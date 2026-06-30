@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mercenary_RPG", "mercenary_RPG.csproj", "{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Debug|x64.Build.0 = Debug|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Debug|x86.Build.0 = Debug|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|x64.ActiveCfg = Debug|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|x64.Build.0 = Debug|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|x86.ActiveCfg = Debug|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|x86.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
