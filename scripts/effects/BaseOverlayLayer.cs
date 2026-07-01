@@ -7,6 +7,9 @@ public partial class BaseOverlayLayer : Node2D
     public NodePath BuildManagerPath { get; set; } = "../../BuildingLayer";
 
     [Export]
+    public NodePath CraftingManagerPath { get; set; } = "../../CraftingManager";
+
+    [Export]
     public bool ShowOverlayDiagnostics { get; set; } = true;
 
     [Export]
@@ -16,6 +19,7 @@ public partial class BaseOverlayLayer : Node2D
     public bool ShowStockpileZones { get; set; } = true;
 
     private BaseBuildManager? _buildManager;
+    private CraftingManager? _craftingManager;
     private CanvasLayer? _diagnosticsCanvasLayer;
     private Label? _diagnosticsLabel;
     private bool _warnedMissingManager;
@@ -25,6 +29,7 @@ public partial class BaseOverlayLayer : Node2D
         ZIndex = 500;
         EnsureDiagnosticsLabel();
         ResolveBuildManager();
+        ResolveCraftingManager();
 
         if (_buildManager == null)
         {
@@ -38,6 +43,11 @@ public partial class BaseOverlayLayer : Node2D
         if (_buildManager == null)
         {
             ResolveBuildManager();
+        }
+
+        if (_craftingManager == null)
+        {
+            ResolveCraftingManager();
         }
 
         UpdateDiagnosticsLabel();
@@ -80,6 +90,16 @@ public partial class BaseOverlayLayer : Node2D
             _warnedMissingManager = true;
             GD.PushWarning("BaseOverlayLayer could not find BaseBuildManager. Check BuildManagerPath.");
         }
+    }
+
+    private void ResolveCraftingManager()
+    {
+        if (!CraftingManagerPath.IsEmpty)
+        {
+            _craftingManager = GetNodeOrNull<CraftingManager>(CraftingManagerPath);
+        }
+
+        _craftingManager ??= GetTree().CurrentScene?.GetNodeOrNull<CraftingManager>("CraftingManager");
     }
 
     private void EnsureDiagnosticsLabel()
@@ -134,7 +154,26 @@ public partial class BaseOverlayLayer : Node2D
 
         int siteCount = _buildManager.GetAllConstructionSites().Count;
         int zoneCount = _buildManager.GetAllStockpileZones().Count;
-        _diagnosticsLabel.Text = $"BaseOverlay OK\nsites {siteCount}\nzones {zoneCount}";
+        string craftJobsText = GetCraftJobsDiagnosticsText();
+        _diagnosticsLabel.Text = $"BaseOverlay OK\nsites {siteCount}\nzones {zoneCount}\n{craftJobsText}";
+    }
+
+    private string GetCraftJobsDiagnosticsText()
+    {
+        if (_craftingManager == null)
+        {
+            return "craft jobs missing";
+        }
+
+        int activeJobCount = _craftingManager.ActiveJobCount;
+        if (activeJobCount <= 0)
+        {
+            return "craft jobs 0";
+        }
+
+        IReadOnlyList<CraftJob> activeJobs = _craftingManager.GetActiveJobs();
+        CraftJob firstJob = activeJobs[0];
+        return $"craft jobs {activeJobCount}\n{firstJob.RecipeId} {firstJob.State} {firstJob.FacilityCell}";
     }
 
     private void DrawConstructionSites()

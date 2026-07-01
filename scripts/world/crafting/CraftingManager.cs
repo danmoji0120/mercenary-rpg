@@ -6,9 +6,42 @@ public partial class CraftingManager : Node
     private readonly List<CraftJob> _jobs = new();
     private int _nextJobId = 1;
 
+    public int ActiveJobCount
+    {
+        get
+        {
+            int count = 0;
+
+            foreach (CraftJob job in _jobs)
+            {
+                if (IsActiveJob(job))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+    }
+
     public IReadOnlyList<CraftJob> GetAllJobs()
     {
         return _jobs;
+    }
+
+    public IReadOnlyList<CraftJob> GetActiveJobs()
+    {
+        List<CraftJob> jobs = new();
+
+        foreach (CraftJob job in _jobs)
+        {
+            if (IsActiveJob(job))
+            {
+                jobs.Add(job);
+            }
+        }
+
+        return jobs;
     }
 
     public bool TryCreateJob(string recipeId, Vector2I facilityCell, out CraftJob? job)
@@ -39,6 +72,11 @@ public partial class CraftingManager : Node
         return true;
     }
 
+    public bool TryCreateDebugWoodPlankJob(Vector2I facilityCell, out CraftJob? job)
+    {
+        return TryCreateJob("process_wood_plank", facilityCell, out job);
+    }
+
     public bool CancelJob(CraftJob job)
     {
         if (job == null || job.IsCompleted || job.IsCancelled)
@@ -50,11 +88,27 @@ public partial class CraftingManager : Node
         return true;
     }
 
+    public int CancelAllDebugJobs()
+    {
+        int cancelledCount = 0;
+
+        foreach (CraftJob job in _jobs)
+        {
+            if (IsActiveJob(job))
+            {
+                job.Cancel();
+                cancelledCount++;
+            }
+        }
+
+        return cancelledCount;
+    }
+
     public bool TryGetJobAtFacility(Vector2I facilityCell, out CraftJob? job)
     {
         foreach (CraftJob candidate in _jobs)
         {
-            if (candidate.FacilityCell == facilityCell && !candidate.IsCompleted && !candidate.IsCancelled)
+            if (candidate.FacilityCell == facilityCell && IsActiveJob(candidate))
             {
                 job = candidate;
                 return true;
@@ -101,5 +155,10 @@ public partial class CraftingManager : Node
         {
             job.PruneReservations();
         }
+    }
+
+    private static bool IsActiveJob(CraftJob job)
+    {
+        return !job.IsCompleted && !job.IsCancelled;
     }
 }
