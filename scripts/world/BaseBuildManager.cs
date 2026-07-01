@@ -78,53 +78,6 @@ public partial class BaseBuildManager : Node2D
 		BaseResourceType.Food
 	};
 
-	private static readonly Dictionary<TileBuildType, BuildCost> BuildCosts = new()
-	{
-		{ TileBuildType.Floor, CreateBuildCost((BaseResourceType.Wood, 1)) },
-		{ TileBuildType.Wall, CreateBuildCost((BaseResourceType.Stone, 2)) },
-		{ TileBuildType.Door, CreateBuildCost((BaseResourceType.Wood, 2), (BaseResourceType.Metal, 1)) },
-		{ TileBuildType.Bed, CreateBuildCost((BaseResourceType.Wood, 5)) },
-		{ TileBuildType.Storage, CreateBuildCost((BaseResourceType.Wood, 4)) },
-		{ TileBuildType.GuardPost, CreateBuildCost((BaseResourceType.Wood, 3), (BaseResourceType.Stone, 2)) },
-		{ TileBuildType.ImprovisedBed, CreateBuildCost((BaseResourceType.Wood, 2)) },
-		{ TileBuildType.LuxuryBed, CreateBuildCost((BaseResourceType.Wood, 10), (BaseResourceType.Metal, 2)) },
-		{ TileBuildType.SmallCabinet, CreateBuildCost((BaseResourceType.Wood, 3)) },
-		{ TileBuildType.SmallDesk, CreateBuildCost((BaseResourceType.Wood, 4)) },
-		{ TileBuildType.Lamp, CreateBuildCost((BaseResourceType.Metal, 1)) },
-		{ TileBuildType.Chair, CreateBuildCost((BaseResourceType.Wood, 1)) },
-		{ TileBuildType.SmallDiningTable, CreateBuildCost((BaseResourceType.Wood, 4)) },
-		{ TileBuildType.LongDiningTable, CreateBuildCost((BaseResourceType.Wood, 8)) },
-		{ TileBuildType.ServingCounter, CreateBuildCost((BaseResourceType.Wood, 4), (BaseResourceType.Metal, 1)) },
-		{ TileBuildType.KitchenCounter, CreateBuildCost((BaseResourceType.Wood, 4), (BaseResourceType.Stone, 2)) },
-		{ TileBuildType.Hearth, CreateBuildCost((BaseResourceType.Stone, 8), (BaseResourceType.Metal, 2)) },
-		{ TileBuildType.IngredientCrate, CreateBuildCost((BaseResourceType.Wood, 3)) },
-		{ TileBuildType.SmallChest, CreateBuildCost((BaseResourceType.Wood, 3)) },
-		{ TileBuildType.LargeStorage, CreateBuildCost((BaseResourceType.Wood, 16), (BaseResourceType.Metal, 4)) },
-		{ TileBuildType.MaterialShelf, CreateBuildCost((BaseResourceType.Wood, 5)) },
-		{ TileBuildType.WeaponRack, CreateBuildCost((BaseResourceType.Wood, 4), (BaseResourceType.Metal, 2)) },
-		{ TileBuildType.MedicineShelf, CreateBuildCost((BaseResourceType.Wood, 3)) },
-		{ TileBuildType.Workbench, CreateBuildCost((BaseResourceType.Wood, 6), (BaseResourceType.Metal, 1)) },
-		{ TileBuildType.LargeWorkbench, CreateBuildCost((BaseResourceType.Wood, 12), (BaseResourceType.Metal, 4)) },
-		{ TileBuildType.RepairBench, CreateBuildCost((BaseResourceType.Wood, 5), (BaseResourceType.Metal, 3)) },
-		{ TileBuildType.Forge, CreateBuildCost((BaseResourceType.Stone, 10), (BaseResourceType.Metal, 5)) },
-		{ TileBuildType.AlchemyBench, CreateBuildCost((BaseResourceType.Wood, 4), (BaseResourceType.Stone, 4), (BaseResourceType.Metal, 2)) },
-		{ TileBuildType.TrainingDummy, CreateBuildCost((BaseResourceType.Wood, 4)) },
-		{ TileBuildType.Sandbag, CreateBuildCost((BaseResourceType.Stone, 2)) },
-		{ TileBuildType.TrainingMat, CreateBuildCost((BaseResourceType.Wood, 4)) },
-		{ TileBuildType.WeaponTrainingRack, CreateBuildCost((BaseResourceType.Wood, 5), (BaseResourceType.Metal, 2)) },
-		{ TileBuildType.TrainingRing, CreateBuildCost((BaseResourceType.Wood, 12), (BaseResourceType.Stone, 6)) },
-		{ TileBuildType.ImprovisedMedicalBed, CreateBuildCost((BaseResourceType.Wood, 3)) },
-		{ TileBuildType.MedicalBed, CreateBuildCost((BaseResourceType.Wood, 6), (BaseResourceType.Metal, 1)) },
-		{ TileBuildType.LuxuryMedicalBed, CreateBuildCost((BaseResourceType.Wood, 10), (BaseResourceType.Metal, 4)) },
-		{ TileBuildType.MedicalTable, CreateBuildCost((BaseResourceType.Wood, 5), (BaseResourceType.Metal, 2)) },
-		{ TileBuildType.MedicineCabinet, CreateBuildCost((BaseResourceType.Wood, 4), (BaseResourceType.Metal, 1)) },
-		{ TileBuildType.PlantPot, CreateBuildCost((BaseResourceType.Wood, 1), (BaseResourceType.Stone, 1)) },
-		{ TileBuildType.SmallRug, CreateBuildCost((BaseResourceType.Wood, 1)) },
-		{ TileBuildType.LargeRug, CreateBuildCost((BaseResourceType.Wood, 3)) },
-		{ TileBuildType.WallBanner, CreateBuildCost((BaseResourceType.Wood, 2)) },
-		{ TileBuildType.TrophyDisplay, CreateBuildCost((BaseResourceType.Wood, 5), (BaseResourceType.Metal, 2)) },
-		{ TileBuildType.Erase, CreateBuildCost() }
-	};
 	private WorldGridRenderer? _worldGrid;
 	private Node2D? _resourcePileLayer;
 	private Node2D? _cropPlantLayer;
@@ -3094,9 +3047,7 @@ public partial class BaseBuildManager : Node2D
 			return GetBuildDefinition(buildType, CurrentBuildMaterialType).Cost;
 		}
 
-		return BuildCosts.TryGetValue(buildType, out BuildCost cost)
-			? cost.Resources
-			: CreateBuildCost().Resources;
+		return BuildDefinitionDatabase.GetCost(buildType).Resources;
 	}
 
 	public IReadOnlyDictionary<BaseResourceType, int> GetBuildCost(TileBuildType buildType, BuildMaterialType materialType)
@@ -3118,60 +3069,17 @@ public partial class BaseBuildManager : Node2D
 
 	private static bool UsesDirectConstruction(TileBuildType buildType)
 	{
-		return buildType == TileBuildType.Floor
-			|| buildType == TileBuildType.Wall
-			|| buildType == TileBuildType.Door
-			|| buildType == TileBuildType.Bed
-			|| buildType == TileBuildType.Storage
-			|| buildType == TileBuildType.SmallChest
-			|| buildType == TileBuildType.Workbench;
+		return BuildDefinitionDatabase.UsesDirectConstruction(buildType);
 	}
 
 	public static string GetBuildDisplayName(TileBuildType buildType)
 	{
-		return buildType switch
-		{
-			TileBuildType.Erase => "\uCCA0\uAC70",
-			TileBuildType.Floor => "\uBC14\uB2E5",
-			TileBuildType.Wall => "\uBCBD",
-			TileBuildType.Door => "\uBB38",
-			TileBuildType.Bed => "\uAE30\uBCF8 \uCE68\uB300",
-			TileBuildType.Storage => "\uAE30\uBCF8 \uCC3D\uACE0",
-			TileBuildType.GuardPost => "\uACBD\uBE44\uCD08\uC18C",
-			TileBuildType.SmallChest => "\uC791\uC740 \uC0C1\uC790",
-			TileBuildType.LargeStorage => "\uB300\uD615 \uCC3D\uACE0",
-			TileBuildType.ImprovisedBed => "\uAE09\uC870 \uCE68\uB300",
-			TileBuildType.LuxuryBed => "\uACE0\uAE09 \uCE68\uB300",
-			TileBuildType.IngredientCrate => "\uC2DD\uC7AC\uB8CC \uC0C1\uC790",
-			TileBuildType.MaterialShelf => "\uC790\uC7AC \uC120\uBC18",
-			TileBuildType.MedicineShelf => "\uC57D\uD488 \uC120\uBC18",
-			TileBuildType.Workbench => "\uC791\uC5C5\uB300",
-			_ => buildType.ToString()
-		};
+		return BuildDefinitionDatabase.GetDisplayName(buildType);
 	}
 
 	private BuildStructureDefinition GetBuildDefinition(TileBuildType buildType, BuildMaterialType materialType)
 	{
-		if (BuildStructureDefinitions.IsMaterialSensitiveBuildType(buildType))
-		{
-			return BuildStructureDefinitions.Get(buildType, materialType);
-		}
-
-		IReadOnlyDictionary<BaseResourceType, int> cost = BuildCosts.TryGetValue(buildType, out BuildCost buildCost)
-			? buildCost.Resources
-			: CreateBuildCost().Resources;
-
-		return new BuildStructureDefinition(
-			buildType,
-			BuildMaterialType.Basic,
-			GetBuildDisplayName(buildType),
-			cost,
-			0,
-			1.0f,
-			0.0f,
-			0.0f,
-			1.0f,
-			"");
+		return BuildDefinitionDatabase.Get(buildType, materialType);
 	}
 
 	public bool CanAffordBuild(TileBuildType buildType)
@@ -3529,24 +3437,6 @@ public partial class BaseBuildManager : Node2D
 	private bool IsStarterSupplyChest(Vector2I storageCell)
 	{
 		return _starterSupplyChestCell.HasValue && _starterSupplyChestCell.Value == storageCell;
-	}
-
-	private static BuildCost CreateBuildCost(params (BaseResourceType ResourceType, int Amount)[] resources)
-	{
-		Dictionary<BaseResourceType, int> cost = new();
-
-		foreach ((BaseResourceType resourceType, int amount) in resources)
-		{
-			if (amount <= 0)
-			{
-				continue;
-			}
-
-			cost[resourceType] = amount;
-		}
-
-		// TODO: Tune these temporary 0.1 build costs when construction time, hauling, and gathering exist.
-		return new BuildCost(cost);
 	}
 
 	private Vector2I FindResourcePileSpawnCell(BaseResourceType type, Vector2I preferredCell)
@@ -4327,36 +4217,7 @@ public partial class BaseBuildManager : Node2D
 
 	public Vector2I GetBuildObjectSize(TileBuildType buildType)
 	{
-		return buildType switch
-		{
-			TileBuildType.ImprovisedBed => new Vector2I(1, 1),
-			TileBuildType.Bed => new Vector2I(1, 2),
-			TileBuildType.LuxuryBed => new Vector2I(2, 2),
-			TileBuildType.Storage => new Vector2I(2, 2),
-			TileBuildType.SmallDesk => new Vector2I(2, 1),
-			TileBuildType.SmallDiningTable => new Vector2I(2, 1),
-			TileBuildType.LongDiningTable => new Vector2I(3, 1),
-			TileBuildType.ServingCounter => new Vector2I(2, 1),
-			TileBuildType.KitchenCounter => new Vector2I(2, 1),
-			TileBuildType.Hearth => new Vector2I(2, 2),
-			TileBuildType.LargeStorage => new Vector2I(3, 2),
-			TileBuildType.MaterialShelf => new Vector2I(2, 1),
-			TileBuildType.WeaponRack => new Vector2I(2, 1),
-			TileBuildType.Workbench => new Vector2I(2, 1),
-			TileBuildType.LargeWorkbench => new Vector2I(3, 2),
-			TileBuildType.RepairBench => new Vector2I(2, 1),
-			TileBuildType.Forge => new Vector2I(2, 2),
-			TileBuildType.AlchemyBench => new Vector2I(2, 1),
-			TileBuildType.TrainingMat => new Vector2I(2, 2),
-			TileBuildType.WeaponTrainingRack => new Vector2I(2, 1),
-			TileBuildType.TrainingRing => new Vector2I(4, 2),
-			TileBuildType.MedicalBed => new Vector2I(1, 2),
-			TileBuildType.LuxuryMedicalBed => new Vector2I(2, 2),
-			TileBuildType.MedicalTable => new Vector2I(2, 1),
-			TileBuildType.LargeRug => new Vector2I(2, 2),
-			TileBuildType.TrophyDisplay => new Vector2I(2, 1),
-			_ => Vector2I.One
-		};
+		return BuildDefinitionDatabase.GetSize(buildType);
 	}
 
 	public Vector2I GetObjectOriginCell(Vector2I cell)

@@ -1142,10 +1142,14 @@ public partial class MercenaryLifeAI : Node
 		{
 			ConstructionSite? site = _targetConstructionSite;
 
-			if (site == null || site.IsCancelled || site.IsCompleted)
+			if (site == null || site.IsCancelled)
 			{
 				warnings.Add("Construction action had invalid site");
 				ResetConstructionState(mercenary, true);
+			}
+			else if (site.IsCompleted)
+			{
+				ResetConstructionState(mercenary, false);
 			}
 			else if (IsConstructionWithdrawAction()
 				&& (!_constructionStorageCell.HasValue
