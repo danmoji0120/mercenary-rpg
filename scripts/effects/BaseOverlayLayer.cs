@@ -173,7 +173,23 @@ public partial class BaseOverlayLayer : Node2D
 
         IReadOnlyList<CraftJob> activeJobs = _craftingManager.GetActiveJobs();
         CraftJob firstJob = activeJobs[0];
-        return $"craft jobs {activeJobCount}\n{firstJob.RecipeId} {firstJob.State} {firstJob.FacilityCell}";
+        string materialText = GetCraftJobMaterialDiagnosticsText(firstJob);
+        return $"craft jobs {activeJobCount}\n{firstJob.RecipeId} {firstJob.State} {firstJob.FacilityCell}{materialText}";
+    }
+
+    private static string GetCraftJobMaterialDiagnosticsText(CraftJob job)
+    {
+        if (!CraftRecipeDatabase.TryGet(job.RecipeId, out CraftRecipeEntry recipe))
+        {
+            return "";
+        }
+
+        foreach (KeyValuePair<BaseResourceType, int> input in recipe.Inputs)
+        {
+            return $" {job.GetDeliveredAmount(input.Key)}/{input.Value} {input.Key}";
+        }
+
+        return "";
     }
 
     private void DrawConstructionSites()

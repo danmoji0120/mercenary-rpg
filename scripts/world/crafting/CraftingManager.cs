@@ -44,6 +44,44 @@ public partial class CraftingManager : Node
         return jobs;
     }
 
+    public IReadOnlyList<CraftJob> GetMaterialDeliveryJobs()
+    {
+        List<CraftJob> jobs = new();
+
+        foreach (CraftJob job in _jobs)
+        {
+            job.PruneReservations();
+
+            if (IsActiveJob(job)
+                && job.State == CraftJobState.WaitingForMaterials
+                && !job.HasAllMaterials
+                && job.GetFirstMissingInput().HasValue)
+            {
+                jobs.Add(job);
+            }
+        }
+
+        return jobs;
+    }
+
+    public bool TryFindMaterialDeliveryJob(out CraftJob? job)
+    {
+        foreach (CraftJob candidate in GetMaterialDeliveryJobs())
+        {
+            job = candidate;
+            return true;
+        }
+
+        job = null;
+        return false;
+    }
+
+    public bool TryGetRecipeForJob(CraftJob job, out CraftRecipeEntry recipe)
+    {
+        recipe = default!;
+        return job != null && CraftRecipeDatabase.TryGet(job.RecipeId, out recipe);
+    }
+
     public bool TryCreateJob(string recipeId, Vector2I facilityCell, out CraftJob? job)
     {
         job = null;

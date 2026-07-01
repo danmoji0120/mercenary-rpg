@@ -13,6 +13,7 @@ public sealed class CraftJob
     public string RecipeId { get; set; } = string.Empty;
     public Vector2I FacilityCell { get; set; }
     public CraftJobState State { get; private set; } = CraftJobState.WaitingForMaterials;
+    public IReadOnlyDictionary<BaseResourceType, int> RequiredInputs => _requiredInputs;
     public IReadOnlyDictionary<BaseResourceType, int> InputsDelivered => _inputsDelivered;
     public IReadOnlyDictionary<BaseResourceType, int> ProducedOutputs => _producedOutputs;
     public float WorkProgress { get; private set; }
@@ -66,7 +67,11 @@ public sealed class CraftJob
 
     public int AcceptMaterial(BaseResourceType type, int amount)
     {
-        if (amount <= 0 || IsCompleted || IsCancelled || !_requiredInputs.ContainsKey(type))
+        if (amount <= 0
+            || State != CraftJobState.WaitingForMaterials
+            || IsCompleted
+            || IsCancelled
+            || !_requiredInputs.ContainsKey(type))
         {
             return 0;
         }
@@ -195,7 +200,7 @@ public sealed class CraftJob
         }
     }
 
-    private BaseResourceType? GetFirstMissingInput()
+    public BaseResourceType? GetFirstMissingInput()
     {
         foreach (KeyValuePair<BaseResourceType, int> input in _requiredInputs)
         {

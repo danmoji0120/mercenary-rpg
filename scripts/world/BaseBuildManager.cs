@@ -4188,6 +4188,45 @@ public partial class BaseBuildManager : Node2D
 		return true;
 	}
 
+	public bool TryFindObjectAccessCell(Vector2I fromCell, Vector2I objectOriginCell, out Vector2I accessCell, out int pathLength)
+	{
+		accessCell = default;
+		pathLength = int.MaxValue;
+
+		if (!TryGetObjectOriginState(objectOriginCell, out BuildableTileState originState)
+			|| originState.ObjectOriginCell != objectOriginCell)
+		{
+			return false;
+		}
+
+		foreach (Vector2I candidateAccessCell in GetObjectAccessCells(objectOriginCell))
+		{
+			if (!IsCellInWorld(candidateAccessCell) || IsCellBlocked(candidateAccessCell))
+			{
+				continue;
+			}
+
+			List<Vector2I> path = GridPathfinder.FindPath(fromCell, candidateAccessCell, this);
+
+			if (fromCell != candidateAccessCell && path.Count == 0)
+			{
+				continue;
+			}
+
+			int candidatePathLength = fromCell == candidateAccessCell ? 0 : path.Count;
+
+			if (candidatePathLength >= pathLength)
+			{
+				continue;
+			}
+
+			accessCell = candidateAccessCell;
+			pathLength = candidatePathLength;
+		}
+
+		return pathLength != int.MaxValue;
+	}
+
 	private string GetMultiCellObjectBlockReason(Vector2I originCell, TileBuildType buildType)
 	{
 		foreach (Vector2I objectCell in GetObjectCells(originCell, GetBuildObjectSize(buildType)))

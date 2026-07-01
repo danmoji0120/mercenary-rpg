@@ -19,11 +19,12 @@
 
 [node name="MainWorld" type="Node2D" unique_id=1694616011]
 script = ExtResource("1_wktxm")
+EnableCraftingDebugHotkeys = true
 
 [node name="BaseAlertState" type="Node" parent="." unique_id=2044625730]
 script = ExtResource("12_a8lbr")
 
-[node name="CraftingManager" type="Node" parent="."]
+[node name="CraftingManager" type="Node" parent="." unique_id=2020276106]
 script = ExtResource("16_crafting")
 
 [node name="TerrainLayer" type="Node2D" parent="." unique_id=1928559420]
