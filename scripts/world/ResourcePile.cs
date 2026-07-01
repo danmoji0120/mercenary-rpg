@@ -42,6 +42,11 @@ public partial class ResourcePile : Node2D
             BaseResourceType.Wood => new Color(0.48f, 0.32f, 0.14f, 0.9f),
             BaseResourceType.Stone => new Color(0.52f, 0.54f, 0.56f, 0.9f),
             BaseResourceType.Metal => new Color(0.34f, 0.46f, 0.54f, 0.9f),
+            BaseResourceType.Plank => new Color(0.62f, 0.42f, 0.20f, 0.9f),
+            BaseResourceType.Brick => new Color(0.62f, 0.24f, 0.16f, 0.9f),
+            BaseResourceType.IronIngot => new Color(0.42f, 0.46f, 0.50f, 0.92f),
+            BaseResourceType.SimpleMeal => new Color(0.86f, 0.56f, 0.24f, 0.92f),
+            BaseResourceType.Medicine => new Color(0.72f, 0.92f, 0.82f, 0.92f),
             _ => new Color(0.8f, 0.8f, 0.8f, 0.9f)
         };
 
@@ -88,6 +93,35 @@ public partial class ResourcePile : Node2D
         return takenAmount;
     }
 
+    public bool ValidateLogisticsState(out string warning)
+    {
+        warning = "";
+
+        if (!System.Enum.IsDefined(typeof(BaseResourceType), ResourceType))
+        {
+            warning = $"Resource pile has invalid type at {Cell}";
+            return false;
+        }
+
+        if (Amount < 0)
+        {
+            Amount = 0;
+            TryRemoveIfEmpty();
+            warning = $"Resource pile negative amount clamped at {Cell}";
+            return false;
+        }
+
+        if (Amount == 0 && !_isRemoving)
+        {
+            TryRemoveIfEmpty();
+            warning = $"Empty resource pile removed at {Cell}";
+            return false;
+        }
+
+        PruneInvalidReservation();
+        return true;
+    }
+
     public void AddAmount(int amount)
     {
         if (amount <= 0 || _isRemoving)
@@ -102,7 +136,7 @@ public partial class ResourcePile : Node2D
 
     public string GetDisplayName()
     {
-        return $"{ResourceType} Pile [{Amount}]";
+        return $"{BaseBuildManager.GetResourceDisplayName(ResourceType)} Pile [{Amount}]";
     }
 
     public bool TryRemoveIfEmpty()
@@ -188,14 +222,7 @@ public partial class ResourcePile : Node2D
             return;
         }
 
-        string marker = ResourceType switch
-        {
-            BaseResourceType.Food => "F",
-            BaseResourceType.Wood => "W",
-            BaseResourceType.Stone => "S",
-            BaseResourceType.Metal => "M",
-            _ => "?"
-        };
+        string marker = BaseBuildManager.GetResourceMarker(ResourceType);
 
         string reservationMarker = IsReservedForHaul ? " H" : "";
         _label.Text = $"{marker} {Amount}{reservationMarker}";

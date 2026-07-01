@@ -10,7 +10,11 @@ public partial class TestMercenarySpawner : Node2D
         new Vector2(320.0f, 320.0f),
         new Vector2(384.0f, 320.0f),
         new Vector2(320.0f, 384.0f),
-        new Vector2(384.0f, 384.0f)
+        new Vector2(384.0f, 384.0f),
+        new Vector2(448.0f, 320.0f),
+        new Vector2(448.0f, 384.0f),
+        new Vector2(320.0f, 448.0f),
+        new Vector2(384.0f, 448.0f)
     };
 
     private Node2D? _lifePointLayer;
@@ -27,11 +31,12 @@ public partial class TestMercenarySpawner : Node2D
     {
         for (int i = 0; i < _spawnPositions.Length; i++)
         {
+            MercenaryProfile profile = MercenaryProfileProvider.GetStartingProfile(i);
             MercenaryController mercenary = new MercenaryController();
             mercenary.Name = $"TestMercenary{i + 1}";
             mercenary.AddToGroup("mercenaries");
             AddChild(mercenary);
-            mercenary.Initialize($"Test Mercenary {i + 1}", _spawnPositions[i], MercenaryMoveSpeed);
+            mercenary.Initialize(profile.DisplayName, _spawnPositions[i], MercenaryMoveSpeed, profile);
 
             if (_lifePointLayer != null)
             {

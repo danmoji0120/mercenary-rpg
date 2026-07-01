@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://dbhvtl0ip0dqx" path="res://scripts/effects/FacilityDebugOverlay.cs" id="11_l4d7r"]
 [ext_resource type="Script" uid="uid://buxod2npr5evo" path="res://scripts/world/BaseAlertState.cs" id="12_a8lbr"]
 [ext_resource type="Script" uid="uid://dy6otv77auv0t" path="res://scripts/world/TestResourceNodeSpawner.cs" id="13_p4x2h"]
+[ext_resource type="Script" uid="uid://b4v3s1t3ykr4o" path="res://scripts/ui/WorldBuildPanel.cs" id="14_mpeui"]
 
 [node name="MainWorld" type="Node2D" unique_id=1694616011]
 script = ExtResource("1_wktxm")
@@ -96,6 +97,17 @@ mouse_filter = 2
 script = ExtResource("6_w4qc7")
 
 [node name="BuildHud" type="Control" parent="CanvasLayer/HUD" unique_id=2128756456]
+visible = false
 anchors_preset = 0
 mouse_filter = 2
 script = ExtResource("9_eqg73")
+
+[node name="WorldBuildPanel" type="Control" parent="CanvasLayer/HUD" unique_id=348107791]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("14_mpeui")

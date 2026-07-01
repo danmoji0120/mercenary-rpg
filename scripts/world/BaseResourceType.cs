@@ -3,5 +3,10 @@ public enum BaseResourceType
     Food,
     Wood,
     Stone,
-    Metal
+    Metal,
+    Plank,
+    Brick,
+    IronIngot,
+    SimpleMeal,
+    Medicine
 }

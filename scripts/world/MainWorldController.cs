@@ -28,6 +28,9 @@ public partial class MainWorldController : Node2D
     public bool ShowFacilityDebug { get; set; } = false;
 
     [Export]
+    public bool ShowHudDebugText { get; set; } = false;
+
+    [Export]
     public bool DebugHarvestDesignation { get; set; } = false;
 
     [Export]
@@ -40,6 +43,8 @@ public partial class MainWorldController : Node2D
     private Marker2D? _rallyPoint;
     private SelectedMercenaryHud? _selectedMercenaryHud;
     private BuildHud? _buildHud;
+    private WorldBuildPanel? _worldBuildPanel;
+    private BaseRoomManager? _baseRoomManager;
     private SelectionOverlay? _selectionOverlay;
     private PathDebugOverlay? _pathDebugOverlay;
     private FacilityDebugOverlay? _facilityDebugOverlay;
@@ -61,6 +66,19 @@ public partial class MainWorldController : Node2D
     private bool _farmZoneRemoveMode;
     private int _farmZoneChangedCount;
     private readonly HashSet<Vector2I> _farmZoneDragCells = new();
+    private bool _isRoomDesignationMode;
+    private bool _isRoomDesignationDragging;
+    private bool _roomDesignationRemoveMode;
+    private bool _roomDesignationDragRemoveMode;
+    private RoomType _roomDesignationType = RoomType.None;
+    private readonly HashSet<Vector2I> _roomDesignationCells = new();
+    private Vector2I? _lastRoomDesignationCell;
+    private bool _isStockpileZoneMode;
+    private bool _isStockpileZoneDragging;
+    private bool _stockpileZoneRemoveMode;
+    private bool _stockpileZoneDragRemoveMode;
+    private readonly HashSet<Vector2I> _stockpileZoneCells = new();
+    private Vector2I? _lastStockpileZoneCell;
     private Vector2 _dragStartWorld;
     private Vector2 _dragCurrentWorld;
     private Vector2 _dragStartScreen;
@@ -75,12 +93,48 @@ public partial class MainWorldController : Node2D
         _selectionOverlay = GetNodeOrNull<SelectionOverlay>("CanvasLayer/SelectionOverlay");
         _selectedMercenaryHud = GetNodeOrNull<SelectedMercenaryHud>("CanvasLayer/HUD");
         _buildHud = GetNodeOrNull<BuildHud>("CanvasLayer/HUD/BuildHud");
+        _worldBuildPanel = GetNodeOrNull<WorldBuildPanel>("CanvasLayer/HUD/WorldBuildPanel");
         _pathDebugOverlay = GetNodeOrNull<PathDebugOverlay>("EffectLayer/PathDebugOverlay");
         _facilityDebugOverlay = GetNodeOrNull<FacilityDebugOverlay>("EffectLayer/FacilityDebugOverlay");
+        _baseRoomManager = GetNodeOrNull<BaseRoomManager>("EffectLayer/BaseRoomManager")
+            ?? GetNodeOrNull<BaseRoomManager>("BaseRoomManager");
 
         if (_baseBuildManager != null)
         {
             _facilityDebugOverlay?.SetBuildManager(_baseBuildManager);
+        }
+
+        if (_baseRoomManager == null)
+        {
+            _baseRoomManager = new BaseRoomManager
+            {
+                Name = "BaseRoomManager"
+            };
+
+            Node? effectLayer = GetNodeOrNull<Node>("EffectLayer");
+            if (effectLayer != null)
+            {
+                effectLayer.AddChild(_baseRoomManager);
+            }
+            else
+            {
+                AddChild(_baseRoomManager);
+            }
+        }
+
+        _baseRoomManager.SetBuildManager(_baseBuildManager);
+
+        _selectedMercenaryHud?.SetDebugStatusVisible(ShowHudDebugText);
+
+        if (_worldBuildPanel != null)
+        {
+            _worldBuildPanel.SetBuildManager(_baseBuildManager);
+            _worldBuildPanel.BuildModeSelected += HandleBuildPanelModeSelected;
+            _worldBuildPanel.BuildMaterialSelected += HandleBuildPanelMaterialSelected;
+            _worldBuildPanel.RoomDesignationSelected += HandleRoomDesignationSelected;
+            _worldBuildPanel.MercenarySelected += HandleMercenaryPanelSelected;
+            _worldBuildPanel.MercenaryWorkSettingsChanged += HandleMercenaryWorkSettingsChanged;
+            _worldBuildPanel.StockpileZoneDesignationSelected += HandleStockpileZoneDesignationSelected;
         }
 
         UpdateBaseAlertState();
@@ -147,6 +201,16 @@ public partial class MainWorldController : Node2D
             TryApplyFarmZoneDragAtWorldPosition(GetGlobalMousePosition());
         }
 
+        if (_isRoomDesignationDragging && Input.IsMouseButtonPressed(MouseButton.Left))
+        {
+            TryAddRoomDesignationCellAtWorldPosition(GetGlobalMousePosition());
+        }
+
+        if (_isStockpileZoneDragging && Input.IsMouseButtonPressed(MouseButton.Left))
+        {
+            TryAddStockpileZoneCellAtWorldPosition(GetGlobalMousePosition());
+        }
+
         UpdateBaseAlertState();
         UpdateSelectedMercenaryHud();
         UpdateBuildHud();
@@ -162,6 +226,11 @@ public partial class MainWorldController : Node2D
         if (@event is InputEventKey keyEvent && keyEvent.Pressed && !keyEvent.Echo)
         {
             if (HandleDebugInput(keyEvent))
+            {
+                return;
+            }
+
+            if (HandleRoomDesignationModeInput(keyEvent))
             {
                 return;
             }
@@ -210,6 +279,34 @@ public partial class MainWorldController : Node2D
         }
         else if (mouseButton.ButtonIndex == MouseButton.Left)
         {
+            if (_isRoomDesignationMode)
+            {
+                if (mouseButton.Pressed)
+                {
+                    HandleRoomDesignationLeftMousePressed(mouseButton);
+                }
+                else
+                {
+                    EndRoomDesignationDrag(true);
+                }
+
+                return;
+            }
+
+            if (_isStockpileZoneMode)
+            {
+                if (mouseButton.Pressed)
+                {
+                    HandleStockpileZoneLeftMousePressed(mouseButton);
+                }
+                else
+                {
+                    EndStockpileZoneDrag(true);
+                }
+
+                return;
+            }
+
             if (_isFarmZoneMode)
             {
                 if (mouseButton.Pressed)
@@ -261,6 +358,24 @@ public partial class MainWorldController : Node2D
         }
         else if (mouseButton.ButtonIndex == MouseButton.Right && mouseButton.Pressed)
         {
+            if (_isRoomDesignationMode)
+            {
+                SetRoomDesignationMode(RoomType.None, false);
+                ClearBuildUiSelection();
+                CancelSelectionDrag();
+                UpdateBuildHud();
+                return;
+            }
+
+            if (_isStockpileZoneMode)
+            {
+                SetStockpileZoneMode(false, false);
+                ClearBuildUiSelection();
+                CancelSelectionDrag();
+                UpdateBuildHud();
+                return;
+            }
+
             if (_isFarmZoneMode)
             {
                 SetFarmZoneMode(false);
@@ -282,6 +397,7 @@ public partial class MainWorldController : Node2D
                 EndBuildDrag();
                 _baseBuildManager?.SetBuildMode(TileBuildType.None);
                 _buildHud?.ClearFeedback();
+                _worldBuildPanel?.SetSelectedBuildType(TileBuildType.None);
                 CancelSelectionDrag();
                 UpdateBuildHud();
                 return;
@@ -359,6 +475,7 @@ public partial class MainWorldController : Node2D
     private void SelectOnly(MercenaryController mercenary)
     {
         ClearSelection();
+        _worldBuildPanel?.ClearInfoPanel();
         AddToSelection(mercenary);
     }
 
@@ -530,11 +647,26 @@ public partial class MainWorldController : Node2D
             return false;
         }
 
+        if (keyEvent.Keycode == Key.Escape)
+        {
+            SetRoomDesignationMode(RoomType.None, false);
+            SetStockpileZoneMode(false, false);
+            SetHarvestDesignationMode(false);
+            SetFarmZoneMode(false);
+            ClearBuildUiSelection();
+            CancelSelectionDrag();
+            UpdateBuildHud();
+            return true;
+        }
+
         if (keyEvent.Keycode == Key.G)
         {
+            SetRoomDesignationMode(RoomType.None, false);
+            SetStockpileZoneMode(false, false);
             SetHarvestDesignationMode(false);
             SetFarmZoneMode(false);
             _baseBuildManager.ToggleBuildMode();
+            _worldBuildPanel?.SetSelectedBuildType(_baseBuildManager.CurrentBuildMode);
             if (!IsBuildModeActive())
             {
                 EndBuildDrag();
@@ -556,7 +688,6 @@ public partial class MainWorldController : Node2D
             Key.Key6 => TileBuildType.GuardPost,
             Key.Key0 => TileBuildType.Erase,
             Key.Delete => TileBuildType.Erase,
-            Key.Escape => TileBuildType.None,
             _ => TileBuildType.None
         };
 
@@ -567,14 +698,15 @@ public partial class MainWorldController : Node2D
             || keyEvent.Keycode == Key.Key5
             || keyEvent.Keycode == Key.Key6
             || keyEvent.Keycode == Key.Key0
-            || keyEvent.Keycode == Key.Delete
-            || keyEvent.Keycode == Key.Escape;
+            || keyEvent.Keycode == Key.Delete;
 
         if (!handled)
         {
             return IsBuildModeActive();
         }
 
+        SetRoomDesignationMode(RoomType.None, false);
+        SetStockpileZoneMode(false, false);
         SetHarvestDesignationMode(false);
         SetFarmZoneMode(false);
         _baseBuildManager.SetBuildMode(buildType);
@@ -584,8 +716,406 @@ public partial class MainWorldController : Node2D
             _buildHud?.ClearFeedback();
         }
 
+        _worldBuildPanel?.SetSelectedBuildType(buildType);
         CancelSelectionDrag();
         UpdateBuildHud();
+        return true;
+    }
+
+    private void HandleBuildPanelModeSelected(TileBuildType buildType)
+    {
+        if (_baseBuildManager == null)
+        {
+            return;
+        }
+
+        SetRoomDesignationMode(RoomType.None, false);
+        SetStockpileZoneMode(false, false);
+        SetHarvestDesignationMode(false);
+        SetFarmZoneMode(false);
+        EndBuildDrag();
+        _baseBuildManager.SetBuildMode(buildType);
+        _buildHud?.ClearFeedback();
+        _worldBuildPanel?.SetSelectedBuildType(buildType);
+        CancelSelectionDrag();
+        UpdateBuildHud();
+    }
+
+    private void HandleBuildPanelMaterialSelected(BuildMaterialType materialType)
+    {
+        _baseBuildManager?.SetBuildMaterialType(materialType);
+        _worldBuildPanel?.SetSelectedBuildMaterialType(_baseBuildManager?.CurrentBuildMaterialType ?? materialType);
+        UpdateBuildHud();
+    }
+
+    private void HandleRoomDesignationSelected(RoomType roomType, bool removeMode)
+    {
+        SetRoomDesignationMode(roomType, removeMode);
+        _worldBuildPanel?.SetSelectedRoomDesignation(roomType, removeMode);
+        CancelSelectionDrag();
+        UpdateBuildHud();
+    }
+
+    private void HandleStockpileZoneDesignationSelected(bool removeMode)
+    {
+        SetStockpileZoneMode(true, removeMode);
+        CancelSelectionDrag();
+        UpdateBuildHud();
+    }
+
+    private void HandleMercenaryPanelSelected(MercenaryController mercenary)
+    {
+        if (!GodotObject.IsInstanceValid(mercenary) || mercenary.IsQueuedForDeletion())
+        {
+            return;
+        }
+
+        SetRoomDesignationMode(RoomType.None, false);
+        SetHarvestDesignationMode(false);
+        SetFarmZoneMode(false);
+        SetStockpileZoneMode(false, false);
+        EndBuildDrag();
+        _baseBuildManager?.SetBuildMode(TileBuildType.None);
+        _buildHud?.ClearFeedback();
+        SelectMercenaryFromManagement(mercenary, true);
+        CancelSelectionDrag();
+        UpdateBuildHud();
+    }
+
+    private void HandleMercenaryWorkSettingsChanged(MercenaryController mercenary)
+    {
+        if (!GodotObject.IsInstanceValid(mercenary) || mercenary.IsQueuedForDeletion())
+        {
+            return;
+        }
+
+        UpdateSelectedMercenaryHud();
+    }
+
+    public void SelectMercenaryFromManagement(MercenaryController mercenary, bool focusCamera)
+    {
+        SelectOnly(mercenary);
+
+        if (focusCamera && _camera != null)
+        {
+            _camera.GlobalPosition = mercenary.GlobalPosition;
+            ClampCameraPosition();
+        }
+    }
+
+    private bool HandleRoomDesignationModeInput(InputEventKey keyEvent)
+    {
+        if (keyEvent.Keycode == Key.Escape && _isRoomDesignationMode)
+        {
+            SetRoomDesignationMode(RoomType.None, false);
+            ClearBuildUiSelection();
+            CancelSelectionDrag();
+            UpdateBuildHud();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void SetRoomDesignationMode(RoomType roomType, bool removeMode)
+    {
+        bool enabled = removeMode || roomType != RoomType.None;
+        _isRoomDesignationMode = enabled;
+        _roomDesignationType = enabled ? roomType : RoomType.None;
+        _roomDesignationRemoveMode = enabled && removeMode;
+
+        if (!enabled)
+        {
+            EndRoomDesignationDrag(false);
+            _roomDesignationCells.Clear();
+            _lastRoomDesignationCell = null;
+            _baseRoomManager?.ClearPreview();
+            return;
+        }
+
+        SetHarvestDesignationMode(false);
+        SetFarmZoneMode(false);
+        EndBuildDrag();
+        _baseBuildManager?.SetBuildMode(TileBuildType.None);
+        _buildHud?.ClearFeedback();
+    }
+
+    private void HandleRoomDesignationLeftMousePressed(InputEventMouseButton mouseButton)
+    {
+        if (_baseBuildManager == null)
+        {
+            return;
+        }
+
+        _isRoomDesignationDragging = true;
+        _roomDesignationDragRemoveMode = _roomDesignationRemoveMode || mouseButton.ShiftPressed;
+        _roomDesignationCells.Clear();
+        _lastRoomDesignationCell = null;
+        TryAddRoomDesignationCellAtWorldPosition(GetGlobalMousePosition());
+    }
+
+    private void TryAddRoomDesignationCellAtWorldPosition(Vector2 worldPosition)
+    {
+        if (_baseBuildManager == null)
+        {
+            return;
+        }
+
+        Vector2I cell = _baseBuildManager.WorldToCell(worldPosition);
+
+        if (!_baseBuildManager.IsCellInWorld(cell))
+        {
+            return;
+        }
+
+        if (_lastRoomDesignationCell.HasValue)
+        {
+            AddRoomDesignationLine(_lastRoomDesignationCell.Value, cell);
+        }
+        else
+        {
+            _roomDesignationCells.Add(cell);
+        }
+
+        _lastRoomDesignationCell = cell;
+        _baseRoomManager?.SetPreviewCells(_roomDesignationCells, _roomDesignationType, _roomDesignationDragRemoveMode);
+    }
+
+    private void AddRoomDesignationLine(Vector2I fromCell, Vector2I toCell)
+    {
+        if (_baseBuildManager == null)
+        {
+            return;
+        }
+
+        int steps = Mathf.Max(Mathf.Abs(toCell.X - fromCell.X), Mathf.Abs(toCell.Y - fromCell.Y));
+
+        for (int i = 0; i <= steps; i++)
+        {
+            float t = steps == 0 ? 0.0f : i / (float)steps;
+            Vector2I cell = new(
+                Mathf.RoundToInt(Mathf.Lerp(fromCell.X, toCell.X, t)),
+                Mathf.RoundToInt(Mathf.Lerp(fromCell.Y, toCell.Y, t)));
+
+            if (_baseBuildManager.IsCellInWorld(cell))
+            {
+                _roomDesignationCells.Add(cell);
+            }
+        }
+    }
+
+    private void EndRoomDesignationDrag(bool apply)
+    {
+        if (!_isRoomDesignationDragging)
+        {
+            return;
+        }
+
+        _isRoomDesignationDragging = false;
+        bool removeMode = _roomDesignationDragRemoveMode;
+        _roomDesignationDragRemoveMode = false;
+        _lastRoomDesignationCell = null;
+        List<Vector2I> selectedCells = new(_roomDesignationCells);
+        _roomDesignationCells.Clear();
+        _baseRoomManager?.ClearPreview();
+
+        if (!apply || _baseBuildManager == null || _baseRoomManager == null)
+        {
+            return;
+        }
+
+        if (removeMode)
+        {
+            int removedCount = _baseRoomManager.RemoveRoomsOverlapping(selectedCells);
+            _buildHud?.ShowFeedback(removedCount > 0 ? $"Removed {removedCount} room(s)" : "No room here");
+            return;
+        }
+
+        if (_roomDesignationType == RoomType.None || selectedCells.Count <= 0)
+        {
+            return;
+        }
+
+        if (_baseRoomManager.TryCreateRoom(_roomDesignationType, selectedCells, out BaseRoom? room) && room != null)
+        {
+            _buildHud?.ShowFeedback($"Marked room: {room.DisplayName}");
+        }
+        else
+        {
+            _buildHud?.ShowFeedback("Cannot mark room");
+        }
+    }
+
+    private void SetStockpileZoneMode(bool enabled, bool removeMode)
+    {
+        _isStockpileZoneMode = enabled;
+        _stockpileZoneRemoveMode = enabled && removeMode;
+
+        if (!enabled)
+        {
+            EndStockpileZoneDrag(false);
+            _stockpileZoneCells.Clear();
+            _lastStockpileZoneCell = null;
+            return;
+        }
+
+        SetRoomDesignationMode(RoomType.None, false);
+        SetHarvestDesignationMode(false);
+        SetFarmZoneMode(false);
+        EndBuildDrag();
+        _baseBuildManager?.SetBuildMode(TileBuildType.None);
+        _buildHud?.ClearFeedback();
+    }
+
+    private void HandleStockpileZoneLeftMousePressed(InputEventMouseButton mouseButton)
+    {
+        _isStockpileZoneDragging = true;
+        _stockpileZoneDragRemoveMode = _stockpileZoneRemoveMode || mouseButton.ShiftPressed;
+        _stockpileZoneCells.Clear();
+        _lastStockpileZoneCell = null;
+        TryAddStockpileZoneCellAtWorldPosition(GetGlobalMousePosition());
+    }
+
+    private void TryAddStockpileZoneCellAtWorldPosition(Vector2 worldPosition)
+    {
+        if (_baseBuildManager == null)
+        {
+            return;
+        }
+
+        Vector2I cell = _baseBuildManager.WorldToCell(worldPosition);
+
+        if (!_baseBuildManager.IsCellInWorld(cell))
+        {
+            return;
+        }
+
+        if (_lastStockpileZoneCell.HasValue)
+        {
+            AddStockpileZoneLine(_lastStockpileZoneCell.Value, cell);
+        }
+        else
+        {
+            _stockpileZoneCells.Add(cell);
+        }
+
+        _lastStockpileZoneCell = cell;
+    }
+
+    private void AddStockpileZoneLine(Vector2I fromCell, Vector2I toCell)
+    {
+        if (_baseBuildManager == null)
+        {
+            return;
+        }
+
+        int steps = Mathf.Max(Mathf.Abs(toCell.X - fromCell.X), Mathf.Abs(toCell.Y - fromCell.Y));
+
+        for (int i = 0; i <= steps; i++)
+        {
+            float t = steps == 0 ? 0.0f : i / (float)steps;
+            Vector2I cell = new(
+                Mathf.RoundToInt(Mathf.Lerp(fromCell.X, toCell.X, t)),
+                Mathf.RoundToInt(Mathf.Lerp(fromCell.Y, toCell.Y, t)));
+
+            if (_baseBuildManager.IsCellInWorld(cell))
+            {
+                _stockpileZoneCells.Add(cell);
+            }
+        }
+    }
+
+    private void EndStockpileZoneDrag(bool apply)
+    {
+        if (!_isStockpileZoneDragging)
+        {
+            return;
+        }
+
+        _isStockpileZoneDragging = false;
+        bool removeMode = _stockpileZoneDragRemoveMode;
+        _stockpileZoneDragRemoveMode = false;
+        _lastStockpileZoneCell = null;
+        List<Vector2I> selectedCells = new(_stockpileZoneCells);
+        _stockpileZoneCells.Clear();
+
+        if (!apply || _baseBuildManager == null)
+        {
+            return;
+        }
+
+        if (removeMode)
+        {
+            int removedCount = _baseBuildManager.RemoveStockpileZonesOverlapping(selectedCells);
+            _buildHud?.ShowFeedback(removedCount > 0 ? $"Removed {removedCount} stockpile zone(s)" : "No stockpile zone here");
+            return;
+        }
+
+        if (_baseBuildManager.TryCreateStockpileZone(selectedCells, out StockpileZone? zone) && zone != null)
+        {
+            _buildHud?.ShowFeedback($"Marked stockpile zone: {zone.DisplayName}");
+        }
+        else
+        {
+            _buildHud?.ShowFeedback("Cannot mark stockpile zone");
+        }
+    }
+
+    private bool TryShowRoomInfoAtMousePosition()
+    {
+        if (_baseBuildManager == null
+            || _baseRoomManager == null
+            || _worldBuildPanel == null
+            || !_worldBuildPanel.IsBaseManagementPanelActive)
+        {
+            return false;
+        }
+
+        Vector2I cell = _baseBuildManager.WorldToCell(GetGlobalMousePosition());
+        BaseRoom? room = _baseRoomManager.GetRoomAtCell(cell);
+
+        if (room == null)
+        {
+            return false;
+        }
+
+        _worldBuildPanel.ShowRoomInfo(room);
+        return true;
+    }
+
+    private bool TryShowStorageInfoAtMousePosition()
+    {
+        if (_baseBuildManager == null || _worldBuildPanel == null)
+        {
+            return false;
+        }
+
+        Vector2I cell = _baseBuildManager.WorldToCell(GetGlobalMousePosition());
+
+        if (!_baseBuildManager.TryResolveStorageOriginCell(cell, out Vector2I originCell))
+        {
+            return false;
+        }
+
+        _worldBuildPanel.ShowStorageInfo(originCell);
+        return true;
+    }
+
+    private bool TryShowConstructionSiteInfoAtMousePosition()
+    {
+        if (_baseBuildManager == null || _worldBuildPanel == null)
+        {
+            return false;
+        }
+
+        Vector2I cell = _baseBuildManager.WorldToCell(GetGlobalMousePosition());
+
+        if (!_baseBuildManager.TryGetConstructionSiteAtCell(cell, out ConstructionSite site))
+        {
+            return false;
+        }
+
+        _worldBuildPanel.ShowConstructionSiteInfo(site);
         return true;
     }
 
@@ -602,6 +1132,7 @@ public partial class MainWorldController : Node2D
         if (keyEvent.Keycode == Key.Escape && _isHarvestDesignationMode)
         {
             SetHarvestDesignationMode(false);
+            ClearBuildUiSelection();
             CancelSelectionDrag();
             UpdateBuildHud();
             return true;
@@ -622,6 +1153,8 @@ public partial class MainWorldController : Node2D
 
         if (enabled)
         {
+            SetRoomDesignationMode(RoomType.None, false);
+            SetStockpileZoneMode(false, false);
             SetFarmZoneMode(false);
             EndBuildDrag();
             _baseBuildManager?.SetBuildMode(TileBuildType.None);
@@ -648,6 +1181,7 @@ public partial class MainWorldController : Node2D
         if (keyEvent.Keycode == Key.Escape && _isFarmZoneMode)
         {
             SetFarmZoneMode(false);
+            ClearBuildUiSelection();
             CancelSelectionDrag();
             UpdateBuildHud();
             return true;
@@ -668,6 +1202,8 @@ public partial class MainWorldController : Node2D
 
         if (enabled)
         {
+            SetRoomDesignationMode(RoomType.None, false);
+            SetStockpileZoneMode(false, false);
             SetHarvestDesignationMode(false);
             EndBuildDrag();
             _baseBuildManager?.SetBuildMode(TileBuildType.None);
@@ -679,6 +1215,16 @@ public partial class MainWorldController : Node2D
         {
             GD.Print($"Farm zone mode: {(enabled ? "On" : "Off")}");
         }
+    }
+
+    private void ClearBuildUiSelection()
+    {
+        SetRoomDesignationMode(RoomType.None, false);
+        SetStockpileZoneMode(false, false);
+        EndBuildDrag();
+        _baseBuildManager?.SetBuildMode(TileBuildType.None);
+        _buildHud?.ClearFeedback();
+        _worldBuildPanel?.ClearUiSelection();
     }
 
     private void HandleFarmZoneLeftMousePressed(InputEventMouseButton mouseButton)
@@ -901,6 +1447,8 @@ public partial class MainWorldController : Node2D
 
         if (_baseBuildManager.TryApplyBuildAtCell(buildType, cell))
         {
+            _baseRoomManager?.RecalculateAllRooms();
+
             if (clearingDepletedResourceNode)
             {
                 if (showFeedback)
@@ -1016,6 +1564,21 @@ public partial class MainWorldController : Node2D
             return;
         }
 
+        if (TryShowRoomInfoAtMousePosition())
+        {
+            return;
+        }
+
+        if (TryShowConstructionSiteInfoAtMousePosition())
+        {
+            return;
+        }
+
+        if (TryShowStorageInfoAtMousePosition())
+        {
+            return;
+        }
+
         MercenaryController? clickedMercenary = FindMercenaryAt(GetGlobalMousePosition());
 
         if (clickedMercenary == null)
@@ -1083,6 +1646,7 @@ public partial class MainWorldController : Node2D
         }
 
         _selectedMercenaries.Clear();
+        _worldBuildPanel?.ClearInfoPanel();
         UpdateSelectedMercenaryHud();
     }
 

@@ -3,7 +3,11 @@ using Godot;
 
 public partial class SelectedMercenaryHud : Control
 {
+    [Export]
+    public bool ShowDebugStatusText { get; set; } = false;
+
     private Label? _statusLabel;
+    private Label? _profileLabel;
     private BaseBuildManager? _buildManager;
     private BaseAlertState? _baseAlertState;
 
@@ -19,10 +23,36 @@ public partial class SelectedMercenaryHud : Control
             Text = "Selected: 0",
             Position = new Vector2(12.0f, 12.0f),
             Size = new Vector2(1040.0f, 390.0f),
-            MouseFilter = MouseFilterEnum.Ignore
+            MouseFilter = MouseFilterEnum.Ignore,
+            Visible = ShowDebugStatusText
         };
 
         AddChild(_statusLabel);
+
+        _profileLabel = new Label
+        {
+            Name = "MercenaryProfileLabel",
+            Text = "",
+            Position = new Vector2(220.0f, 12.0f),
+            Size = new Vector2(460.0f, 320.0f),
+            MouseFilter = MouseFilterEnum.Ignore,
+            Visible = false,
+            AutowrapMode = TextServer.AutowrapMode.WordSmart
+        };
+        _profileLabel.AddThemeFontSizeOverride("font_size", 13);
+        _profileLabel.AddThemeColorOverride("font_outline_color", new Color(0.0f, 0.0f, 0.0f, 0.82f));
+        _profileLabel.AddThemeConstantOverride("outline_size", 2);
+        AddChild(_profileLabel);
+    }
+
+    public void SetDebugStatusVisible(bool visible)
+    {
+        ShowDebugStatusText = visible;
+
+        if (_statusLabel != null)
+        {
+            _statusLabel.Visible = visible;
+        }
     }
 
     public void UpdateSelectionSummary(IEnumerable<MercenaryController> selectedMercenaries)
@@ -122,6 +152,11 @@ public partial class SelectedMercenaryHud : Control
         {
             summary += BuildNeedSummary(singleSelectedMercenary);
             summary += BuildPathFeedbackSummary(singleSelectedMercenary);
+            ShowProfileSummary(singleSelectedMercenary);
+        }
+        else if (_profileLabel != null)
+        {
+            _profileLabel.Visible = false;
         }
 
         summary += BuildResourceSummary();
@@ -130,6 +165,63 @@ public partial class SelectedMercenaryHud : Control
         {
             _statusLabel.Text = summary;
         }
+    }
+
+    private void ShowProfileSummary(MercenaryController mercenary)
+    {
+        if (_profileLabel == null)
+        {
+            return;
+        }
+
+        MercenaryProfile profile = mercenary.Profile;
+        MercenaryStats stats = profile.Stats;
+        MercenaryCondition condition = profile.Condition;
+        int hunger = Mathf.RoundToInt(condition.Hunger);
+        int sleepiness = Mathf.RoundToInt(condition.Sleepiness);
+        int mood = Mathf.RoundToInt(condition.Mood);
+        int stress = Mathf.RoundToInt(condition.Stress);
+        int hygiene = Mathf.RoundToInt(condition.Hygiene);
+        int injurySeverity = Mathf.RoundToInt(condition.InjurySeverity);
+
+        string traits = profile.Traits.Count == 0 ? "-" : string.Join(", ", profile.Traits);
+        string useProgressLabel = mercenary.GetCurrentUseProgressLabel();
+        string useProgressText = string.IsNullOrWhiteSpace(useProgressLabel)
+            ? ""
+            : $"\n\uC9C4\uD589: {useProgressLabel}";
+        string roomEffectLabel = mercenary.GetCurrentRoomEffectLabel();
+        string roomEffectText = string.IsNullOrWhiteSpace(roomEffectLabel)
+            ? ""
+            : $"\n\uBC29 \uD6A8\uACFC: {roomEffectLabel}";
+        string inventoryContents = mercenary.GetInventoryContentsSummary();
+        string logisticsWarning = mercenary.GetLogisticsValidationWarning();
+        string logisticsWarningText = string.IsNullOrWhiteSpace(logisticsWarning)
+            ? ""
+            : $"\n\uACBD\uACE0: {logisticsWarning}";
+        _profileLabel.Text =
+            $"{profile.DisplayName} [{profile.Rank}]\n"
+            + $"{profile.Race} / {profile.PrimaryRole}"
+            + (profile.SecondaryRole == profile.PrimaryRole ? "" : $" / {profile.SecondaryRole}")
+            + $"\nHP {condition.Health}/{stats.MaxHealth}"
+            + $"\n\uC0C1\uD0DC \uC694\uC57D: {mercenary.GetConditionStatusSummary()}"
+            + $"\n\uAE30\uBD84 {mood} / \uC2A4\uD2B8\uB808\uC2A4 {stress} / \uC704\uC0DD {hygiene}"
+            + $"\n\uBC30\uACE0\uD514 {hunger} / \uC878\uB9BC {sleepiness} / \uBD80\uC0C1 {injurySeverity}"
+            + $"\n\uC6B4\uBC18 \uAC00\uB2A5 \uBB34\uAC8C {stats.MaxCarryWeight}"
+            + $"\n\uAC00\uBC29: {mercenary.GetInventoryWeightSummary()}"
+            + $"\n\uAC00\uBC29 \uB0B4\uC6A9: {inventoryContents}"
+            + logisticsWarningText
+            + $"\n\n\uD604\uC7AC \uC791\uC5C5: {mercenary.GetCurrentWorkLabel()}"
+            + $"\n\uBAA9\uD45C: {mercenary.GetCurrentWorkTargetLabel()}"
+            + $"\n\uC0C1\uD0DC: {mercenary.GetCurrentWorkStateLabel()}"
+            + $"\n\uC774\uC720: {mercenary.GetCurrentWorkDecisionReason()}"
+            + useProgressText
+            + roomEffectText
+            + $"\nSTR {stats.Strength} DEX {stats.Dexterity} END {stats.Endurance} INT {stats.Intelligence} WIL {stats.Willpower}"
+            + $"\n\uC219\uB828 C{stats.CombatSkill} H{stats.HaulingSkill} F{stats.FarmingSkill} Cr{stats.CraftingSkill} M{stats.MedicalSkill} Co{stats.CookingSkill}"
+            + $"\n\uC791\uC5C5: {profile.GetWorkSettings().GetCompactSummary()}"
+            + $"\n\uD2B9\uC131: {traits}"
+            + (string.IsNullOrWhiteSpace(profile.ShortDescription) ? "" : $"\n{profile.ShortDescription}");
+        _profileLabel.Visible = true;
     }
 
     private static string BuildNeedSummary(MercenaryController mercenary)
