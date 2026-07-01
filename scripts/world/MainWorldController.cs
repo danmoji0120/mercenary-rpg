@@ -36,9 +36,13 @@ public partial class MainWorldController : Node2D
     [Export]
     public bool DebugFarmZone { get; set; } = false;
 
+    [Export]
+    public bool EnableCraftingDebugHotkeys { get; set; } = false;
+
     private Camera2D? _camera;
     private WorldGridRenderer? _worldGrid;
     private BaseBuildManager? _baseBuildManager;
+    private CraftingManager? _craftingManager;
     private BaseAlertState? _baseAlertState;
     private Marker2D? _rallyPoint;
     private SelectedMercenaryHud? _selectedMercenaryHud;
@@ -88,6 +92,7 @@ public partial class MainWorldController : Node2D
         _camera = GetNodeOrNull<Camera2D>("Camera2D");
         _worldGrid = GetNodeOrNull<WorldGridRenderer>("TerrainLayer");
         _baseBuildManager = GetNodeOrNull<BaseBuildManager>("BuildingLayer");
+        _craftingManager = GetNodeOrNull<CraftingManager>("CraftingManager");
         _baseAlertState = GetNodeOrNull<BaseAlertState>("BaseAlertState");
         _rallyPoint = GetNodeOrNull<Marker2D>("RallyPointLayer/RallyPoint");
         _selectionOverlay = GetNodeOrNull<SelectionOverlay>("CanvasLayer/SelectionOverlay");
@@ -526,6 +531,11 @@ public partial class MainWorldController : Node2D
 
     private bool HandleDebugInput(InputEventKey keyEvent)
     {
+        if (EnableCraftingDebugHotkeys && HandleCraftingDebugInput(keyEvent))
+        {
+            return true;
+        }
+
         if (keyEvent.Keycode == Key.F3)
         {
             ShowPathDebug = !ShowPathDebug;
@@ -586,6 +596,56 @@ public partial class MainWorldController : Node2D
         }
 
         return false;
+    }
+
+    private bool HandleCraftingDebugInput(InputEventKey keyEvent)
+    {
+        if (keyEvent.Keycode == Key.F7)
+        {
+            TryCreateDebugCraftJobAtMouse();
+            return true;
+        }
+
+        if (keyEvent.Keycode == Key.F8)
+        {
+            int cancelledCount = _craftingManager?.CancelAllDebugJobs() ?? 0;
+            GD.Print($"Cancelled debug craft jobs: {cancelledCount}");
+            return true;
+        }
+
+        return false;
+    }
+
+    private void TryCreateDebugCraftJobAtMouse()
+    {
+        if (_baseBuildManager == null || _craftingManager == null)
+        {
+            GD.Print("Failed to create debug craft job: manager missing");
+            return;
+        }
+
+        Vector2I cell = _baseBuildManager.WorldToCell(GetGlobalMousePosition());
+
+        if (!CraftRecipeDatabase.TryGet("process_wood_plank", out CraftRecipeEntry recipe))
+        {
+            GD.Print("Failed to create debug craft job: recipe missing");
+            return;
+        }
+
+        if (!_baseBuildManager.TryGetObjectInfoAtCell(cell, out TileBuildType objectType, out Vector2I originCell, out _)
+            || objectType != recipe.RequiredFacilityType)
+        {
+            GD.Print($"Failed to create debug craft job at {cell}: {recipe.RequiredFacilityType} required");
+            return;
+        }
+
+        if (_craftingManager.TryCreateDebugWoodPlankJob(originCell, out _))
+        {
+            GD.Print($"Created debug craft job process_wood_plank at {originCell}");
+            return;
+        }
+
+        GD.Print($"Failed to create debug craft job at {originCell}");
     }
 
     private void AdjustFoodDebug(int amount, string messagePrefix)
