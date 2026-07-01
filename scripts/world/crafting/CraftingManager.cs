@@ -107,6 +107,37 @@ public partial class CraftingManager : Node
         return false;
     }
 
+    public IReadOnlyList<CraftJob> GetOutputReadyJobs()
+    {
+        List<CraftJob> jobs = new();
+
+        foreach (CraftJob job in _jobs)
+        {
+            job.PruneReservations();
+
+            if (IsActiveJob(job)
+                && job.State == CraftJobState.OutputReady
+                && job.HasProducedOutputs)
+            {
+                jobs.Add(job);
+            }
+        }
+
+        return jobs;
+    }
+
+    public bool TryFindOutputPickupJob(out CraftJob? job)
+    {
+        foreach (CraftJob candidate in GetOutputReadyJobs())
+        {
+            job = candidate;
+            return true;
+        }
+
+        job = null;
+        return false;
+    }
+
     public bool TryGetRecipeForJob(CraftJob job, out CraftRecipeEntry recipe)
     {
         recipe = default!;

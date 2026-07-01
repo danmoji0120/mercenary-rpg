@@ -9,6 +9,7 @@ public sealed class CraftJob
     private readonly Dictionary<BaseResourceType, int> _producedOutputs = new();
     private MercenaryController? _reservedWorker;
     private MercenaryController? _reservedDeliveryWorker;
+    private MercenaryController? _reservedOutputWorker;
 
     public int JobId { get; set; }
     public string RecipeId { get; set; } = string.Empty;
@@ -22,9 +23,11 @@ public sealed class CraftJob
     public float RequiredWork { get; set; } = 1.0f;
     public MercenaryController? ReservedWorker => IsValidWorker(_reservedWorker) ? _reservedWorker : null;
     public MercenaryController? ReservedDeliveryWorker => IsValidWorker(_reservedDeliveryWorker) ? _reservedDeliveryWorker : null;
+    public MercenaryController? ReservedOutputWorker => IsValidWorker(_reservedOutputWorker) ? _reservedOutputWorker : null;
     public bool IsCompleted => State == CraftJobState.Completed;
     public bool IsCancelled => State == CraftJobState.Cancelled;
     public bool HasAllMaterials => GetFirstMissingInput() == null;
+    public bool HasProducedOutputs => _producedOutputs.Count > 0;
 
     public void SetRequirements(CraftRecipeEntry recipe)
     {
@@ -142,6 +145,67 @@ public sealed class CraftJob
         return _producedOutputs.Count > 0;
     }
 
+    public int TakeProducedOutput(BaseResourceType type, int amount)
+    {
+        if (amount <= 0 || IsCompleted || IsCancelled || State != CraftJobState.OutputReady)
+        {
+            return 0;
+        }
+
+        if (!_producedOutputs.TryGetValue(type, out int availableAmount) || availableAmount <= 0)
+        {
+            return 0;
+        }
+
+        int takenAmount = Mathf.Min(amount, availableAmount);
+        int remainingAmount = availableAmount - takenAmount;
+
+        if (remainingAmount > 0)
+        {
+            _producedOutputs[type] = remainingAmount;
+        }
+        else
+        {
+            _producedOutputs.Remove(type);
+        }
+
+        TryMarkCompletedIfOutputsEmpty();
+        return takenAmount;
+    }
+
+    public Dictionary<BaseResourceType, int> TakeAllProducedOutputs()
+    {
+        Dictionary<BaseResourceType, int> outputs = new();
+
+        if (IsCompleted || IsCancelled || State != CraftJobState.OutputReady)
+        {
+            return outputs;
+        }
+
+        foreach (KeyValuePair<BaseResourceType, int> output in _producedOutputs)
+        {
+            if (output.Value > 0)
+            {
+                outputs[output.Key] = output.Value;
+            }
+        }
+
+        _producedOutputs.Clear();
+        TryMarkCompletedIfOutputsEmpty();
+        return outputs;
+    }
+
+    public bool TryMarkCompletedIfOutputsEmpty()
+    {
+        if (IsCompleted || IsCancelled || State != CraftJobState.OutputReady || _producedOutputs.Count > 0)
+        {
+            return false;
+        }
+
+        Complete();
+        return true;
+    }
+
     public bool TryReserveDelivery(MercenaryController worker)
     {
         PruneReservations();
@@ -165,6 +229,32 @@ public sealed class CraftJob
         if (_reservedDeliveryWorker == worker || !IsValidWorker(_reservedDeliveryWorker))
         {
             _reservedDeliveryWorker = null;
+        }
+    }
+
+    public bool TryReserveOutputPickup(MercenaryController worker)
+    {
+        PruneReservations();
+
+        if (IsCompleted || IsCancelled || State != CraftJobState.OutputReady || !HasProducedOutputs)
+        {
+            return false;
+        }
+
+        if (_reservedOutputWorker != null && _reservedOutputWorker != worker)
+        {
+            return false;
+        }
+
+        _reservedOutputWorker = worker;
+        return true;
+    }
+
+    public void ReleaseOutputPickup(MercenaryController worker)
+    {
+        if (_reservedOutputWorker == worker || !IsValidWorker(_reservedOutputWorker))
+        {
+            _reservedOutputWorker = null;
         }
     }
 
@@ -206,6 +296,7 @@ public sealed class CraftJob
         State = CraftJobState.Cancelled;
         _reservedWorker = null;
         _reservedDeliveryWorker = null;
+        _reservedOutputWorker = null;
     }
 
     public void Complete()
@@ -214,6 +305,7 @@ public sealed class CraftJob
         WorkProgress = RequiredWork;
         _reservedWorker = null;
         _reservedDeliveryWorker = null;
+        _reservedOutputWorker = null;
     }
 
     public float GetProgressRatio()
@@ -234,6 +326,11 @@ public sealed class CraftJob
         if (!IsValidWorker(_reservedDeliveryWorker))
         {
             _reservedDeliveryWorker = null;
+        }
+
+        if (!IsValidWorker(_reservedOutputWorker))
+        {
+            _reservedOutputWorker = null;
         }
 
         if (clearedCraftWorker && State == CraftJobState.Crafting && WorkProgress < RequiredWork)
