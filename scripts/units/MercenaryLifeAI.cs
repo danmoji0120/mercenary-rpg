@@ -2551,26 +2551,45 @@ public partial class MercenaryLifeAI : Node
 			return false;
 		}
 
-		buildManager.TryAddResourceToStorage(_targetStorageCell.Value, _carriedResourceType, _carriedResourceAmount, out int storedAmount, out _);
+		Vector2I storageCell = _targetStorageCell.Value;
+		BaseResourceType depositType = _carriedResourceType;
+		int requestedAmount = _carriedResourceAmount;
+		buildManager.TryAddResourceToStorage(storageCell, depositType, requestedAmount, out int storedAmount, out _);
 
 		if (DebugHauling && storedAmount > 0)
 		{
-			GD.Print($"{mercenary.MercenaryName} stored {_carriedResourceType} x{storedAmount} at Storage {_targetStorageCell.Value}");
+			GD.Print($"{mercenary.MercenaryName} stored {depositType} x{storedAmount} at Storage {storageCell}");
 		}
 
 		if (storedAmount > 0)
 		{
-			mercenary.Inventory.TryRemove(_carriedResourceType, storedAmount, out _);
+			mercenary.Inventory.TryRemove(depositType, storedAmount, out _);
 		}
 
-		_carriedResourceAmount = mercenary.Inventory.GetAmount(_carriedResourceType);
+		int remainingAmount = mercenary.Inventory.GetAmount(depositType);
+		_carriedResourceType = depositType;
+		_carriedResourceAmount = remainingAmount;
+		_isCarryingResource = remainingAmount > 0;
+		_isHaulingToStorage = remainingAmount > 0;
+		_isDepositingToStorage = false;
+		_storageInteractionTimer = 0.0f;
+		_storageInteractionDuration = 0.0f;
+		ClearUseProgress();
 
-		if (_carriedResourceAmount > 0)
+		if (DebugHauling)
+		{
+			GD.Print(remainingAmount > 0
+				? $"{mercenary.MercenaryName} deposit completed with leftover: {depositType} accepted {storedAmount}, remaining {remainingAmount}"
+				: $"{mercenary.MercenaryName} deposit completed: {depositType} accepted {storedAmount}, remaining 0");
+		}
+
+		ReleaseStorageInteractionReservation(mercenary);
+
+		if (remainingAmount > 0)
 		{
 			DropCarriedResourceAtCurrentCell(mercenary);
 		}
 
-		ReleaseStorageInteractionReservation(mercenary);
 		ResetHaulState(false);
 		RunLogisticsValidation(mercenary);
 		return true;
@@ -3693,18 +3712,18 @@ public partial class MercenaryLifeAI : Node
 			DropCarriedResourceAtCurrentCell(mercenary);
 		}
 
+		_isDepositingToStorage = false;
+		_isCarryingResource = false;
+		_isHaulingToStorage = false;
+		_carriedResourceAmount = 0;
+		_storageInteractionTimer = 0.0f;
+		_storageInteractionDuration = 0.0f;
+		ClearUseProgress();
 		ReleaseStorageInteractionReservation(mercenary);
 		_targetHaulPile = null;
 		_targetHaulPileLabel = "-";
 		_targetStorageCell = null;
 		_targetStorageAccessCell = null;
-		_isCarryingResource = false;
-		_isHaulingToStorage = false;
-		_isDepositingToStorage = false;
-		_storageInteractionTimer = 0.0f;
-		_storageInteractionDuration = 0.0f;
-		_carriedResourceAmount = 0;
-		ClearUseProgress();
 
 		if (CurrentLifeAction == "Haul")
 		{
@@ -3736,10 +3755,25 @@ public partial class MercenaryLifeAI : Node
 	private void DropCarriedResourceAtCurrentCell(MercenaryController mercenary)
 	{
 		int inventoryAmount = mercenary.Inventory.GetAmount(_carriedResourceType);
-		int dropAmount = inventoryAmount > 0 ? inventoryAmount : _carriedResourceAmount;
 
-		if (!_isCarryingResource || dropAmount <= 0)
+		if (!_isCarryingResource)
 		{
+			return;
+		}
+
+		if (_carriedResourceAmount <= 0 || inventoryAmount <= 0)
+		{
+			if (DebugHauling)
+			{
+				GD.Print($"{mercenary.MercenaryName} skip drop: carried flag was true but inventory had {inventoryAmount}");
+			}
+
+			_isCarryingResource = false;
+			_isHaulingToStorage = false;
+			_isDepositingToStorage = false;
+			_carriedResourceAmount = 0;
+			ReleaseStorageInteractionReservation(mercenary);
+			ClearUseProgress();
 			return;
 		}
 
@@ -3750,10 +3784,13 @@ public partial class MercenaryLifeAI : Node
 			return;
 		}
 
+		int dropAmount = inventoryAmount;
 		Vector2I currentCell = buildManager.WorldToCell(mercenary.GlobalPosition);
 		buildManager.TrySpawnOrMergeResourcePile(_carriedResourceType, currentCell, dropAmount);
 		mercenary.Inventory.TryRemove(_carriedResourceType, dropAmount, out _);
 		_carriedResourceAmount = mercenary.Inventory.GetAmount(_carriedResourceType);
+		_isCarryingResource = _carriedResourceAmount > 0;
+		_isHaulingToStorage = _isCarryingResource;
 
 		if (DebugHauling)
 		{
