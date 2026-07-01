@@ -175,7 +175,8 @@ public partial class BaseOverlayLayer : Node2D
         CraftJob firstJob = activeJobs[0];
         string materialText = GetCraftJobMaterialDiagnosticsText(firstJob);
         string progressText = GetCraftJobProgressDiagnosticsText(firstJob);
-        return $"craft jobs {activeJobCount}\n{firstJob.RecipeId} {firstJob.State} {firstJob.FacilityCell}{materialText}{progressText}";
+        string outputText = GetCraftJobOutputDiagnosticsText(firstJob);
+        return $"craft jobs {activeJobCount}\n{firstJob.RecipeId} {firstJob.State} {firstJob.FacilityCell}{materialText}{progressText}{outputText}";
     }
 
     private static string GetCraftJobMaterialDiagnosticsText(CraftJob job)
@@ -203,6 +204,23 @@ public partial class BaseOverlayLayer : Node2D
         }
 
         return $" {(int)(job.GetProgressRatio() * 100.0f)}%";
+    }
+
+    private static string GetCraftJobOutputDiagnosticsText(CraftJob job)
+    {
+        if (job.State != CraftJobState.OutputReady || job.ProducedOutputs.Count <= 0)
+        {
+            return "";
+        }
+
+        List<string> outputParts = new();
+
+        foreach (KeyValuePair<BaseResourceType, int> output in job.ProducedOutputs)
+        {
+            outputParts.Add($"{BaseBuildManager.GetResourceDisplayName(output.Key)} x{output.Value}");
+        }
+
+        return $" => {string.Join(", ", outputParts)}";
     }
 
     private void DrawConstructionSites()

@@ -5,6 +5,7 @@ public sealed class CraftJob
 {
     private readonly Dictionary<BaseResourceType, int> _requiredInputs = new();
     private readonly Dictionary<BaseResourceType, int> _inputsDelivered = new();
+    private readonly Dictionary<BaseResourceType, int> _requiredOutputs = new();
     private readonly Dictionary<BaseResourceType, int> _producedOutputs = new();
     private MercenaryController? _reservedWorker;
     private MercenaryController? _reservedDeliveryWorker;
@@ -15,6 +16,7 @@ public sealed class CraftJob
     public CraftJobState State { get; private set; } = CraftJobState.WaitingForMaterials;
     public IReadOnlyDictionary<BaseResourceType, int> RequiredInputs => _requiredInputs;
     public IReadOnlyDictionary<BaseResourceType, int> InputsDelivered => _inputsDelivered;
+    public IReadOnlyDictionary<BaseResourceType, int> RequiredOutputs => _requiredOutputs;
     public IReadOnlyDictionary<BaseResourceType, int> ProducedOutputs => _producedOutputs;
     public float WorkProgress { get; private set; }
     public float RequiredWork { get; set; } = 1.0f;
@@ -28,6 +30,7 @@ public sealed class CraftJob
     {
         _requiredInputs.Clear();
         _inputsDelivered.Clear();
+        _requiredOutputs.Clear();
         _producedOutputs.Clear();
 
         if (recipe != null)
@@ -41,6 +44,14 @@ public sealed class CraftJob
                 {
                     _requiredInputs[input.Key] = input.Value;
                     _inputsDelivered[input.Key] = 0;
+                }
+            }
+
+            foreach (KeyValuePair<BaseResourceType, int> output in recipe.Outputs)
+            {
+                if (output.Value > 0)
+                {
+                    _requiredOutputs[output.Key] = output.Value;
                 }
             }
         }
@@ -109,7 +120,26 @@ public sealed class CraftJob
         if (WorkProgress >= RequiredWork)
         {
             State = CraftJobState.OutputReady;
+            TryFinalizeOutputs();
         }
+    }
+
+    public bool TryFinalizeOutputs()
+    {
+        if (IsCompleted || IsCancelled || State != CraftJobState.OutputReady || _producedOutputs.Count > 0)
+        {
+            return false;
+        }
+
+        foreach (KeyValuePair<BaseResourceType, int> output in _requiredOutputs)
+        {
+            if (output.Value > 0)
+            {
+                _producedOutputs[output.Key] = output.Value;
+            }
+        }
+
+        return _producedOutputs.Count > 0;
     }
 
     public bool TryReserveDelivery(MercenaryController worker)

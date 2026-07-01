@@ -223,6 +223,13 @@ public partial class CraftingManager : Node
         foreach (CraftJob job in _jobs)
         {
             job.PruneReservations();
+
+            if (job.State == CraftJobState.OutputReady
+                && job.RequiredOutputs.Count > 0
+                && job.ProducedOutputs.Count <= 0)
+            {
+                job.TryFinalizeOutputs();
+            }
         }
     }
 
