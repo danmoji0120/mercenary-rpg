@@ -7,16 +7,16 @@ public partial class BaseBuildManager : Node2D
 	public bool ShowBlockedLineDebug { get; set; } = false;
 
 	[Export]
-	public int InitialFoodCount { get; set; } = 0;
+	public int InitialFoodCount { get; set; } = 20;
 
 	[Export]
-	public int InitialWood { get; set; } = 0;
+	public int InitialWood { get; set; } = 100;
 
 	[Export]
-	public int InitialStone { get; set; } = 0;
+	public int InitialStone { get; set; } = 80;
 
 	[Export]
-	public int InitialMetal { get; set; } = 0;
+	public int InitialMetal { get; set; } = 30;
 
 	[Export]
 	public int FoodLowThreshold { get; set; } = 5;
@@ -140,7 +140,6 @@ public partial class BaseBuildManager : Node2D
 	private bool _isRunningLogisticsValidation;
 	private int _nextConstructionSiteId = 1;
 	private int _nextStockpileZoneId = 1;
-	private Vector2I? _starterSupplyChestCell;
 
 	public override void _Ready()
 	{
@@ -190,10 +189,6 @@ public partial class BaseBuildManager : Node2D
 		{
 			List<string> warnings = new();
 			ValidateStorageInventories(warnings);
-			ValidateStorageInteractions(warnings);
-			ValidateConstructionSites(warnings);
-			ValidateStockpileZones(warnings);
-			ValidateStarterSupplyChest(warnings);
 			ValidateResourcePiles(warnings);
 			ValidateMercenaryInventories(warnings);
 
@@ -266,153 +261,12 @@ public partial class BaseBuildManager : Node2D
 					inventory[resourceType] = 0;
 					warnings.Add($"Negative storage amount clamped at {storageCell}");
 				}
-
-				if (inventory[resourceType] > 0 && !CanStoragePolicyAllow(storageCell, resourceType))
-				{
-					warnings.Add($"Storage policy mismatch at {storageCell}: {resourceType}");
-				}
 			}
 
 			if (GetStorageUsedWeight(storageCell) > GetStorageWeightCapacity(storageCell))
 			{
 				warnings.Add($"Storage overweight at {storageCell}");
 			}
-		}
-	}
-
-	private void ValidateStorageInteractions(List<string> warnings)
-	{
-		foreach (KeyValuePair<Vector2I, MercenaryController> reservation in new Dictionary<Vector2I, MercenaryController>(_storageInteractionReservations))
-		{
-			Vector2I originCell = reservation.Key;
-			MercenaryController user = reservation.Value;
-
-			if (!TryGetStorageOriginCell(originCell, out Vector2I resolvedOrigin) || resolvedOrigin != originCell)
-			{
-				_storageInteractionReservations.Remove(originCell);
-				warnings.Add($"Stale storage interaction removed at {originCell}");
-				continue;
-			}
-
-			if (!GodotObject.IsInstanceValid(user) || user.IsQueuedForDeletion())
-			{
-				_storageInteractionReservations.Remove(originCell);
-				warnings.Add($"Invalid storage interaction user removed at {originCell}");
-			}
-		}
-	}
-
-	private void ValidateConstructionSites(List<string> warnings)
-	{
-		HashSet<Vector2I> occupiedSiteCells = new();
-		List<ConstructionSite> completedSites = new();
-
-		foreach (ConstructionSite site in _constructionSites)
-		{
-			site.PruneReservations();
-
-			if (site.IsCompleted || site.IsCancelled)
-			{
-				completedSites.Add(site);
-				continue;
-			}
-
-			foreach (Vector2I cell in site.OccupiedCells)
-			{
-				if (!IsCellInWorld(cell))
-				{
-					warnings.Add($"Construction site outside world at {cell}");
-				}
-
-				if (!occupiedSiteCells.Add(cell))
-				{
-					warnings.Add($"Construction site overlap at {cell}");
-				}
-
-				if (_buildings.TryGetValue(cell, out BuildableTileState state) && state.HasObject)
-				{
-					bool allowedDoorReplacement = site.TargetBuildType == TileBuildType.Door && state.ObjectType == TileBuildType.Wall;
-
-					if (!allowedDoorReplacement)
-					{
-						warnings.Add($"Construction site overlaps object at {cell}");
-					}
-				}
-			}
-
-			foreach (ConstructionRequirement requirement in site.Requirements.Values)
-			{
-				if (requirement.DeliveredAmount < 0)
-				{
-					requirement.DeliveredAmount = 0;
-					warnings.Add($"Negative construction delivery clamped at site {site.SiteId}");
-				}
-
-				if (requirement.DeliveredAmount > requirement.RequiredAmount)
-				{
-					requirement.DeliveredAmount = requirement.RequiredAmount;
-					warnings.Add($"Over-delivered construction material clamped at site {site.SiteId}");
-				}
-			}
-		}
-
-		foreach (ConstructionSite site in completedSites)
-		{
-			_constructionSites.Remove(site);
-			warnings.Add($"Completed/cancelled construction site removed from active list: {site.SiteId}");
-		}
-	}
-
-	private void ValidateStockpileZones(List<string> warnings)
-	{
-		HashSet<Vector2I> occupiedZoneCells = new();
-
-		foreach (StockpileZone zone in _stockpileZones)
-		{
-			if (zone.Cells.Count == 0)
-			{
-				warnings.Add($"Empty stockpile zone {zone.ZoneId}");
-				continue;
-			}
-
-			foreach (Vector2I cell in zone.Cells)
-			{
-				if (!IsCellInWorld(cell))
-				{
-					warnings.Add($"Stockpile zone outside world at {cell}");
-				}
-
-				if (!occupiedZoneCells.Add(cell))
-				{
-					warnings.Add($"Stockpile zone overlap at {cell}");
-				}
-			}
-
-			Vector2I originCell = GetStockpileOriginCell(zone);
-			RegisterStorage(originCell);
-			zone.Bounds = CalculateBounds(zone.Cells);
-
-			if (GetStorageUsedWeight(originCell) > zone.WeightCapacity)
-			{
-				warnings.Add($"Stockpile zone overweight: {zone.DisplayName}");
-			}
-		}
-	}
-
-	private void ValidateStarterSupplyChest(List<string> warnings)
-	{
-		if (!_starterSupplyChestCell.HasValue)
-		{
-			warnings.Add("Starter supply chest is not registered");
-			return;
-		}
-
-		if (!TryGetObjectOriginState(_starterSupplyChestCell.Value, out BuildableTileState state)
-			|| state.ObjectType != TileBuildType.SmallChest
-			|| !TryGetStorageOriginCell(_starterSupplyChestCell.Value, out Vector2I originCell)
-			|| originCell != _starterSupplyChestCell.Value)
-		{
-			warnings.Add("Starter supply chest is missing");
 		}
 	}
 
@@ -1119,16 +973,6 @@ public partial class BaseBuildManager : Node2D
 			&& IsStorageBuildType(state.ObjectType);
 	}
 
-	public bool IsStorageOrigin(Vector2I cell)
-	{
-		return TryGetStorageOriginCell(cell, out Vector2I originCell) && originCell == cell;
-	}
-
-	public Vector2I ResolveStorageOrigin(Vector2I cell)
-	{
-		return TryGetStorageOriginCell(cell, out Vector2I originCell) ? originCell : cell;
-	}
-
 	public int GetStoredAmountAt(Vector2I storageCell, BaseResourceType type)
 	{
 		Vector2I originCell = TryGetStorageOriginCell(storageCell, out Vector2I resolvedCell) ? resolvedCell : storageCell;
@@ -1151,23 +995,6 @@ public partial class BaseBuildManager : Node2D
 		}
 
 		return total;
-	}
-
-	public IReadOnlyDictionary<BaseResourceType, int> GetAllStoredResourceTotals()
-	{
-		Dictionary<BaseResourceType, int> totals = new();
-
-		foreach (BaseResourceType resourceType in AllResourceTypes)
-		{
-			int amount = GetTotalStoredAmount(resourceType);
-
-			if (amount > 0)
-			{
-				totals[resourceType] = amount;
-			}
-		}
-
-		return totals;
 	}
 
 	public int GetStorageFreeSpace(Vector2I storageCell, BaseResourceType type)
@@ -1211,11 +1038,6 @@ public partial class BaseBuildManager : Node2D
 			storageCell = originCell;
 		}
 
-		if (IsStarterSupplyChest(storageCell))
-		{
-			return 150;
-		}
-
 		if (TryGetStockpileZoneByOrigin(storageCell, out StockpileZone? zone) && zone != null)
 		{
 			return zone.WeightCapacity;
@@ -1238,11 +1060,6 @@ public partial class BaseBuildManager : Node2D
 		};
 
 		return Mathf.RoundToInt(baseCapacity * GetStorageCapability(storageCell).CapacityMultiplier);
-	}
-
-	public int GetStorageCapacity(Vector2I storageCell)
-	{
-		return GetStorageWeightCapacity(storageCell);
 	}
 
 	public int GetStorageFreeWeight(Vector2I storageCell)
@@ -1279,13 +1096,6 @@ public partial class BaseBuildManager : Node2D
 		return true;
 	}
 
-	public IReadOnlyDictionary<BaseResourceType, int> GetStorageContents(Vector2I storageCell)
-	{
-		return TryGetStorageContents(storageCell, out Dictionary<BaseResourceType, int> contents)
-			? contents
-			: new Dictionary<BaseResourceType, int>();
-	}
-
 	public IReadOnlyList<Vector2I> GetStorageOriginCells()
 	{
 		List<Vector2I> storageCells = new(_storageInventories.Keys);
@@ -1303,11 +1113,6 @@ public partial class BaseBuildManager : Node2D
 		if (TryGetStorageOriginCell(storageCell, out Vector2I originCell))
 		{
 			storageCell = originCell;
-		}
-
-		if (IsStarterSupplyChest(storageCell))
-		{
-			return "\uCD08\uAE30 \uBCF4\uAE09 \uC0C1\uC790";
 		}
 
 		if (TryGetStockpileZoneByOrigin(storageCell, out StockpileZone? zone) && zone != null)
@@ -1482,16 +1287,9 @@ public partial class BaseBuildManager : Node2D
 		Vector2I? nearestStorageCell = null;
 		Vector2I? nearestAccessCell = null;
 		int nearestPathLength = int.MaxValue;
-		int bestPriority = int.MinValue;
-		bool bestSpecializedMatch = false;
 
 		foreach (Vector2I candidateStorageCell in GetStorageCellsWithSpace(type))
 		{
-			StoragePolicy candidatePolicy = GetStoragePolicy(candidateStorageCell);
-			StorageCapability candidateCapability = GetStorageCapability(candidateStorageCell);
-			int candidatePriority = (int)candidatePolicy.Priority;
-			bool candidateSpecializedMatch = candidateCapability.IsSpecializedMatch(type);
-
 			foreach (Vector2I candidateAccessCell in GetStorageAccessCells(candidateStorageCell))
 			{
 				if (!IsCellInWorld(candidateAccessCell) || IsCellBlocked(candidateAccessCell))
@@ -1508,17 +1306,11 @@ public partial class BaseBuildManager : Node2D
 
 				int pathLength = fromCell == candidateAccessCell ? 0 : path.Count;
 
-				bool isBetter = candidatePriority > bestPriority
-					|| candidatePriority == bestPriority && candidateSpecializedMatch && !bestSpecializedMatch
-					|| candidatePriority == bestPriority && candidateSpecializedMatch == bestSpecializedMatch && pathLength < nearestPathLength;
-
-				if (!isBetter)
+				if (pathLength >= nearestPathLength)
 				{
 					continue;
 				}
 
-				bestPriority = candidatePriority;
-				bestSpecializedMatch = candidateSpecializedMatch;
 				nearestPathLength = pathLength;
 				nearestStorageCell = candidateStorageCell;
 				nearestAccessCell = candidateAccessCell;
@@ -1535,11 +1327,6 @@ public partial class BaseBuildManager : Node2D
 		storageCell = nearestStorageCell.Value;
 		accessCell = nearestAccessCell.Value;
 		return true;
-	}
-
-	public bool TryFindNearestStorageAccessForResource(Vector2I fromCell, BaseResourceType type, out Vector2I storageCell, out Vector2I accessCell)
-	{
-		return TryFindNearestStorageAccessWithSpace(fromCell, type, out storageCell, out accessCell);
 	}
 
 	public bool TryFindNearestStorageAccessWithResource(Vector2I fromCell, BaseResourceType type, out Vector2I storageCell, out Vector2I accessCell)
@@ -1625,7 +1412,6 @@ public partial class BaseBuildManager : Node2D
 		}
 
 		_storageInteractionReservations[storageOriginCell] = user;
-		ValidateLogisticsWorld("storage interaction reserve");
 		return true;
 	}
 
@@ -1640,7 +1426,6 @@ public partial class BaseBuildManager : Node2D
 			&& (!GodotObject.IsInstanceValid(reservedBy) || reservedBy.IsQueuedForDeletion() || reservedBy == user))
 		{
 			_storageInteractionReservations.Remove(storageOriginCell);
-			ValidateLogisticsWorld("storage interaction release");
 		}
 	}
 
@@ -1678,14 +1463,6 @@ public partial class BaseBuildManager : Node2D
 		return user.MercenaryName;
 	}
 
-	public string GetStorageInteractionSummary(Vector2I storageCell)
-	{
-		string userLabel = GetStorageInteractionUserLabel(storageCell);
-		return userLabel == "\uC5C6\uC74C"
-			? "\uC0AC\uC6A9 \uC911: \uC5C6\uC74C"
-			: $"\uC0AC\uC6A9 \uC911: {userLabel}";
-	}
-
 	public StoragePolicy GetStoragePolicy(Vector2I storageCell)
 	{
 		Vector2I originCell = TryGetStorageOriginCell(storageCell, out Vector2I resolvedCell) ? resolvedCell : storageCell;
@@ -1695,11 +1472,6 @@ public partial class BaseBuildManager : Node2D
 	public StorageCapability GetStorageCapability(Vector2I storageCell)
 	{
 		Vector2I originCell = TryGetStorageOriginCell(storageCell, out Vector2I resolvedCell) ? resolvedCell : storageCell;
-
-		if (IsStarterSupplyChest(originCell))
-		{
-			return StorageCapability.ForBuildType(TileBuildType.SmallChest, true);
-		}
 
 		if (TryGetStockpileZoneByOrigin(originCell, out StockpileZone? zone) && zone != null)
 		{
@@ -1722,11 +1494,6 @@ public partial class BaseBuildManager : Node2D
 	{
 		StoragePolicy policy = GetStoragePolicy(storageCell);
 		return $"{StoragePolicyHelpers.GetPresetDisplayName(policy.Preset)} / {StoragePolicyHelpers.GetPriorityDisplayName(policy.Priority)}";
-	}
-
-	public StoragePriority GetStoragePriority(Vector2I storageCell)
-	{
-		return GetStoragePolicy(storageCell).Priority;
 	}
 
 	public string GetStorageLimitText(Vector2I storageCell)
@@ -1807,19 +1574,6 @@ public partial class BaseBuildManager : Node2D
 		EjectDisallowedStorageContents(originCell);
 	}
 
-	public void SetStorageResourceAllowed(Vector2I storageCell, BaseResourceType type, bool allowed)
-	{
-		if (!TryGetStorageOriginCell(storageCell, out Vector2I originCell)
-			|| !CanStorageCapabilityAllow(originCell, type))
-		{
-			return;
-		}
-
-		StoragePolicy policy = EnsureStoragePolicy(originCell);
-		policy.SetAllowed(type, allowed);
-		EjectDisallowedStorageContents(originCell);
-	}
-
 	public void ToggleStorageCategoryAllowed(Vector2I storageCell, StorageResourceCategory category)
 	{
 		if (!TryGetStorageOriginCell(storageCell, out Vector2I originCell))
@@ -1835,26 +1589,6 @@ public partial class BaseBuildManager : Node2D
 			if (CanStorageCapabilityAllow(originCell, resourceType))
 			{
 				policy.SetAllowed(resourceType, allow);
-			}
-		}
-
-		EjectDisallowedStorageContents(originCell);
-	}
-
-	public void SetStorageCategoryAllowed(Vector2I storageCell, StorageResourceCategory category, bool allowed)
-	{
-		if (!TryGetStorageOriginCell(storageCell, out Vector2I originCell))
-		{
-			return;
-		}
-
-		StoragePolicy policy = EnsureStoragePolicy(originCell);
-
-		foreach (BaseResourceType resourceType in StoragePolicyHelpers.GetResourcesInCategory(category))
-		{
-			if (CanStorageCapabilityAllow(originCell, resourceType))
-			{
-				policy.SetAllowed(resourceType, allowed);
 			}
 		}
 
@@ -1900,20 +1634,13 @@ public partial class BaseBuildManager : Node2D
 		return changed;
 	}
 
-	public bool CleanupStorageContentsByPolicy(Vector2I storageCell)
-	{
-		return EjectDisallowedStorageContents(storageCell);
-	}
-
-	private bool EjectAllStorageContents(Vector2I storageCell)
+	private void EjectAllStorageContents(Vector2I storageCell)
 	{
 		if (!TryGetStorageOriginCell(storageCell, out Vector2I originCell)
 			|| !_storageInventories.TryGetValue(originCell, out Dictionary<BaseResourceType, int>? inventory))
 		{
-			return true;
+			return;
 		}
-
-		bool success = true;
 
 		foreach (BaseResourceType resourceType in AllResourceTypes)
 		{
@@ -1930,11 +1657,8 @@ public partial class BaseBuildManager : Node2D
 			{
 				inventory[resourceType] = amount;
 				GD.PushWarning($"Storage eject failed to drop {resourceType} x{amount} near {originCell}");
-				success = false;
 			}
 		}
-
-		return success;
 	}
 
 	private StoragePolicy EnsureStoragePolicy(Vector2I storageCell)
@@ -1955,11 +1679,6 @@ public partial class BaseBuildManager : Node2D
 	}
 
 	public IReadOnlyList<StockpileZone> GetStockpileZones()
-	{
-		return _stockpileZones;
-	}
-
-	public IReadOnlyList<StockpileZone> GetAllStockpileZones()
 	{
 		return _stockpileZones;
 	}
@@ -2002,15 +1721,6 @@ public partial class BaseBuildManager : Node2D
 		}
 
 		RemoveStockpileZonesOverlapping(validCells);
-
-		foreach (Vector2I cell in validCells)
-		{
-			if (TryGetStockpileZoneAtCell(cell, out _))
-			{
-				return false;
-			}
-		}
-
 		zone = new StockpileZone
 		{
 			ZoneId = _nextStockpileZoneId++,
@@ -2049,75 +1759,21 @@ public partial class BaseBuildManager : Node2D
 			}
 		}
 
-		int removedCount = 0;
-
 		foreach (StockpileZone zone in zonesToRemove)
 		{
 			Vector2I originCell = GetStockpileOriginCell(zone);
-			if (!EjectAllStorageContents(originCell))
-			{
-				GD.PushWarning($"Stockpile zone removal skipped because contents could not be dropped: {zone.DisplayName}");
-				continue;
-			}
-
+			EjectAllStorageContents(originCell);
 			UnregisterStorage(originCell);
 			_stockpileZones.Remove(zone);
-			removedCount++;
 		}
 
-		if (removedCount > 0)
+		if (zonesToRemove.Count > 0)
 		{
 			QueueRedraw();
 			ValidateLogisticsWorld("stockpile zone remove");
 		}
 
-		return removedCount;
-	}
-
-	public bool DeleteStockpileZone(StockpileZone zone)
-	{
-		if (!_stockpileZones.Contains(zone))
-		{
-			return false;
-		}
-
-		Vector2I originCell = GetStockpileOriginCell(zone);
-		if (!EjectAllStorageContents(originCell))
-		{
-			GD.PushWarning($"Stockpile zone delete skipped because contents could not be dropped: {zone.DisplayName}");
-			return false;
-		}
-
-		UnregisterStorage(originCell);
-		_stockpileZones.Remove(zone);
-		QueueRedraw();
-		ValidateLogisticsWorld("stockpile zone delete");
-		return true;
-	}
-
-	public bool TryAddResourceToStockpileZone(StockpileZone zone, BaseResourceType type, int amount, out int storedAmount, out int leftoverAmount)
-	{
-		return TryAddResourceToStorage(GetStockpileOriginCell(zone), type, amount, out storedAmount, out leftoverAmount);
-	}
-
-	public bool TryRemoveResourceFromStockpileZone(StockpileZone zone, BaseResourceType type, int requestedAmount, out int removedAmount)
-	{
-		return TryRemoveResourceFromStorage(GetStockpileOriginCell(zone), type, requestedAmount, out removedAmount);
-	}
-
-	public bool TryGetStockpileZoneContents(StockpileZone zone, out Dictionary<BaseResourceType, int> contents)
-	{
-		return TryGetStorageContents(GetStockpileOriginCell(zone), out contents);
-	}
-
-	public int GetStockpileZoneCapacity(StockpileZone zone)
-	{
-		return zone.WeightCapacity;
-	}
-
-	public bool CleanupStockpileZoneContentsByPolicy(StockpileZone zone)
-	{
-		return EjectDisallowedStorageContents(GetStockpileOriginCell(zone));
+		return zonesToRemove.Count;
 	}
 
 	private bool TryGetStockpileZoneByOrigin(Vector2I originCell, out StockpileZone? zone)
@@ -2198,10 +1854,7 @@ public partial class BaseBuildManager : Node2D
 
 		foreach (Vector2I occupiedCell in occupiedCells)
 		{
-			if (IsConstructionSiteCell(occupiedCell)
-				|| IsResourcePileCell(occupiedCell)
-				|| IsResourceNodeCell(occupiedCell)
-				|| IsCropPlantCell(occupiedCell))
+			if (IsConstructionSiteCell(occupiedCell))
 			{
 				return false;
 			}
@@ -2240,11 +1893,6 @@ public partial class BaseBuildManager : Node2D
 
 		site = null!;
 		return false;
-	}
-
-	public IReadOnlyList<ConstructionSite> GetAllConstructionSites()
-	{
-		return _constructionSites;
 	}
 
 	public bool TryFindConstructionBuildWork(Vector2I fromCell, MercenaryController worker, out ConstructionSite site, out Vector2I accessCell)
@@ -2419,33 +2067,6 @@ public partial class BaseBuildManager : Node2D
 		return AddBuildProgress(site, amount);
 	}
 
-	public bool CompleteSite(ConstructionSite site)
-	{
-		if (!_constructionSites.Contains(site) || site.IsCancelled)
-		{
-			return false;
-		}
-
-		CompleteConstructionSite(site);
-		QueueRedraw();
-		return true;
-	}
-
-	public bool CancelSite(ConstructionSite site)
-	{
-		if (!_constructionSites.Contains(site) || site.IsCompleted)
-		{
-			return false;
-		}
-
-		DropDeliveredConstructionMaterials(site);
-		site.Cancel();
-		_constructionSites.Remove(site);
-		QueueRedraw();
-		ValidateLogisticsWorld("construction cancel");
-		return true;
-	}
-
 	private void CompleteConstructionSite(ConstructionSite site)
 	{
 		ApplyBuildAt(site.OriginCell, site.TargetBuildType, site.MaterialType);
@@ -2461,23 +2082,10 @@ public partial class BaseBuildManager : Node2D
 			return false;
 		}
 
-		return CancelSite(site);
-	}
-
-	private void DropDeliveredConstructionMaterials(ConstructionSite site)
-	{
-		foreach (ConstructionRequirement requirement in site.Requirements.Values)
-		{
-			if (requirement.DeliveredAmount <= 0)
-			{
-				continue;
-			}
-
-			if (!TrySpawnOrMergeResourcePile(requirement.ResourceType, site.OriginCell, requirement.DeliveredAmount))
-			{
-				GD.PushWarning($"Construction cancel failed to drop {requirement.ResourceType} x{requirement.DeliveredAmount} at {site.OriginCell}");
-			}
-		}
+		site.Cancel();
+		_constructionSites.Remove(site);
+		QueueRedraw();
+		return true;
 	}
 
 	private bool IsConstructionSiteCell(Vector2I cell)
@@ -3258,12 +2866,8 @@ public partial class BaseBuildManager : Node2D
 
 	public int GetResourceAmount(BaseResourceType type)
 	{
-		if (IsStoredResource(type))
-		{
-			return GetTotalStoredAmount(type);
-		}
-
-		return _resources.TryGetValue(type, out int amount) ? amount : 0;
+		int legacyAmount = _resources.TryGetValue(type, out int amount) ? amount : 0;
+		return IsStoredResource(type) ? legacyAmount + GetTotalStoredAmount(type) : legacyAmount;
 	}
 
 	public bool HasResource(BaseResourceType type, int amount)
@@ -3290,7 +2894,22 @@ public partial class BaseBuildManager : Node2D
 
 		if (IsStoredResource(type))
 		{
-			return TryRemoveResourceFromStorages(type, amount);
+			int remainingAmount = amount;
+			int storedAmount = GetTotalStoredAmount(type);
+			int removeFromStorage = Mathf.Min(storedAmount, remainingAmount);
+
+			if (removeFromStorage > 0)
+			{
+				TryRemoveResourceFromStorages(type, removeFromStorage);
+				remainingAmount -= removeFromStorage;
+			}
+
+			if (remainingAmount > 0)
+			{
+				_resources[type] = Mathf.Max(0, (_resources.TryGetValue(type, out int legacyAmount) ? legacyAmount : 0) - remainingAmount);
+			}
+
+			return true;
 		}
 
 		SetResourceAmount(type, GetResourceAmount(type) - amount);
@@ -3304,12 +2923,7 @@ public partial class BaseBuildManager : Node2D
 			return;
 		}
 
-		if (IsStoredResource(type))
-		{
-			AddResourceToAvailableStorage(type, amount);
-			return;
-		}
-
+		// TODO: Route production and hauling through storage policies once jobs and stockpile filters exist.
 		_resources[type] = (_resources.TryGetValue(type, out int legacyAmount) ? legacyAmount : 0) + amount;
 	}
 
@@ -3318,59 +2932,9 @@ public partial class BaseBuildManager : Node2D
 		if (IsStoredResource(type))
 		{
 			ClearStoredResource(type);
-			AddResourceToAvailableStorage(type, Mathf.Max(0, amount));
-			return;
 		}
 
 		_resources[type] = Mathf.Max(0, amount);
-	}
-
-	private void AddResourceToAvailableStorage(BaseResourceType type, int amount)
-	{
-		int remaining = amount;
-		List<Vector2I> storageCells = new(GetStorageOriginCells());
-		storageCells.Sort((a, b) =>
-		{
-			int priorityCompare = GetStoragePolicy(b).Priority.CompareTo(GetStoragePolicy(a).Priority);
-
-			if (priorityCompare != 0)
-			{
-				return priorityCompare;
-			}
-
-			bool aSpecialized = GetStorageCapability(a).IsSpecializedMatch(type);
-			bool bSpecialized = GetStorageCapability(b).IsSpecializedMatch(type);
-
-			if (aSpecialized != bSpecialized)
-			{
-				return bSpecialized.CompareTo(aSpecialized);
-			}
-
-			return a.Y == b.Y ? a.X.CompareTo(b.X) : a.Y.CompareTo(b.Y);
-		});
-
-		foreach (Vector2I storageCell in storageCells)
-		{
-			if (remaining <= 0)
-			{
-				break;
-			}
-
-			if (TryAddResourceToStorage(storageCell, type, remaining, out int storedAmount, out int leftoverAmount))
-			{
-				remaining = leftoverAmount;
-
-				if (storedAmount <= 0)
-				{
-					break;
-				}
-			}
-		}
-
-		if (remaining > 0)
-		{
-			GD.PushWarning($"No storage space for debug resource {type} x{remaining}");
-		}
 	}
 
 	public bool TryConsumeFood(int amount = 1)
@@ -3415,120 +2979,10 @@ public partial class BaseBuildManager : Node2D
 
 	private void InitializeResources()
 	{
-		foreach (BaseResourceType resourceType in AllResourceTypes)
-		{
-			_resources[resourceType] = 0;
-		}
-
-		EnsureStarterSupplyChest();
-	}
-
-	private void EnsureStarterSupplyChest()
-	{
-		if (_starterSupplyChestCell.HasValue
-			&& TryGetObjectOriginState(_starterSupplyChestCell.Value, out BuildableTileState existingStarter)
-			&& existingStarter.ObjectType == TileBuildType.SmallChest)
-		{
-			RegisterStorage(_starterSupplyChestCell.Value);
-			EnsureStarterSupplyContents(_starterSupplyChestCell.Value);
-			return;
-		}
-
-		if (!FindStarterSupplyChestCell(out Vector2I chestCell))
-		{
-			GD.PushWarning("Could not place starter supply chest.");
-			return;
-		}
-
-		if (!_buildings.TryGetValue(chestCell, out BuildableTileState state) || !state.HasFloor)
-		{
-			ApplyBuildAt(chestCell, TileBuildType.Floor, BuildMaterialType.Wood);
-		}
-
-		_starterSupplyChestCell = chestCell;
-		ApplyBuildAt(chestCell, TileBuildType.SmallChest);
-		RegisterStorage(chestCell);
-		_storagePolicies[chestCell] = new StoragePolicy(StoragePolicyPreset.All, StoragePriority.Normal)
-		{
-			PolicyName = "\uCD08\uAE30 \uBCF4\uAE09 \uC0C1\uC790"
-		};
-		EnsureStarterSupplyContents(chestCell);
-	}
-
-	private bool FindStarterSupplyChestCell(out Vector2I chestCell)
-	{
-		Vector2I preferredCell = new(8, 8);
-
-		if (CanUseStarterSupplyChestCell(preferredCell))
-		{
-			chestCell = preferredCell;
-			return true;
-		}
-
-		for (int radius = 1; radius <= 12; radius++)
-		{
-			for (int y = -radius; y <= radius; y++)
-			{
-				for (int x = -radius; x <= radius; x++)
-				{
-					if (Mathf.Abs(x) != radius && Mathf.Abs(y) != radius)
-					{
-						continue;
-					}
-
-					Vector2I candidate = preferredCell + new Vector2I(x, y);
-
-					if (CanUseStarterSupplyChestCell(candidate))
-					{
-						chestCell = candidate;
-						return true;
-					}
-				}
-			}
-		}
-
-		chestCell = default;
-		return false;
-	}
-
-	private bool CanUseStarterSupplyChestCell(Vector2I cell)
-	{
-		if (!IsCellInWorld(cell)
-			|| IsResourceNodeCell(cell)
-			|| IsCropPlantCell(cell)
-			|| IsResourcePileCell(cell)
-			|| IsConstructionSiteCell(cell)
-			|| IsCellOccupied(cell))
-		{
-			return false;
-		}
-
-		return !_buildings.TryGetValue(cell, out BuildableTileState state) || !state.HasObject;
-	}
-
-	private void EnsureStarterSupplyContents(Vector2I chestCell)
-	{
-		RegisterStorage(chestCell);
-
-		if (!_storageInventories.TryGetValue(chestCell, out Dictionary<BaseResourceType, int>? inventory))
-		{
-			return;
-		}
-
-		if (!IsInventoryEmpty(inventory))
-		{
-			return;
-		}
-
-		inventory[BaseResourceType.Wood] = 30;
-		inventory[BaseResourceType.Stone] = 10;
-		inventory[BaseResourceType.Food] = 20;
-		inventory[BaseResourceType.Metal] = 5;
-	}
-
-	private bool IsStarterSupplyChest(Vector2I storageCell)
-	{
-		return _starterSupplyChestCell.HasValue && _starterSupplyChestCell.Value == storageCell;
+		SetResourceAmount(BaseResourceType.Food, InitialFoodCount);
+		SetResourceAmount(BaseResourceType.Wood, InitialWood);
+		SetResourceAmount(BaseResourceType.Stone, InitialStone);
+		SetResourceAmount(BaseResourceType.Metal, InitialMetal);
 	}
 
 	private static BuildCost CreateBuildCost(params (BaseResourceType ResourceType, int Amount)[] resources)
@@ -3589,21 +3043,7 @@ public partial class BaseBuildManager : Node2D
 		}
 
 		ResourcePile? existingPile = GetResourcePileAtCell(cell);
-
-		if (existingPile != null)
-		{
-			return existingPile.ResourceType == type;
-		}
-
-		if (IsResourceNodeCell(cell)
-			|| IsCropPlantCell(cell)
-			|| IsConstructionSiteCell(cell)
-			|| IsCellBlocked(cell))
-		{
-			return false;
-		}
-
-		return !_buildings.TryGetValue(cell, out BuildableTileState state) || !state.HasObject;
+		return existingPile == null || existingPile.ResourceType == type;
 	}
 
 	private bool CanPlantCropAt(Vector2I cell)
@@ -3647,7 +3087,6 @@ public partial class BaseBuildManager : Node2D
 				_storageInventories[cell].TryAdd(resourceType, 0);
 			}
 
-			EnsureStoragePolicy(cell);
 			return;
 		}
 
@@ -4558,33 +3997,6 @@ public partial class BaseBuildManager : Node2D
 			(originCell.Y + size.Y * 0.5f) * tileSize);
 	}
 
-	private static Color GetFloorColor(BuildMaterialType materialType)
-	{
-		return materialType switch
-		{
-			BuildMaterialType.Stone => new Color(0.54f, 0.56f, 0.56f, 0.62f),
-			BuildMaterialType.Metal => new Color(0.38f, 0.42f, 0.46f, 0.66f),
-			_ => new Color(0.72f, 0.60f, 0.40f, 0.58f)
-		};
-	}
-
-	private static Color GetWallColor(BuildMaterialType materialType)
-	{
-		return materialType switch
-		{
-			BuildMaterialType.Stone => new Color(0.46f, 0.46f, 0.48f, 0.95f),
-			BuildMaterialType.Metal => new Color(0.24f, 0.28f, 0.32f, 0.96f),
-			_ => new Color(0.46f, 0.28f, 0.12f, 0.95f)
-		};
-	}
-
-	private static Color GetDoorColor(BuildMaterialType materialType)
-	{
-		return materialType == BuildMaterialType.Metal
-			? new Color(0.42f, 0.44f, 0.48f, 0.96f)
-			: new Color(0.58f, 0.36f, 0.16f, 0.95f);
-	}
-
 	private void DrawBuildTileFloor(BuildableTileState state)
 	{
 		int tileSize = GetTileSize();
@@ -4593,9 +4005,8 @@ public partial class BaseBuildManager : Node2D
 
 		if (state.HasFloor)
 		{
-			Color floorColor = GetFloorColor(state.FloorMaterialType);
-			DrawRect(tileRect.Grow(-2.0f), floorColor);
-			DrawRect(tileRect.Grow(-2.0f), floorColor.Lightened(0.22f), false, 1.0f);
+			DrawRect(tileRect.Grow(-2.0f), new Color(0.72f, 0.68f, 0.56f, 0.55f));
+			DrawRect(tileRect.Grow(-2.0f), new Color(0.92f, 0.86f, 0.68f, 0.7f), false, 1.0f);
 		}
 	}
 
@@ -4613,15 +4024,13 @@ public partial class BaseBuildManager : Node2D
 
 		if (state.ObjectType == TileBuildType.Wall)
 		{
-			Color wallColor = GetWallColor(state.ObjectMaterialType);
-			DrawRect(tileRect.Grow(-1.0f), wallColor.Darkened(0.24f));
-			DrawRect(tileRect.Grow(-6.0f), wallColor);
+			DrawRect(tileRect.Grow(-1.0f), new Color(0.24f, 0.24f, 0.26f, 0.92f));
+			DrawRect(tileRect.Grow(-6.0f), new Color(0.38f, 0.38f, 0.42f, 0.95f));
 		}
 		else if (state.ObjectType == TileBuildType.Door)
 		{
-			Color doorColor = GetDoorColor(state.ObjectMaterialType);
-			DrawRect(tileRect.Grow(-1.0f), doorColor.Darkened(0.35f));
-			DrawRect(new Rect2(position + new Vector2(5.0f, tileSize * 0.36f), new Vector2(tileSize - 10.0f, tileSize * 0.28f)), doorColor);
+			DrawRect(tileRect.Grow(-1.0f), new Color(0.18f, 0.18f, 0.2f, 0.72f));
+			DrawRect(new Rect2(position + new Vector2(5.0f, tileSize * 0.36f), new Vector2(tileSize - 10.0f, tileSize * 0.28f)), new Color(0.58f, 0.36f, 0.16f, 0.95f));
 			DrawLine(position + new Vector2(8.0f, tileSize * 0.5f), position + new Vector2(tileSize - 8.0f, tileSize * 0.5f), new Color(0.98f, 0.78f, 0.36f), 2.0f);
 			DrawCircle(tileRect.GetCenter() + new Vector2(tileSize * 0.2f, -2.0f), 2.0f, new Color(1.0f, 0.86f, 0.4f));
 		}
