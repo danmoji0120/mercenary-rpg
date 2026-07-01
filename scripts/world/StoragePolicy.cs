@@ -97,59 +97,14 @@ public sealed class StoragePolicy
 
 public static class StoragePolicyHelpers
 {
-    private static readonly BaseResourceType[] FoodResources =
-    {
-        BaseResourceType.Food
-    };
-
-    private static readonly BaseResourceType[] MealResources =
-    {
-        BaseResourceType.SimpleMeal
-    };
-
-    private static readonly BaseResourceType[] RawMaterialResources =
-    {
-        BaseResourceType.Wood,
-        BaseResourceType.Stone,
-        BaseResourceType.Metal
-    };
-
-    private static readonly BaseResourceType[] ProcessedMaterialResources =
-    {
-        BaseResourceType.Plank,
-        BaseResourceType.Brick,
-        BaseResourceType.IronIngot
-    };
-
-    private static readonly BaseResourceType[] MedicalResources =
-    {
-        BaseResourceType.Medicine
-    };
-
     public static StorageResourceCategory GetResourceCategory(BaseResourceType type)
     {
-        return type switch
-        {
-            BaseResourceType.Food => StorageResourceCategory.Food,
-            BaseResourceType.SimpleMeal => StorageResourceCategory.Meal,
-            BaseResourceType.Wood or BaseResourceType.Stone or BaseResourceType.Metal => StorageResourceCategory.RawMaterial,
-            BaseResourceType.Plank or BaseResourceType.Brick or BaseResourceType.IronIngot => StorageResourceCategory.ProcessedMaterial,
-            BaseResourceType.Medicine => StorageResourceCategory.Medical,
-            _ => StorageResourceCategory.Misc
-        };
+        return ResourceDefinitionDatabase.GetCategory(type);
     }
 
     public static IReadOnlyList<BaseResourceType> GetResourcesInCategory(StorageResourceCategory category)
     {
-        return category switch
-        {
-            StorageResourceCategory.Food => FoodResources,
-            StorageResourceCategory.Meal => MealResources,
-            StorageResourceCategory.RawMaterial => RawMaterialResources,
-            StorageResourceCategory.ProcessedMaterial => ProcessedMaterialResources,
-            StorageResourceCategory.Medical => MedicalResources,
-            _ => BaseBuildManager.GetAllResourceTypes()
-        };
+        return ResourceDefinitionDatabase.GetResourcesInCategory(category);
     }
 
     public static bool PresetAllows(StoragePolicyPreset preset, BaseResourceType type)

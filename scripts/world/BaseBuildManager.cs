@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Godot;
 
 public partial class BaseBuildManager : Node2D
@@ -58,26 +58,6 @@ public partial class BaseBuildManager : Node2D
 	private readonly List<ConstructionSite> _constructionSites = new();
 	private readonly List<StockpileZone> _stockpileZones = new();
 	private readonly HashSet<Vector2I> _farmZoneCells = new();
-	private static readonly BaseResourceType[] AllResourceTypes =
-	{
-		BaseResourceType.Food,
-		BaseResourceType.Wood,
-		BaseResourceType.Stone,
-		BaseResourceType.Metal,
-		BaseResourceType.Plank,
-		BaseResourceType.Brick,
-		BaseResourceType.IronIngot,
-		BaseResourceType.SimpleMeal,
-		BaseResourceType.Medicine
-	};
-	private static readonly BaseResourceType[] BuildCostResourceOrder =
-	{
-		BaseResourceType.Wood,
-		BaseResourceType.Stone,
-		BaseResourceType.Metal,
-		BaseResourceType.Food
-	};
-
 	private WorldGridRenderer? _worldGrid;
 	private Node2D? _resourcePileLayer;
 	private Node2D? _cropPlantLayer;
@@ -207,7 +187,7 @@ public partial class BaseBuildManager : Node2D
 				continue;
 			}
 
-			foreach (BaseResourceType resourceType in AllResourceTypes)
+			foreach (BaseResourceType resourceType in ResourceDefinitionDatabase.AllResourceTypes)
 			{
 				inventory.TryAdd(resourceType, 0);
 			}
@@ -1110,7 +1090,7 @@ public partial class BaseBuildManager : Node2D
 	{
 		Dictionary<BaseResourceType, int> totals = new();
 
-		foreach (BaseResourceType resourceType in AllResourceTypes)
+		foreach (BaseResourceType resourceType in ResourceDefinitionDatabase.AllResourceTypes)
 		{
 			int amount = GetTotalStoredAmount(resourceType);
 
@@ -1219,7 +1199,7 @@ public partial class BaseBuildManager : Node2D
 
 		RegisterStorage(originCell);
 
-		foreach (BaseResourceType resourceType in AllResourceTypes)
+		foreach (BaseResourceType resourceType in ResourceDefinitionDatabase.AllResourceTypes)
 		{
 			int amount = GetStoredAmountAt(originCell, resourceType);
 
@@ -1824,7 +1804,7 @@ public partial class BaseBuildManager : Node2D
 
 		bool changed = false;
 
-		foreach (BaseResourceType resourceType in AllResourceTypes)
+		foreach (BaseResourceType resourceType in ResourceDefinitionDatabase.AllResourceTypes)
 		{
 			int amount = inventory.TryGetValue(resourceType, out int storedAmount) ? storedAmount : 0;
 
@@ -1868,7 +1848,7 @@ public partial class BaseBuildManager : Node2D
 
 		bool success = true;
 
-		foreach (BaseResourceType resourceType in AllResourceTypes)
+		foreach (BaseResourceType resourceType in ResourceDefinitionDatabase.AllResourceTypes)
 		{
 			int amount = inventory.TryGetValue(resourceType, out int storedAmount) ? storedAmount : 0;
 
@@ -3128,7 +3108,7 @@ public partial class BaseBuildManager : Node2D
 
 		List<string> parts = new();
 
-		foreach (BaseResourceType resourceType in BuildCostResourceOrder)
+		foreach (BaseResourceType resourceType in ResourceDefinitionDatabase.BuildCostResourceOrder)
 		{
 			if (cost.TryGetValue(resourceType, out int amount) && amount > 0)
 			{
@@ -3143,7 +3123,7 @@ public partial class BaseBuildManager : Node2D
 	{
 		List<string> missingResources = new();
 
-		foreach (BaseResourceType resourceType in BuildCostResourceOrder)
+		foreach (BaseResourceType resourceType in ResourceDefinitionDatabase.BuildCostResourceOrder)
 		{
 			IReadOnlyDictionary<BaseResourceType, int> cost = GetBuildCost(buildType);
 
@@ -3323,7 +3303,7 @@ public partial class BaseBuildManager : Node2D
 
 	private void InitializeResources()
 	{
-		foreach (BaseResourceType resourceType in AllResourceTypes)
+		foreach (BaseResourceType resourceType in ResourceDefinitionDatabase.AllResourceTypes)
 		{
 			_resources[resourceType] = 0;
 		}
@@ -3532,7 +3512,7 @@ public partial class BaseBuildManager : Node2D
 	{
 		if (_storageInventories.ContainsKey(cell))
 		{
-			foreach (BaseResourceType resourceType in AllResourceTypes)
+			foreach (BaseResourceType resourceType in ResourceDefinitionDatabase.AllResourceTypes)
 			{
 				_storageInventories[cell].TryAdd(resourceType, 0);
 			}
@@ -3543,7 +3523,7 @@ public partial class BaseBuildManager : Node2D
 
 		Dictionary<BaseResourceType, int> inventory = new();
 
-		foreach (BaseResourceType resourceType in AllResourceTypes)
+		foreach (BaseResourceType resourceType in ResourceDefinitionDatabase.AllResourceTypes)
 		{
 			inventory[resourceType] = 0;
 		}
@@ -3614,63 +3594,27 @@ public partial class BaseBuildManager : Node2D
 
 	private static bool IsStoredResource(BaseResourceType type)
 	{
-		return true;
+		return ResourceDefinitionDatabase.IsStoredResource(type);
 	}
 
 	public static IReadOnlyList<BaseResourceType> GetAllResourceTypes()
 	{
-		return AllResourceTypes;
+		return ResourceDefinitionDatabase.AllResourceTypes;
 	}
 
 	public static int GetResourceUnitWeight(BaseResourceType type)
 	{
-		return type switch
-		{
-			BaseResourceType.Food => 1,
-			BaseResourceType.Wood => 2,
-			BaseResourceType.Stone => 4,
-			BaseResourceType.Metal => 5,
-			BaseResourceType.Plank => 2,
-			BaseResourceType.Brick => 3,
-			BaseResourceType.IronIngot => 5,
-			BaseResourceType.SimpleMeal => 1,
-			BaseResourceType.Medicine => 1,
-			_ => 1
-		};
+		return ResourceDefinitionDatabase.GetUnitWeight(type);
 	}
 
 	public static string GetResourceDisplayName(BaseResourceType type)
 	{
-		return type switch
-		{
-			BaseResourceType.Food => "\uC2DD\uB7C9",
-			BaseResourceType.Wood => "\uB098\uBB34",
-			BaseResourceType.Stone => "\uB3CC",
-			BaseResourceType.Metal => "\uAE08\uC18D",
-			BaseResourceType.Plank => "\uD310\uC7AC",
-			BaseResourceType.Brick => "\uBCBD\uB3CC",
-			BaseResourceType.IronIngot => "\uCCA0\uAD34",
-			BaseResourceType.SimpleMeal => "\uAC04\uB2E8 \uC2DD\uC0AC",
-			BaseResourceType.Medicine => "\uC57D\uD488",
-			_ => type.ToString()
-		};
+		return ResourceDefinitionDatabase.GetDisplayName(type);
 	}
 
 	public static string GetResourceMarker(BaseResourceType type)
 	{
-		return type switch
-		{
-			BaseResourceType.Food => "\uC2DD",
-			BaseResourceType.Wood => "\uBAA9",
-			BaseResourceType.Stone => "\uC11D",
-			BaseResourceType.Metal => "\uAE08",
-			BaseResourceType.Plank => "\uD310",
-			BaseResourceType.Brick => "\uBCBD",
-			BaseResourceType.IronIngot => "\uCCA0",
-			BaseResourceType.SimpleMeal => "\uBC25",
-			BaseResourceType.Medicine => "\uC57D",
-			_ => "?"
-		};
+		return ResourceDefinitionDatabase.GetMarker(type);
 	}
 
 	private static bool IsFacilityBuildType(TileBuildType buildType)

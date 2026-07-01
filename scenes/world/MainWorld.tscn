@@ -38,7 +38,6 @@ script = ExtResource("13_p4x2h")
 script = ExtResource("8_x2nkp")
 
 [node name="LifePointLayer" type="Node2D" parent="." unique_id=1437020773]
-visible = false
 script = ExtResource("4_u2w5x")
 
 [node name="SleepPoint" type="Marker2D" parent="LifePointLayer" unique_id=1433216350]
