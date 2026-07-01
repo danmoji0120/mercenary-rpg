@@ -39,6 +39,7 @@ public partial class WorldBuildPanel : Control
 	private const string StorageOverviewCategory = "\uC804\uCCB4 \uBCF4\uAD00";
 	private const string ComingSoon = "\uC900\uBE44 \uC911";
 	private const string NoSelection = "\uC120\uD0DD \uC5C6\uC74C";
+	private static readonly bool ShowStockpileZoneControls = false;
 
 	private readonly List<Button> _mainTabButtons = new();
 	private readonly Dictionary<string, Button> _categoryButtons = new();
@@ -964,16 +965,19 @@ public partial class WorldBuildPanel : Control
 		Label titleLabel = CreateSmallLabel("\uC800\uC7A5\uACE0 \uAD00\uB9AC\n" + BuildStorageTotalSummary(), 12);
 		content.AddChild(titleLabel);
 
-		HBoxContainer zoneButtons = new() { MouseFilter = MouseFilterEnum.Stop };
-		content.AddChild(zoneButtons);
-		Button addZoneButton = CreateButton("\uC800\uC7A5 \uAD6C\uC5ED \uC9C0\uC815", new Vector2(118.0f, 28.0f));
-		addZoneButton.AddThemeFontSizeOverride("font_size", 10);
-		addZoneButton.Pressed += () => StockpileZoneDesignationSelected?.Invoke(false);
-		zoneButtons.AddChild(addZoneButton);
-		Button removeZoneButton = CreateButton("\uAD6C\uC5ED \uC0AD\uC81C", new Vector2(96.0f, 28.0f));
-		removeZoneButton.AddThemeFontSizeOverride("font_size", 10);
-		removeZoneButton.Pressed += () => StockpileZoneDesignationSelected?.Invoke(true);
-		zoneButtons.AddChild(removeZoneButton);
+		if (ShowStockpileZoneControls)
+		{
+			HBoxContainer zoneButtons = new() { MouseFilter = MouseFilterEnum.Stop };
+			content.AddChild(zoneButtons);
+			Button addZoneButton = CreateButton("\uC800\uC7A5 \uAD6C\uC5ED \uC9C0\uC815", new Vector2(118.0f, 28.0f));
+			addZoneButton.AddThemeFontSizeOverride("font_size", 10);
+			addZoneButton.Pressed += () => StockpileZoneDesignationSelected?.Invoke(false);
+			zoneButtons.AddChild(addZoneButton);
+			Button removeZoneButton = CreateButton("\uAD6C\uC5ED \uC0AD\uC81C", new Vector2(96.0f, 28.0f));
+			removeZoneButton.AddThemeFontSizeOverride("font_size", 10);
+			removeZoneButton.Pressed += () => StockpileZoneDesignationSelected?.Invoke(true);
+			zoneButtons.AddChild(removeZoneButton);
+		}
 
 		foreach (Vector2I storageCell in storageCells)
 		{

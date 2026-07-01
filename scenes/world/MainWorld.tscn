@@ -14,6 +14,7 @@
 [ext_resource type="Script" uid="uid://buxod2npr5evo" path="res://scripts/world/BaseAlertState.cs" id="12_a8lbr"]
 [ext_resource type="Script" uid="uid://dy6otv77auv0t" path="res://scripts/world/TestResourceNodeSpawner.cs" id="13_p4x2h"]
 [ext_resource type="Script" uid="uid://b4v3s1t3ykr4o" path="res://scripts/ui/WorldBuildPanel.cs" id="14_mpeui"]
+[ext_resource type="Script" uid="uid://86ptct0i2mft" path="res://scripts/effects/BaseOverlayLayer.cs" id="15_baseoverlay"]
 
 [node name="MainWorld" type="Node2D" unique_id=1694616011]
 script = ExtResource("1_wktxm")
@@ -23,6 +24,8 @@ script = ExtResource("12_a8lbr")
 
 [node name="TerrainLayer" type="Node2D" parent="." unique_id=1928559420]
 script = ExtResource("2_w4bmx")
+WorldWidth = 128
+WorldHeight = 128
 
 [node name="ResourceNodeLayer" type="Node2D" parent="." unique_id=1018619387]
 script = ExtResource("13_p4x2h")
@@ -35,6 +38,7 @@ script = ExtResource("13_p4x2h")
 script = ExtResource("8_x2nkp")
 
 [node name="LifePointLayer" type="Node2D" parent="." unique_id=1437020773]
+visible = false
 script = ExtResource("4_u2w5x")
 
 [node name="SleepPoint" type="Marker2D" parent="LifePointLayer" unique_id=1433216350]
@@ -71,6 +75,9 @@ script = ExtResource("10_qxks4")
 
 [node name="FacilityDebugOverlay" type="Node2D" parent="EffectLayer" unique_id=1356532760]
 script = ExtResource("11_l4d7r")
+
+[node name="BaseOverlayLayer" type="Node2D" parent="EffectLayer" unique_id=801007011]
+script = ExtResource("15_baseoverlay")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=636579964]
 
