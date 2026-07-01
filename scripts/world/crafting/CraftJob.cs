@@ -142,7 +142,7 @@ public sealed class CraftJob
     {
         PruneReservations();
 
-        if (IsCompleted || IsCancelled || !HasAllMaterials)
+        if (IsCompleted || IsCancelled || State == CraftJobState.OutputReady || !HasAllMaterials)
         {
             return false;
         }
@@ -153,7 +153,6 @@ public sealed class CraftJob
         }
 
         _reservedWorker = worker;
-        State = CraftJobState.Crafting;
         return true;
     }
 
@@ -162,6 +161,11 @@ public sealed class CraftJob
         if (_reservedWorker == worker || !IsValidWorker(_reservedWorker))
         {
             _reservedWorker = null;
+        }
+
+        if (_reservedWorker == null && State == CraftJobState.Crafting && WorkProgress < RequiredWork)
+        {
+            State = CraftJobState.ReadyToCraft;
         }
 
         RefreshState();
@@ -189,14 +193,22 @@ public sealed class CraftJob
 
     public void PruneReservations()
     {
+        bool clearedCraftWorker = false;
+
         if (!IsValidWorker(_reservedWorker))
         {
             _reservedWorker = null;
+            clearedCraftWorker = true;
         }
 
         if (!IsValidWorker(_reservedDeliveryWorker))
         {
             _reservedDeliveryWorker = null;
+        }
+
+        if (clearedCraftWorker && State == CraftJobState.Crafting && WorkProgress < RequiredWork)
+        {
+            State = CraftJobState.ReadyToCraft;
         }
     }
 

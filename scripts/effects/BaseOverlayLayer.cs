@@ -174,7 +174,8 @@ public partial class BaseOverlayLayer : Node2D
         IReadOnlyList<CraftJob> activeJobs = _craftingManager.GetActiveJobs();
         CraftJob firstJob = activeJobs[0];
         string materialText = GetCraftJobMaterialDiagnosticsText(firstJob);
-        return $"craft jobs {activeJobCount}\n{firstJob.RecipeId} {firstJob.State} {firstJob.FacilityCell}{materialText}";
+        string progressText = GetCraftJobProgressDiagnosticsText(firstJob);
+        return $"craft jobs {activeJobCount}\n{firstJob.RecipeId} {firstJob.State} {firstJob.FacilityCell}{materialText}{progressText}";
     }
 
     private static string GetCraftJobMaterialDiagnosticsText(CraftJob job)
@@ -190,6 +191,18 @@ public partial class BaseOverlayLayer : Node2D
         }
 
         return "";
+    }
+
+    private static string GetCraftJobProgressDiagnosticsText(CraftJob job)
+    {
+        if (job.State != CraftJobState.ReadyToCraft
+            && job.State != CraftJobState.Crafting
+            && job.State != CraftJobState.OutputReady)
+        {
+            return "";
+        }
+
+        return $" {(int)(job.GetProgressRatio() * 100.0f)}%";
     }
 
     private void DrawConstructionSites()

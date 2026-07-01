@@ -734,6 +734,13 @@ public partial class MercenaryLifeAI : Node
 		else if (buildManager != null
 			&& mercenary != null
 			&& IsWorkEnabled(mercenary, MercenaryWorkType.Craft)
+			&& TrySelectCraftWork(mercenary, buildManager, previousPoint, selectableLifePoints))
+		{
+			return;
+		}
+		else if (buildManager != null
+			&& mercenary != null
+			&& IsWorkEnabled(mercenary, MercenaryWorkType.Craft)
 			&& TrySelectCraftMaterialDelivery(mercenary, buildManager, previousPoint, selectableLifePoints))
 		{
 			return;
@@ -969,6 +976,87 @@ public partial class MercenaryLifeAI : Node
 		_isPatrolling = false;
 		ClearPatrolDetection();
 		SetCurrentWorkStatus(MercenaryWorkType.Build, $"{BaseBuildManager.GetResourceDisplayName(resourceType)} x{amount} \u2192 {site.DisplayName}", "\uCC3D\uACE0\uB85C \uC774\uB3D9 \uC911", "\uAC74\uC124 \uC608\uC815\uC9C0 \uC7AC\uB8CC \uBD80\uC871");
+		return true;
+	}
+
+	private bool TrySelectCraftWork(MercenaryController mercenary, BaseBuildManager buildManager, Node2D? previousPoint, List<Node2D> selectableLifePoints)
+	{
+		CraftingManager? craftingManager = GetCraftingManager();
+
+		if (craftingManager == null)
+		{
+			return false;
+		}
+
+		Vector2I startCell = buildManager.WorldToCell(mercenary.GlobalPosition);
+		CraftJob? selectedJob = null;
+		Vector2I selectedFacilityAccessCell = default;
+		int bestPathLength = int.MaxValue;
+
+		foreach (CraftJob job in craftingManager.GetReadyToCraftJobs())
+		{
+			job.PruneReservations();
+
+			if (job.ReservedWorker is { } reservedWorker && reservedWorker != mercenary)
+			{
+				continue;
+			}
+
+			if (!craftingManager.TryGetRecipeForJob(job, out CraftRecipeEntry recipe))
+			{
+				continue;
+			}
+
+			if (!TryValidateCraftFacility(buildManager, job, recipe, out Vector2I facilityOriginCell))
+			{
+				craftingManager.CancelJob(job);
+				continue;
+			}
+
+			if (!buildManager.TryFindObjectAccessCell(startCell, facilityOriginCell, out Vector2I facilityAccessCell, out int pathLength))
+			{
+				continue;
+			}
+
+			if (pathLength >= bestPathLength)
+			{
+				continue;
+			}
+
+			bestPathLength = pathLength;
+			selectedJob = job;
+			selectedFacilityAccessCell = facilityAccessCell;
+		}
+
+		if (selectedJob == null)
+		{
+			return false;
+		}
+
+		if (!selectedJob.TryReserveCrafting(mercenary))
+		{
+			return false;
+		}
+
+		_targetCraftJob = selectedJob;
+		_craftStorageCell = null;
+		_craftStorageAccessCell = null;
+		_craftFacilityAccessCell = selectedFacilityAccessCell;
+		_craftInteractionTimer = 0.0f;
+		_craftInteractionDuration = 0.0f;
+		_targetPoint = GetSafePreviousLifePoint(previousPoint, selectableLifePoints)
+			?? (selectableLifePoints.Count > 0 ? selectableLifePoints[0] : null);
+		CurrentLifeAction = "CraftWork";
+		_waitTimer = 0.0f;
+		_hasPathToTarget = false;
+		_usingFacilityTarget = false;
+		_isPatrolling = false;
+		ClearPatrolDetection();
+		SetCurrentWorkStatus(
+			MercenaryWorkType.Craft,
+			selectedJob.RecipeId,
+			"Moving to workbench",
+			"Craft materials ready");
 		return true;
 	}
 
@@ -1327,11 +1415,30 @@ public partial class MercenaryLifeAI : Node
 
 			if (job == null)
 			{
-				warnings.Add("Craft delivery missing job");
+				warnings.Add("Craft action missing job");
 				ResetCraftState(mercenary, false);
 			}
-			else if (job.IsCancelled || job.IsCompleted || job.HasAllMaterials)
+			else if (job.IsCancelled || job.IsCompleted || job.State == CraftJobState.OutputReady)
 			{
+				ResetCraftState(mercenary, false);
+			}
+			else if (buildManager != null && !TryValidateCraftFacility(buildManager, job, out _))
+			{
+				warnings.Add("Craft action had invalid facility");
+				job.Cancel();
+				ResetCraftState(mercenary, false);
+			}
+			else if (IsCraftWorkAction()
+				&& !job.HasAllMaterials)
+			{
+				warnings.Add("Craft work started without materials");
+				ResetCraftState(mercenary, false);
+			}
+			else if (IsCraftWorkAction()
+				&& job.ReservedWorker is { } reservedWorker
+				&& reservedWorker != mercenary)
+			{
+				warnings.Add("Craft work reservation owner mismatch");
 				ResetCraftState(mercenary, false);
 			}
 			else if (IsCraftWithdrawAction()
@@ -1345,12 +1452,6 @@ public partial class MercenaryLifeAI : Node
 				&& mercenary.Inventory.GetAmount(_craftMaterialType) <= 0)
 			{
 				warnings.Add("Craft delivery had empty inventory");
-				ResetCraftState(mercenary, false);
-			}
-			else if (buildManager != null && !TryValidateCraftFacility(buildManager, job, out _))
-			{
-				warnings.Add("Craft delivery had invalid facility");
-				job.Cancel();
 				ResetCraftState(mercenary, false);
 			}
 		}
@@ -1639,7 +1740,7 @@ public partial class MercenaryLifeAI : Node
 	{
 		CraftJob? job = _targetCraftJob;
 
-		if (job == null || job.IsCancelled || job.IsCompleted || job.HasAllMaterials)
+		if (job == null || job.IsCancelled || job.IsCompleted || job.State == CraftJobState.OutputReady)
 		{
 			ResetCraftState(mercenary, false);
 			return false;
@@ -1657,6 +1758,12 @@ public partial class MercenaryLifeAI : Node
 
 		if (IsCraftWithdrawAction())
 		{
+			if (job.HasAllMaterials)
+			{
+				ResetCraftState(mercenary, false);
+				return false;
+			}
+
 			if (!_craftStorageCell.HasValue || !_craftStorageAccessCell.HasValue)
 			{
 				ResetCraftState(mercenary, false);
@@ -1668,7 +1775,24 @@ public partial class MercenaryLifeAI : Node
 		}
 		else if (IsCraftDeliverAction())
 		{
+			if (job.HasAllMaterials)
+			{
+				ResetCraftState(mercenary, false);
+				return false;
+			}
+
 			if (!_craftFacilityAccessCell.HasValue)
+			{
+				ResetCraftState(mercenary, false);
+				return false;
+			}
+
+			targetCell = _craftFacilityAccessCell.Value;
+			stateLabel = "Moving to workbench";
+		}
+		else if (IsCraftWorkAction())
+		{
+			if (!job.HasAllMaterials || !_craftFacilityAccessCell.HasValue)
 			{
 				ResetCraftState(mercenary, false);
 				return false;
@@ -1693,7 +1817,7 @@ public partial class MercenaryLifeAI : Node
 			MercenaryWorkType.Craft,
 			GetCraftTargetLabel(job),
 			stateLabel,
-			"Craft material delivery");
+			IsCraftWorkAction() ? "Craft materials ready" : "Craft material delivery");
 		return true;
 	}
 
@@ -1744,6 +1868,11 @@ public partial class MercenaryLifeAI : Node
 		if (IsCraftDeliverAction())
 		{
 			return UpdateCraftDeliverWork(mercenary, buildManager, delta);
+		}
+
+		if (IsCraftWorkAction())
+		{
+			return UpdateCraftWork(mercenary, buildManager, delta);
 		}
 
 		ResetCraftState(mercenary, false);
@@ -1936,6 +2065,54 @@ public partial class MercenaryLifeAI : Node
 		_carriedResourceAmount = remainingAmount;
 		_isCarryingResource = remainingAmount > 0;
 		_isHaulingToStorage = remainingAmount > 0;
+		ResetCraftState(mercenary, false);
+		RunLogisticsValidation(mercenary);
+		return true;
+	}
+
+	private bool UpdateCraftWork(MercenaryController mercenary, BaseBuildManager buildManager, double delta)
+	{
+		CraftJob? job = _targetCraftJob;
+
+		if (job == null || job.IsCancelled || job.IsCompleted)
+		{
+			ResetCraftState(mercenary, false);
+			return true;
+		}
+
+		if (job.State == CraftJobState.OutputReady)
+		{
+			ResetCraftState(mercenary, false);
+			return true;
+		}
+
+		if (!job.HasAllMaterials)
+		{
+			ResetCraftState(mercenary, false);
+			return true;
+		}
+
+		if (!TryValidateCraftFacility(buildManager, job, out _))
+		{
+			job.Cancel();
+			ResetCraftState(mercenary, false);
+			return true;
+		}
+
+		float craftSpeed = GetCraftWorkSpeed(mercenary);
+		job.AddWorkProgress((float)delta * craftSpeed);
+		SetUseProgress(job.WorkProgress, job.RequiredWork, $"Craft {(int)(job.GetProgressRatio() * 100.0f)}%");
+		SetCurrentWorkStatus(
+			MercenaryWorkType.Craft,
+			job.RecipeId,
+			"Crafting",
+			"Craft materials ready");
+
+		if (job.State != CraftJobState.OutputReady)
+		{
+			return false;
+		}
+
 		ResetCraftState(mercenary, false);
 		RunLogisticsValidation(mercenary);
 		return true;
@@ -2149,6 +2326,23 @@ public partial class MercenaryLifeAI : Node
 		}
 
 		return Mathf.Clamp(speed, 0.5f, 2.0f);
+	}
+
+	private static float GetCraftWorkSpeed(MercenaryController mercenary)
+	{
+		MercenaryWorkPriority craftPriority = mercenary.Profile.GetWorkSettings().GetPriority(MercenaryWorkType.Craft);
+		float speed = 1.0f;
+
+		if (craftPriority == MercenaryWorkPriority.High)
+		{
+			speed *= 1.1f;
+		}
+		else if (craftPriority == MercenaryWorkPriority.Low)
+		{
+			speed *= 0.9f;
+		}
+
+		return Mathf.Clamp(speed, 0.5f, 1.5f);
 	}
 
 	private static string GetConstructionTargetLabel(ConstructionSite site)
@@ -3776,9 +3970,14 @@ public partial class MercenaryLifeAI : Node
 		return CurrentLifeAction == "CraftDeliver";
 	}
 
+	private bool IsCraftWorkAction()
+	{
+		return CurrentLifeAction == "CraftWork";
+	}
+
 	private bool IsCraftAction()
 	{
-		return IsCraftWithdrawAction() || IsCraftDeliverAction();
+		return IsCraftWithdrawAction() || IsCraftDeliverAction() || IsCraftWorkAction();
 	}
 
 	private bool IsPlantAction()
@@ -4254,6 +4453,7 @@ public partial class MercenaryLifeAI : Node
 		if (mercenary != null && job != null)
 		{
 			job.ReleaseDelivery(mercenary);
+			job.ReleaseCrafting(mercenary);
 		}
 
 		ReleaseStorageInteractionReservation(mercenary);
