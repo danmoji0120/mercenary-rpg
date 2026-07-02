@@ -25,7 +25,7 @@ public static class CraftRecipeDatabase
             TileBuildType.Workbench,
             CraftRecipeCategory.Processing,
             20,
-            false,
+            true,
             "\uB3CC\uC744 \uB2E4\uB4EC\uC5B4 \uBCBD\uB3CC\uB85C \uB9CC\uB4DC\uB294 \uD6C4\uBCF4 \uB808\uC2DC\uD53C\uC785\uB2C8\uB2E4."),
         Entry(
             "smelt_metal_ingot",
