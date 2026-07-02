@@ -19,6 +19,7 @@ public sealed class CraftRecipeEntry
         DisplayName = displayName ?? string.Empty;
         Inputs = CopyPositiveAmounts(inputs);
         Outputs = CopyPositiveAmounts(outputs);
+        OutputEntries = BuildResourceOutputEntries(Outputs);
         RequiredWork = requiredWork > 0.0f ? requiredWork : 0.0f;
         RequiredFacilityType = requiredFacilityType;
         Category = category;
@@ -30,7 +31,9 @@ public sealed class CraftRecipeEntry
     public string RecipeId { get; }
     public string DisplayName { get; }
     public IReadOnlyDictionary<BaseResourceType, int> Inputs { get; }
+    // Resource-only legacy-compatible outputs. Equipment crafting should use OutputEntries in later steps.
     public IReadOnlyDictionary<BaseResourceType, int> Outputs { get; }
+    public IReadOnlyList<CraftOutputEntry> OutputEntries { get; }
     public float RequiredWork { get; }
     public TileBuildType RequiredFacilityType { get; }
     public CraftRecipeCategory Category { get; }
@@ -54,5 +57,20 @@ public sealed class CraftRecipeEntry
         }
 
         return new ReadOnlyDictionary<BaseResourceType, int>(copy);
+    }
+
+    private static IReadOnlyList<CraftOutputEntry> BuildResourceOutputEntries(IReadOnlyDictionary<BaseResourceType, int> outputs)
+    {
+        List<CraftOutputEntry> entries = new();
+
+        foreach (KeyValuePair<BaseResourceType, int> output in outputs)
+        {
+            if (output.Value > 0)
+            {
+                entries.Add(CraftOutputEntry.Resource(output.Key, output.Value));
+            }
+        }
+
+        return new ReadOnlyCollection<CraftOutputEntry>(entries);
     }
 }
