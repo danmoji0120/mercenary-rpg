@@ -68,6 +68,7 @@ public partial class WorldBuildPanel : Control
 	private PanelContainer? _infoPanel;
 	private Label? _selectionLabel;
 	private Label? _infoLabel;
+	private Label? _equipmentInventoryLabel;
 	private GridContainer? _inventoryGrid;
 	private string _activeMainTab = "";
 	private string _activeCategory = StructureCategory;
@@ -995,13 +996,14 @@ public partial class WorldBuildPanel : Control
 			Label emptyLabel = new()
 			{
 				Text = "\uBCF4\uAD00\uD568 \uC5C6\uC74C",
-				CustomMinimumSize = new Vector2(240.0f, 56.0f),
+				CustomMinimumSize = new Vector2(220.0f, 56.0f),
 				VerticalAlignment = VerticalAlignment.Center,
 				HorizontalAlignment = HorizontalAlignment.Center,
 				MouseFilter = MouseFilterEnum.Ignore
 			};
 			emptyLabel.AddThemeFontSizeOverride("font_size", 18);
 			_itemRow.AddChild(emptyLabel);
+			AddEquipmentInventoryPanel();
 			return;
 		}
 
@@ -1019,6 +1021,7 @@ public partial class WorldBuildPanel : Control
 		else
 		{
 			AddStorageOverviewTotalsPanel(storageCells);
+			AddEquipmentInventoryPanel();
 		}
 
 		UpdateCategoryButtonStyles();
@@ -1120,7 +1123,7 @@ public partial class WorldBuildPanel : Control
 		_itemRow.AddChild(summaryPanel);
 
 		PanelContainer contentsPanel = CreatePanel(new Color(0.07f, 0.07f, 0.07f, 0.78f), new Color(0.45f, 0.58f, 0.72f, 0.55f), 6);
-		contentsPanel.CustomMinimumSize = new Vector2(520.0f, 80.0f);
+		contentsPanel.CustomMinimumSize = new Vector2(360.0f, 80.0f);
 		contentsPanel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		contentsPanel.ClipContents = true;
 		ScrollContainer contentScroll = new()
@@ -1139,6 +1142,36 @@ public partial class WorldBuildPanel : Control
 			$"\uC804\uCCB4 \uBCF4\uC720\n{BuildStorageTotalSummary()}",
 			12));
 		_itemRow.AddChild(contentsPanel);
+	}
+
+	private void AddEquipmentInventoryPanel()
+	{
+		if (_itemRow == null)
+		{
+			return;
+		}
+
+		PanelContainer panel = CreatePanel(new Color(0.07f, 0.07f, 0.07f, 0.78f), new Color(0.64f, 0.50f, 0.78f, 0.55f), 6);
+		panel.CustomMinimumSize = new Vector2(320.0f, 80.0f);
+		panel.SizeFlagsHorizontal = SizeFlags.Fill;
+		panel.ClipContents = true;
+
+		ScrollContainer contentScroll = new()
+		{
+			Name = "EquipmentInventoryScroll",
+			CustomMinimumSize = new Vector2(280.0f, 0.0f),
+			MouseFilter = MouseFilterEnum.Stop,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			SizeFlagsVertical = SizeFlags.ExpandFill,
+			ClipContents = true,
+			VerticalScrollMode = ScrollContainer.ScrollMode.Auto,
+			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
+		};
+		panel.AddChild(contentScroll);
+
+		_equipmentInventoryLabel = CreateStorageDetailLabel(BuildEquipmentInventoryText(), 12);
+		contentScroll.AddChild(_equipmentInventoryLabel);
+		_itemRow.AddChild(panel);
 	}
 
 	private void AddStorageManagementSummaryPanel(Vector2I? selectedStorageCell)
@@ -1350,6 +1383,8 @@ public partial class WorldBuildPanel : Control
 		{
 			child.QueueFree();
 		}
+
+		_equipmentInventoryLabel = null;
 	}
 
 	private void AddComingSoonLabel()
@@ -1773,6 +1808,72 @@ public partial class WorldBuildPanel : Control
 			: "\uC5C6\uC74C";
 	}
 
+	private string BuildEquipmentInventoryText()
+	{
+		EquipmentInventoryManager? equipmentInventoryManager = GetEquipmentInventoryManager();
+
+		if (equipmentInventoryManager == null)
+		{
+			return "\uC7A5\uBE44\n\uC7A5\uBE44 \uAD00\uB9AC\uC790 \uC5C6\uC74C";
+		}
+
+		IReadOnlyList<EquipmentInstance> equipment = equipmentInventoryManager.GetAllEquipment();
+
+		if (equipment.Count <= 0)
+		{
+			return "\uC7A5\uBE44\n\uC81C\uC791\uB41C \uC7A5\uBE44 \uC5C6\uC74C";
+		}
+
+		List<string> lines = new()
+		{
+			$"\uC7A5\uBE44 {equipment.Count}"
+		};
+
+		foreach (EquipmentInstance item in equipment)
+		{
+			if (item == null)
+			{
+				continue;
+			}
+
+			string equippedText = item.IsEquipped ? "\uC7A5\uCC29" : "\uBBF8\uC7A5\uCC29";
+
+			if (EquipmentDefinitionDatabase.TryGet(item.DefinitionId, out EquipmentDefinitionEntry? definition))
+			{
+				lines.Add(
+					$"{definition.DisplayName} / {GetEquipmentSlotDisplayName(definition.SlotType)} / "
+					+ $"\uACF5\uACA9 +{definition.AttackBonus} / \uBC29\uC5B4 +{definition.DefenseBonus} / "
+					+ $"\uB0B4\uAD6C\uB3C4 {item.Durability}/{item.MaxDurability} / {equippedText}");
+			}
+			else
+			{
+				lines.Add(
+					$"{item.DefinitionId} / \uC54C \uC218 \uC5C6\uB294 \uC2AC\uB86F / "
+					+ $"\uB0B4\uAD6C\uB3C4 {item.Durability}/{item.MaxDurability} / {equippedText}");
+			}
+		}
+
+		return string.Join("\n", lines);
+	}
+
+	private EquipmentInventoryManager? GetEquipmentInventoryManager()
+	{
+		return GetTree().CurrentScene?.GetNodeOrNull<EquipmentInventoryManager>("EquipmentInventoryManager");
+	}
+
+	private static string GetEquipmentSlotDisplayName(EquipmentSlotType slotType)
+	{
+		return slotType switch
+		{
+			EquipmentSlotType.Weapon => "\uBB34\uAE30",
+			EquipmentSlotType.Armor => "\uAC11\uC637",
+			EquipmentSlotType.Shield => "\uBC29\uD328",
+			EquipmentSlotType.Accessory => "\uC7A5\uC2E0\uAD6C",
+			EquipmentSlotType.Tool => "\uB3C4\uAD6C",
+			_ => slotType.ToString()
+		};
+	}
+
 	private void CycleStoragePriority(Vector2I storageCell)
 	{
 		if (_buildManager == null)
@@ -1855,6 +1956,13 @@ public partial class WorldBuildPanel : Control
 			&& _buildManager.TryResolveStorageOriginCell(_selectedStorageCell.Value, out Vector2I originCell))
 		{
 			ShowStorageInfo(originCell);
+		}
+
+		if (_equipmentInventoryLabel != null
+			&& GodotObject.IsInstanceValid(_equipmentInventoryLabel)
+			&& !_equipmentInventoryLabel.IsQueuedForDeletion())
+		{
+			_equipmentInventoryLabel.Text = BuildEquipmentInventoryText();
 		}
 
 		UpdateStorageButtonStyles();
