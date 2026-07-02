@@ -13,6 +13,8 @@ public partial class CraftingPanel : Control
     private PanelContainer? _panel;
     private Label? _facilityLabel;
     private Label? _jobStatusLabel;
+    private Button? _cancelJobButton;
+    private Label? _cancelReasonLabel;
     private VBoxContainer? _recipeList;
     private Label? _statusLabel;
     private Vector2I _facilityOriginCell;
@@ -123,6 +125,30 @@ public partial class CraftingPanel : Control
 
         _jobStatusLabel = CreateLabel("-", 11, false);
         content.AddChild(_jobStatusLabel);
+
+        HBoxContainer cancelRow = new()
+        {
+            Name = "CraftingCancelRow",
+            MouseFilter = MouseFilterEnum.Ignore
+        };
+        cancelRow.AddThemeConstantOverride("separation", 6);
+        content.AddChild(cancelRow);
+
+        _cancelJobButton = new Button
+        {
+            Text = "\uC791\uC5C5 \uCDE8\uC18C",
+            CustomMinimumSize = new Vector2(92.0f, 26.0f),
+            FocusMode = FocusModeEnum.None,
+            MouseFilter = MouseFilterEnum.Stop,
+            Visible = false
+        };
+        _cancelJobButton.AddThemeFontSizeOverride("font_size", 11);
+        _cancelJobButton.Pressed += TryCancelActiveJob;
+        cancelRow.AddChild(_cancelJobButton);
+
+        _cancelReasonLabel = CreateLabel("", 10, false);
+        _cancelReasonLabel.Visible = false;
+        cancelRow.AddChild(_cancelReasonLabel);
 
         content.AddChild(new HSeparator
         {
@@ -336,18 +362,21 @@ public partial class CraftingPanel : Control
         if (_facilityType == TileBuildType.None)
         {
             _jobStatusLabel.Text = "\uD604\uC7AC \uC791\uC5C5: -";
+            UpdateCancelControls(null);
             return;
         }
 
         if (_craftingManager == null)
         {
             _jobStatusLabel.Text = "\uD604\uC7AC \uC791\uC5C5: \uC81C\uC791 \uAD00\uB9AC\uC790 \uC5C6\uC74C";
+            UpdateCancelControls(null);
             return;
         }
 
         if (!_craftingManager.TryGetJobAtFacility(_facilityOriginCell, out CraftJob? job) || job == null)
         {
             _jobStatusLabel.Text = "\uD604\uC7AC \uC791\uC5C5: \uC5C6\uC74C";
+            UpdateCancelControls(null);
             return;
         }
 
@@ -355,6 +384,111 @@ public partial class CraftingPanel : Control
             ? recipe.DisplayName
             : job.RecipeId;
         _jobStatusLabel.Text = $"\uD604\uC7AC \uC791\uC5C5: {recipeName} / {FormatJobState(job)}";
+        UpdateCancelControls(job);
+    }
+
+    private void UpdateCancelControls(CraftJob? job)
+    {
+        if (_cancelJobButton == null || _cancelReasonLabel == null)
+        {
+            return;
+        }
+
+        if (job == null)
+        {
+            _cancelJobButton.Visible = false;
+            _cancelReasonLabel.Visible = false;
+            _cancelReasonLabel.Text = "";
+            return;
+        }
+
+        bool canCancel = CanSafeCancelWithoutResourceLoss(job, out string reason);
+        _cancelJobButton.Visible = true;
+        _cancelJobButton.Disabled = !canCancel;
+        _cancelReasonLabel.Visible = true;
+        _cancelReasonLabel.Text = canCancel ? "\uC548\uC804 \uCDE8\uC18C \uAC00\uB2A5" : reason;
+    }
+
+    private void TryCancelActiveJob()
+    {
+        if (_craftingManager == null)
+        {
+            SetStatus("\uC81C\uC791 \uAD00\uB9AC\uC790 \uC5C6\uC74C");
+            return;
+        }
+
+        if (!_craftingManager.TryGetJobAtFacility(_facilityOriginCell, out CraftJob? job) || job == null)
+        {
+            SetStatus("\uCDE8\uC18C\uD560 \uC791\uC5C5 \uC5C6\uC74C");
+            RefreshRecipes();
+            return;
+        }
+
+        if (!CanSafeCancelWithoutResourceLoss(job, out string reason))
+        {
+            SetStatus(reason);
+            RefreshRecipes();
+            return;
+        }
+
+        if (_craftingManager.CancelJob(job))
+        {
+            SetStatus("\uC791\uC5C5 \uCDE8\uC18C\uB428");
+            RefreshRecipes();
+            return;
+        }
+
+        SetStatus("\uC791\uC5C5 \uCDE8\uC18C \uC2E4\uD328");
+        RefreshRecipes();
+    }
+
+    private static bool CanSafeCancelWithoutResourceLoss(CraftJob job, out string reason)
+    {
+        if (job == null || job.IsCompleted || job.IsCancelled)
+        {
+            reason = "\uCDE8\uC18C\uD560 \uC791\uC5C5 \uC5C6\uC74C";
+            return false;
+        }
+
+        if (job.ProducedOutputs.Count > 0)
+        {
+            reason = "\uCD9C\uB825 \uB300\uAE30 \uC911 \uCDE8\uC18C\uB294 \uC544\uC9C1 \uBD88\uAC00";
+            return false;
+        }
+
+        if (HasDeliveredInputs(job))
+        {
+            reason = "\uC7AC\uB8CC \uD22C\uC785 \uD6C4 \uCDE8\uC18C\uB294 \uC544\uC9C1 \uBD88\uAC00";
+            return false;
+        }
+
+        if (job.State == CraftJobState.WaitingForMaterials)
+        {
+            reason = string.Empty;
+            return true;
+        }
+
+        reason = job.State switch
+        {
+            CraftJobState.ReadyToCraft => "\uC7AC\uB8CC \uD22C\uC785 \uD6C4 \uCDE8\uC18C\uB294 \uC544\uC9C1 \uBD88\uAC00",
+            CraftJobState.Crafting => "\uC81C\uC791 \uC911 \uCDE8\uC18C\uB294 \uC544\uC9C1 \uBD88\uAC00",
+            CraftJobState.OutputReady => "\uCD9C\uB825 \uB300\uAE30 \uC911 \uCDE8\uC18C\uB294 \uC544\uC9C1 \uBD88\uAC00",
+            _ => "\uC791\uC5C5 \uC0C1\uD0DC\uC0C1 \uCDE8\uC18C \uBD88\uAC00"
+        };
+        return false;
+    }
+
+    private static bool HasDeliveredInputs(CraftJob job)
+    {
+        foreach (KeyValuePair<BaseResourceType, int> input in job.InputsDelivered)
+        {
+            if (input.Value > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static string FormatJobState(CraftJob job)
