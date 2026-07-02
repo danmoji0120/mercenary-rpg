@@ -287,6 +287,7 @@ public partial class MercenaryLifeAI : Node
 	private bool _isCarryingResource;
 	private bool _isHaulingToStorage;
 	private bool _isDepositingToStorage;
+	private bool _preserveCarriedResourceOnDepositFailure;
 	private float _storageInteractionTimer;
 	private float _storageInteractionDuration;
 	private Vector2I? _reservedStorageInteractionCell;
@@ -680,6 +681,14 @@ public partial class MercenaryLifeAI : Node
 			return;
 		}
 
+		if (buildManager != null
+			&& mercenary != null
+			&& IsWorkEnabled(mercenary, MercenaryWorkType.Haul)
+			&& TrySelectInventoryDepositWork(mercenary, buildManager))
+		{
+			return;
+		}
+
 		List<Node2D> selectableLifePoints = GetSelectableLifePoints();
 
 		Node2D? previousPoint = _targetPoint;
@@ -984,6 +993,52 @@ public partial class MercenaryLifeAI : Node
 		ClearPatrolDetection();
 		SetCurrentWorkStatus(MercenaryWorkType.Build, $"{BaseBuildManager.GetResourceDisplayName(resourceType)} x{amount} \u2192 {site.DisplayName}", "\uCC3D\uACE0\uB85C \uC774\uB3D9 \uC911", "\uAC74\uC124 \uC608\uC815\uC9C0 \uC7AC\uB8CC \uBD80\uC871");
 		return true;
+	}
+
+	private bool TrySelectInventoryDepositWork(MercenaryController mercenary, BaseBuildManager buildManager)
+	{
+		if (_isCarryingResource || mercenary.Inventory.IsEmpty())
+		{
+			return false;
+		}
+
+		Vector2I startCell = buildManager.WorldToCell(mercenary.GlobalPosition);
+
+		foreach (MercenaryInventoryStack stack in mercenary.Inventory.Stacks)
+		{
+			if (stack.Amount <= 0 || !ResourceDefinitionDatabase.IsStoredResource(stack.ResourceType))
+			{
+				continue;
+			}
+
+			if (!buildManager.TryFindNearestStorageAccessWithSpace(startCell, stack.ResourceType, out Vector2I storageCell, out Vector2I accessCell))
+			{
+				continue;
+			}
+
+			_carriedResourceType = stack.ResourceType;
+			_carriedResourceAmount = stack.Amount;
+			_isCarryingResource = true;
+			_isHaulingToStorage = true;
+			_preserveCarriedResourceOnDepositFailure = true;
+			_targetStorageCell = storageCell;
+			_targetStorageAccessCell = accessCell;
+			_targetPoint = null;
+			CurrentLifeAction = "Haul";
+			_waitTimer = 0.0f;
+			_hasPathToTarget = false;
+			_usingFacilityTarget = false;
+			_isPatrolling = false;
+			ClearPatrolDetection();
+			SetCurrentWorkStatus(
+				MercenaryWorkType.Haul,
+				BaseBuildManager.GetResourceDisplayName(stack.ResourceType),
+				"\uC790\uC6D0 \uBC30\uC1A1 \uC911",
+				"\uAC00\uBC29 \uC790\uC6D0 \uC785\uACE0");
+			return true;
+		}
+
+		return false;
 	}
 
 	private bool TrySelectCraftOutputPickup(MercenaryController mercenary, BaseBuildManager buildManager, Node2D? previousPoint, List<Node2D> selectableLifePoints)
@@ -2307,8 +2362,11 @@ public partial class MercenaryLifeAI : Node
 			"Picked up craft output",
 			"Craft output ready");
 		ResetCraftState(mercenary, false);
+
+		bool startedDeposit = TryGetFirstStoredOutput(outputs, mercenary, out _, out _)
+			&& TrySelectInventoryDepositWork(mercenary, buildManager);
 		RunLogisticsValidation(mercenary);
-		return true;
+		return !startedDeposit;
 	}
 
 	private bool UpdateConstructionWithdrawWork(MercenaryController mercenary, BaseBuildManager buildManager, double delta)
@@ -2598,6 +2656,33 @@ public partial class MercenaryLifeAI : Node
 		}
 
 		return totalWeight > 0.0f && mercenary.Inventory.GetFreeWeight() + 0.01f >= totalWeight;
+	}
+
+	private static bool TryGetFirstStoredOutput(IReadOnlyDictionary<BaseResourceType, int> outputs, MercenaryController mercenary, out BaseResourceType resourceType, out int amount)
+	{
+		resourceType = BaseResourceType.Wood;
+		amount = 0;
+
+		foreach (KeyValuePair<BaseResourceType, int> output in outputs)
+		{
+			if (output.Value <= 0 || !ResourceDefinitionDatabase.IsStoredResource(output.Key))
+			{
+				continue;
+			}
+
+			int inventoryAmount = mercenary.Inventory.GetAmount(output.Key);
+
+			if (inventoryAmount <= 0)
+			{
+				continue;
+			}
+
+			resourceType = output.Key;
+			amount = inventoryAmount;
+			return true;
+		}
+
+		return false;
 	}
 
 	private static bool TryValidateCraftFacility(BaseBuildManager buildManager, CraftJob job, out Vector2I facilityOriginCell)
@@ -3194,6 +3279,12 @@ public partial class MercenaryLifeAI : Node
 			{
 				if (!buildManager.TryFindNearestStorageAccessWithSpace(startCell, _carriedResourceType, out Vector2I deliveryStorageCell, out Vector2I deliveryAccessCell))
 				{
+					if (_preserveCarriedResourceOnDepositFailure)
+					{
+						AbortCarriedResourceDepositWithoutDrop("Storage unavailable");
+						return false;
+					}
+
 					DropCarriedResourceAtCurrentCell(mercenary);
 					ResetHaulState(false);
 					return false;
@@ -3214,6 +3305,12 @@ public partial class MercenaryLifeAI : Node
 			if (DebugHauling)
 			{
 				GD.Print($"{mercenary.MercenaryName} haul delivery path failed, dropping {_carriedResourceType} x{_carriedResourceAmount}");
+			}
+
+			if (_preserveCarriedResourceOnDepositFailure)
+			{
+				AbortCarriedResourceDepositWithoutDrop("Storage path failed");
+				return false;
 			}
 
 			DropCarriedResourceAtCurrentCell(mercenary);
@@ -3408,6 +3505,12 @@ public partial class MercenaryLifeAI : Node
 		{
 			if (!buildManager.TryFindNearestStorageAccessWithSpace(deliveryCell, _carriedResourceType, out Vector2I storageCell, out Vector2I accessCell))
 			{
+				if (_preserveCarriedResourceOnDepositFailure)
+				{
+					AbortCarriedResourceDepositWithoutDrop("Storage unavailable");
+					return true;
+				}
+
 				DropCarriedResourceAtCurrentCell(mercenary);
 				ResetHaulState(false);
 				return true;
@@ -3423,6 +3526,12 @@ public partial class MercenaryLifeAI : Node
 		if (deliveryCell != _targetStorageAccessCell.Value
 			&& GetManhattanDistance(deliveryCell, _targetStorageCell.Value) > 1)
 		{
+			if (_preserveCarriedResourceOnDepositFailure)
+			{
+				AbortCarriedResourceDepositWithoutDrop("Storage path failed");
+				return true;
+			}
+
 			DropCarriedResourceAtCurrentCell(mercenary);
 			ResetHaulState(false);
 			return true;
@@ -3441,6 +3550,12 @@ public partial class MercenaryLifeAI : Node
 
 		if (buildManager.IsStorageInteractionReservedByOther(_targetStorageCell.Value, mercenary))
 		{
+			if (_preserveCarriedResourceOnDepositFailure)
+			{
+				AbortCarriedResourceDepositWithoutDrop("Storage busy");
+				return true;
+			}
+
 			DropCarriedResourceAtCurrentCell(mercenary);
 			ResetHaulState(false);
 			return true;
@@ -3467,6 +3582,13 @@ public partial class MercenaryLifeAI : Node
 			{
 				_isDepositingToStorage = false;
 				_reservedStorageInteractionCell = null;
+
+				if (_preserveCarriedResourceOnDepositFailure)
+				{
+					AbortCarriedResourceDepositWithoutDrop("Storage busy");
+					return true;
+				}
+
 				DropCarriedResourceAtCurrentCell(mercenary);
 				ResetHaulState(false);
 				return true;
@@ -3523,6 +3645,13 @@ public partial class MercenaryLifeAI : Node
 
 		if (remainingAmount > 0)
 		{
+			if (_preserveCarriedResourceOnDepositFailure)
+			{
+				AbortCarriedResourceDepositWithoutDrop("Storage full");
+				RunLogisticsValidation(mercenary);
+				return true;
+			}
+
 			DropCarriedResourceAtCurrentCell(mercenary);
 		}
 
@@ -4734,6 +4863,7 @@ public partial class MercenaryLifeAI : Node
 		_isDepositingToStorage = false;
 		_isCarryingResource = false;
 		_isHaulingToStorage = false;
+		_preserveCarriedResourceOnDepositFailure = false;
 		_carriedResourceAmount = 0;
 		_storageInteractionTimer = 0.0f;
 		_storageInteractionDuration = 0.0f;
@@ -4753,6 +4883,22 @@ public partial class MercenaryLifeAI : Node
 		{
 			RunLogisticsValidation(mercenary);
 		}
+	}
+
+	private void AbortCarriedResourceDepositWithoutDrop(string reason)
+	{
+		_isDepositingToStorage = false;
+		_isCarryingResource = false;
+		_isHaulingToStorage = false;
+		_preserveCarriedResourceOnDepositFailure = false;
+		_carriedResourceAmount = 0;
+		_storageInteractionTimer = 0.0f;
+		_storageInteractionDuration = 0.0f;
+		_reservedStorageInteractionCell = null;
+		_targetStorageCell = null;
+		_targetStorageAccessCell = null;
+		ClearUseProgress();
+		SetIdleWorkStatus(reason);
 	}
 
 	private void ReleaseStorageInteractionReservation(MercenaryController? mercenary)
