@@ -40,6 +40,16 @@ public partial class WorldBuildPanel : Control
 	private const string ComingSoon = "\uC900\uBE44 \uC911";
 	private const string NoSelection = "\uC120\uD0DD \uC5C6\uC74C";
 	private static readonly bool ShowStockpileZoneControls = false;
+	private const float ManagementPanelLeftMargin = 12.0f;
+	private const float ManagementPanelRightMargin = 12.0f;
+	private const float ManagementPanelRightReservedWidth = 240.0f;
+	private const float ManagementPanelBottomReservedHeight = 176.0f;
+	private const float ManagementPanelBottomMargin = 12.0f;
+	private const float ManagementPanelTopMargin = 12.0f;
+	private const float ManagementPanelMinHeight = 180.0f;
+	private const float ManagementPanelPreferredHeight = 260.0f;
+	private const float ManagementPanelMaxViewportRatio = 0.48f;
+	private const float ManagementPanelMinWidth = 520.0f;
 
 	private readonly List<Button> _mainTabButtons = new();
 	private readonly Dictionary<string, Button> _categoryButtons = new();
@@ -121,9 +131,11 @@ public partial class WorldBuildPanel : Control
 			if (_storageListRefreshTimer <= 0.0f)
 			{
 				_storageListRefreshTimer = 1.0f;
-				PopulateStorageOverview();
+				RefreshStorageOverviewText();
 			}
 		}
+
+		UpdateManagementPanelLayout();
 	}
 
 	public void SetBuildManager(BaseBuildManager? buildManager)
@@ -549,23 +561,29 @@ public partial class WorldBuildPanel : Control
 		_bottomPanel = CreatePanel(new Color(0.10f, 0.10f, 0.10f, 0.82f), new Color(0.82f, 0.62f, 0.34f, 0.36f), 4);
 		_bottomPanel.Name = "BuildBottomPanel";
 		_bottomPanel.MouseFilter = MouseFilterEnum.Stop;
-		_bottomPanel.AnchorLeft = 0.22f;
-		_bottomPanel.AnchorRight = 0.0f;
-		_bottomPanel.AnchorTop = 1.0f;
-		_bottomPanel.AnchorBottom = 1.0f;
-		_bottomPanel.OffsetLeft = 0.0f;
-		_bottomPanel.OffsetRight = 0.0f;
-		_bottomPanel.OffsetTop = -170.0f;
-		_bottomPanel.OffsetBottom = -8.0f;
+		_bottomPanel.SetAnchorsPreset(LayoutPreset.BottomLeft, false);
+		_bottomPanel.GrowVertical = GrowDirection.Begin;
+		_bottomPanel.ClipContents = true;
+		_bottomPanel.CustomMinimumSize = Vector2.Zero;
+		_bottomPanel.OffsetLeft = ManagementPanelLeftMargin;
+		_bottomPanel.OffsetRight = ManagementPanelLeftMargin + ManagementPanelMinWidth;
+		_bottomPanel.OffsetBottom = -ManagementPanelBottomMargin;
+		_bottomPanel.OffsetTop = _bottomPanel.OffsetBottom - ManagementPanelPreferredHeight;
+		_bottomPanel.Size = new Vector2(ManagementPanelMinWidth, ManagementPanelPreferredHeight);
 		_bottomPanel.Visible = false;
 		AddChild(_bottomPanel);
+		UpdateManagementPanelLayout();
 
 		VBoxContainer root = new()
 		{
 			Name = "BuildPanelRows",
-			MouseFilter = MouseFilterEnum.Ignore
+			MouseFilter = MouseFilterEnum.Ignore,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			SizeFlagsVertical = SizeFlags.ExpandFill,
+			ClipContents = true,
+			CustomMinimumSize = Vector2.Zero
 		};
-		root.AddThemeConstantOverride("separation", 8);
+		root.AddThemeConstantOverride("separation", 6);
 		_bottomPanel.AddChild(root);
 
 		_selectionLabel = new Label
@@ -590,8 +608,11 @@ public partial class WorldBuildPanel : Control
 		ScrollContainer itemScroll = new()
 		{
 			Name = "BuildItemScroll",
-			CustomMinimumSize = new Vector2(0.0f, 80.0f),
+			CustomMinimumSize = Vector2.Zero,
 			MouseFilter = MouseFilterEnum.Stop,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			SizeFlagsVertical = SizeFlags.ExpandFill,
+			ClipContents = true,
 			VerticalScrollMode = ScrollContainer.ScrollMode.Disabled,
 			HorizontalScrollMode = ScrollContainer.ScrollMode.Auto
 		};
@@ -600,7 +621,11 @@ public partial class WorldBuildPanel : Control
 		_itemRow = new HBoxContainer
 		{
 			Name = "BuildItems",
-			MouseFilter = MouseFilterEnum.Ignore
+			MouseFilter = MouseFilterEnum.Ignore,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			SizeFlagsVertical = SizeFlags.Fill,
+			ClipContents = true,
+			CustomMinimumSize = Vector2.Zero
 		};
 		_itemRow.AddThemeConstantOverride("separation", 10);
 		itemScroll.AddChild(_itemRow);
@@ -608,13 +633,55 @@ public partial class WorldBuildPanel : Control
 		_categoryRow = new HBoxContainer
 		{
 			Name = "BuildCategories",
-			MouseFilter = MouseFilterEnum.Ignore
+			MouseFilter = MouseFilterEnum.Ignore,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			ClipContents = true,
+			CustomMinimumSize = Vector2.Zero
 		};
 		_categoryRow.AddThemeConstantOverride("separation", 8);
 		root.AddChild(_categoryRow);
 
 		RebuildCategoryButtons(GetBuildCategories());
 		PopulateBuildItems(StructureCategory);
+	}
+
+	private void UpdateManagementPanelLayout()
+	{
+		if (_bottomPanel == null)
+		{
+			return;
+		}
+
+		Vector2 viewportSize = GetViewportRect().Size;
+		float maxPanelWidth = Mathf.Max(280.0f, viewportSize.X - ManagementPanelLeftMargin - ManagementPanelRightReservedWidth - ManagementPanelRightMargin);
+		float panelWidth = Mathf.Clamp(maxPanelWidth, 280.0f, maxPanelWidth);
+
+		float viewportHeightCap = Mathf.Max(ManagementPanelMinHeight, viewportSize.Y * ManagementPanelMaxViewportRatio);
+		float availableHeightCap = Mathf.Max(ManagementPanelMinHeight, viewportSize.Y - ManagementPanelTopMargin - ManagementPanelBottomMargin);
+		float maxPanelHeight = Mathf.Min(viewportHeightCap, availableHeightCap);
+		float panelHeight = Mathf.Clamp(ManagementPanelPreferredHeight, ManagementPanelMinHeight, maxPanelHeight);
+		float requestedBottomReserve = ShouldReserveSelectedMercenaryHudSpace()
+			? ManagementPanelBottomReservedHeight
+			: ManagementPanelBottomMargin;
+		float maxBottomReserve = Mathf.Max(ManagementPanelBottomMargin, viewportSize.Y - panelHeight - ManagementPanelTopMargin);
+		float bottomReserve = Mathf.Min(requestedBottomReserve, maxBottomReserve);
+
+		_bottomPanel.SetAnchorsPreset(LayoutPreset.BottomLeft, false);
+		_bottomPanel.GrowVertical = GrowDirection.Begin;
+		_bottomPanel.ClipContents = true;
+		_bottomPanel.CustomMinimumSize = Vector2.Zero;
+		_bottomPanel.OffsetLeft = ManagementPanelLeftMargin;
+		_bottomPanel.OffsetRight = ManagementPanelLeftMargin + panelWidth;
+		_bottomPanel.OffsetBottom = -bottomReserve;
+		_bottomPanel.OffsetTop = _bottomPanel.OffsetBottom - panelHeight;
+		_bottomPanel.Size = new Vector2(panelWidth, panelHeight);
+	}
+
+	private bool ShouldReserveSelectedMercenaryHudSpace()
+	{
+		return _selectedMercenary != null
+			&& GodotObject.IsInstanceValid(_selectedMercenary)
+			&& !_selectedMercenary.IsQueuedForDeletion();
 	}
 
 	private static string[] GetBuildCategories()
@@ -741,7 +808,7 @@ public partial class WorldBuildPanel : Control
 
 		foreach (string category in categories)
 		{
-			Button button = CreateButton(category, new Vector2(116.0f, 34.0f));
+			Button button = CreateButton(category, new Vector2(98.0f, 34.0f));
 			button.Pressed += () => PopulateCategory(category);
 			_categoryRow.AddChild(button);
 			_categoryButtons[category] = button;
@@ -903,12 +970,10 @@ public partial class WorldBuildPanel : Control
 	private void PopulateStorageOverview()
 	{
 		_activeCategory = StorageOverviewCategory;
-		UpdateCategoryButtonStyles();
 		ClearItemRow();
 		_itemButtons.Clear();
 		_roomButtons.Clear();
 		_mercenaryButtons.Clear();
-		_storageButtons.Clear();
 		RebuildMaterialButtons();
 
 		if (_itemRow == null)
@@ -923,6 +988,7 @@ public partial class WorldBuildPanel : Control
 		}
 
 		IReadOnlyList<Vector2I> storageCells = _buildManager.GetStorageOriginCells();
+		RebuildStorageSelectorButtons(storageCells);
 
 		if (storageCells.Count == 0)
 		{
@@ -939,55 +1005,129 @@ public partial class WorldBuildPanel : Control
 			return;
 		}
 
-		if (!_selectedStorageCell.HasValue || !_buildManager.TryResolveStorageOriginCell(_selectedStorageCell.Value, out _))
+		if (_selectedStorageCell.HasValue && !_buildManager.TryResolveStorageOriginCell(_selectedStorageCell.Value, out _))
 		{
-			_selectedStorageCell = storageCells[0];
+			_selectedStorageCell = null;
 		}
 
-		AddStorageManagementListPanel(storageCells);
-		AddStorageManagementContentsPanel(_selectedStorageCell);
-		AddStorageManagementPolicyPanel(_selectedStorageCell);
+		if (_selectedStorageCell.HasValue)
+		{
+			AddStorageManagementContentsPanel(_selectedStorageCell);
+			AddStorageManagementPolicyPanel(_selectedStorageCell);
+		}
+		else
+		{
+			AddStorageOverviewTotalsPanel(storageCells);
+		}
+
+		UpdateCategoryButtonStyles();
 		UpdateStorageButtonStyles();
 	}
 
-	private void AddStorageManagementListPanel(IReadOnlyList<Vector2I> storageCells)
+	private void RebuildStorageSelectorButtons(IReadOnlyList<Vector2I> storageCells)
+	{
+		if (_categoryRow == null || _buildManager == null)
+		{
+			return;
+		}
+
+		foreach (Node child in _categoryRow.GetChildren())
+		{
+			child.QueueFree();
+		}
+
+		_categoryButtons.Clear();
+		_storageButtons.Clear();
+
+		Button allButton = CreateButton(StorageOverviewCategory, new Vector2(104.0f, 34.0f));
+		allButton.Pressed += SelectStorageOverviewAll;
+		PrepareSingleLineButton(allButton);
+		_categoryRow.AddChild(allButton);
+		_categoryButtons[StorageOverviewCategory] = allButton;
+
+		if (ShowStockpileZoneControls)
+		{
+			Button addZoneButton = CreateButton("\uC800\uC7A5 \uAD6C\uC5ED \uC9C0\uC815", new Vector2(118.0f, 34.0f));
+			addZoneButton.AddThemeFontSizeOverride("font_size", 10);
+			PrepareSingleLineButton(addZoneButton);
+			addZoneButton.Pressed += () => StockpileZoneDesignationSelected?.Invoke(false);
+			_categoryRow.AddChild(addZoneButton);
+
+			Button removeZoneButton = CreateButton("\uAD6C\uC5ED \uC0AD\uC81C", new Vector2(96.0f, 34.0f));
+			removeZoneButton.AddThemeFontSizeOverride("font_size", 10);
+			PrepareSingleLineButton(removeZoneButton);
+			removeZoneButton.Pressed += () => StockpileZoneDesignationSelected?.Invoke(true);
+			_categoryRow.AddChild(removeZoneButton);
+		}
+
+		ScrollContainer selectorScroll = new()
+		{
+			Name = "StorageSelectorScroll",
+			CustomMinimumSize = Vector2.Zero,
+			MouseFilter = MouseFilterEnum.Stop,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			ClipContents = true,
+			VerticalScrollMode = ScrollContainer.ScrollMode.Disabled,
+			HorizontalScrollMode = ScrollContainer.ScrollMode.Auto
+		};
+		_categoryRow.AddChild(selectorScroll);
+
+		HBoxContainer selectorRow = new()
+		{
+			Name = "StorageSelectorRow",
+			MouseFilter = MouseFilterEnum.Ignore,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			ClipContents = true
+		};
+		selectorRow.AddThemeConstantOverride("separation", 6);
+		selectorScroll.AddChild(selectorRow);
+
+		Dictionary<string, int> nameTotals = BuildStorageNameTotals(storageCells);
+		Dictionary<string, int> nameSeen = new();
+
+		foreach (Vector2I storageCell in storageCells)
+		{
+			string buttonText = GetStorageSelectorButtonText(storageCell, nameTotals, nameSeen);
+			Button button = CreateButton(buttonText, new Vector2(116.0f, 34.0f));
+			button.AddThemeFontSizeOverride("font_size", 12);
+			PrepareSingleLineButton(button);
+			button.Pressed += () => SelectStorageItem(storageCell);
+			selectorRow.AddChild(button);
+			_storageButtons[storageCell] = button;
+		}
+
+		UpdateCategoryButtonStyles();
+		UpdateStorageButtonStyles();
+	}
+
+	private void AddStorageOverviewTotalsPanel(IReadOnlyList<Vector2I> storageCells)
 	{
 		if (_itemRow == null || _buildManager == null)
 		{
 			return;
 		}
 
-		PanelContainer panel = CreatePanel(new Color(0.06f, 0.06f, 0.06f, 0.78f), new Color(0.70f, 0.48f, 0.22f, 0.55f), 6);
-		panel.CustomMinimumSize = new Vector2(280.0f, 172.0f);
-		VBoxContainer content = new() { MouseFilter = MouseFilterEnum.Stop };
-		panel.AddChild(content);
-
-		Label titleLabel = CreateSmallLabel("\uC800\uC7A5\uACE0 \uAD00\uB9AC\n" + BuildStorageTotalSummary(), 12);
-		content.AddChild(titleLabel);
-
-		if (ShowStockpileZoneControls)
+		PanelContainer panel = CreatePanel(new Color(0.07f, 0.07f, 0.07f, 0.78f), new Color(0.45f, 0.58f, 0.72f, 0.55f), 6);
+		panel.CustomMinimumSize = new Vector2(360.0f, 80.0f);
+		panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		panel.ClipContents = true;
+		ScrollContainer contentScroll = new()
 		{
-			HBoxContainer zoneButtons = new() { MouseFilter = MouseFilterEnum.Stop };
-			content.AddChild(zoneButtons);
-			Button addZoneButton = CreateButton("\uC800\uC7A5 \uAD6C\uC5ED \uC9C0\uC815", new Vector2(118.0f, 28.0f));
-			addZoneButton.AddThemeFontSizeOverride("font_size", 10);
-			addZoneButton.Pressed += () => StockpileZoneDesignationSelected?.Invoke(false);
-			zoneButtons.AddChild(addZoneButton);
-			Button removeZoneButton = CreateButton("\uAD6C\uC5ED \uC0AD\uC81C", new Vector2(96.0f, 28.0f));
-			removeZoneButton.AddThemeFontSizeOverride("font_size", 10);
-			removeZoneButton.Pressed += () => StockpileZoneDesignationSelected?.Invoke(true);
-			zoneButtons.AddChild(removeZoneButton);
-		}
-
-		foreach (Vector2I storageCell in storageCells)
-		{
-			Button button = CreateButton(GetStorageButtonText(storageCell), new Vector2(250.0f, 64.0f));
-			button.AddThemeFontSizeOverride("font_size", 11);
-			button.Pressed += () => SelectStorageItem(storageCell);
-			content.AddChild(button);
-			_storageButtons[storageCell] = button;
-		}
-
+			Name = "StorageOverviewTotalsScroll",
+			CustomMinimumSize = new Vector2(260.0f, 0.0f),
+			MouseFilter = MouseFilterEnum.Stop,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			SizeFlagsVertical = SizeFlags.ExpandFill,
+			ClipContents = true,
+			VerticalScrollMode = ScrollContainer.ScrollMode.Auto,
+			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
+		};
+		panel.AddChild(contentScroll);
+		contentScroll.AddChild(CreateStorageDetailLabel(
+			$"{StorageOverviewCategory}\n"
+			+ $"\uBCF4\uAD00\uD568 {storageCells.Count}\n\n"
+			+ BuildStorageTotalSummary(),
+			12));
 		_itemRow.AddChild(panel);
 	}
 
@@ -1005,10 +1145,22 @@ public partial class WorldBuildPanel : Control
 		string useText = _buildManager.GetStorageInteractionUserLabel(storageCell);
 
 		PanelContainer panel = CreatePanel(new Color(0.07f, 0.07f, 0.07f, 0.78f), new Color(0.45f, 0.58f, 0.72f, 0.55f), 6);
-		panel.CustomMinimumSize = new Vector2(260.0f, 172.0f);
-		VBoxContainer content = new() { MouseFilter = MouseFilterEnum.Stop };
-		panel.AddChild(content);
-		content.AddChild(CreateSmallLabel(
+		panel.CustomMinimumSize = new Vector2(250.0f, 80.0f);
+		panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		panel.ClipContents = true;
+		ScrollContainer contentScroll = new()
+		{
+			Name = "StorageContentsScroll",
+			CustomMinimumSize = new Vector2(220.0f, 0.0f),
+			MouseFilter = MouseFilterEnum.Stop,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			SizeFlagsVertical = SizeFlags.ExpandFill,
+			ClipContents = true,
+			VerticalScrollMode = ScrollContainer.ScrollMode.Auto,
+			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
+		};
+		panel.AddChild(contentScroll);
+		contentScroll.AddChild(CreateStorageDetailLabel(
 			$"{_buildManager.GetStorageDisplayName(storageCell)}\n"
 			+ $"\uBB34\uAC8C {usedWeight} / {capacity}\n"
 			+ $"\uC815\uCC45: {_buildManager.GetStoragePolicySummary(storageCell)}\n"
@@ -1028,32 +1180,53 @@ public partial class WorldBuildPanel : Control
 		Vector2I storageCell = selectedStorageCell.Value;
 		StoragePolicy policy = _buildManager.GetStoragePolicy(storageCell);
 		PanelContainer panel = CreatePanel(new Color(0.07f, 0.07f, 0.07f, 0.78f), new Color(0.72f, 0.62f, 0.30f, 0.55f), 6);
-		panel.CustomMinimumSize = new Vector2(520.0f, 172.0f);
-		HBoxContainer columns = new() { MouseFilter = MouseFilterEnum.Stop };
-		panel.AddChild(columns);
+		panel.CustomMinimumSize = new Vector2(500.0f, 80.0f);
+		panel.ClipContents = true;
+		ScrollContainer policyScroll = new()
+		{
+			Name = "StoragePolicyScroll",
+			CustomMinimumSize = Vector2.Zero,
+			MouseFilter = MouseFilterEnum.Stop,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			SizeFlagsVertical = SizeFlags.ExpandFill,
+			ClipContents = true,
+			VerticalScrollMode = ScrollContainer.ScrollMode.Auto,
+			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
+		};
+		panel.AddChild(policyScroll);
 
-		VBoxContainer left = new() { CustomMinimumSize = new Vector2(150.0f, 150.0f), MouseFilter = MouseFilterEnum.Stop };
+		HBoxContainer columns = new()
+		{
+			MouseFilter = MouseFilterEnum.Stop,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			SizeFlagsVertical = SizeFlags.Fill,
+			CustomMinimumSize = Vector2.Zero
+		};
+		columns.ClipContents = true;
+		policyScroll.AddChild(columns);
+
+		VBoxContainer left = new() { CustomMinimumSize = new Vector2(136.0f, 72.0f), MouseFilter = MouseFilterEnum.Stop, ClipContents = true };
 		columns.AddChild(left);
 		left.AddChild(CreateSmallLabel("\uC800\uC7A5 \uC120\uD638\uB3C4", 12));
-		Button priorityButton = CreateButton(StoragePolicyHelpers.GetPriorityDisplayName(policy.Priority), new Vector2(132.0f, 34.0f));
+		Button priorityButton = CreateButton(StoragePolicyHelpers.GetPriorityDisplayName(policy.Priority), new Vector2(118.0f, 30.0f));
 		priorityButton.AddThemeFontSizeOverride("font_size", 12);
 		priorityButton.Pressed += () => CycleStoragePriority(storageCell);
 		left.AddChild(priorityButton);
 		left.AddChild(CreateSmallLabel("\n\uC800\uC7A5\uC18C \uC81C\uD55C:\n" + _buildManager.GetStorageLimitText(storageCell), 11));
 
-		VBoxContainer presets = new() { CustomMinimumSize = new Vector2(170.0f, 150.0f), MouseFilter = MouseFilterEnum.Stop };
+		VBoxContainer presets = new() { CustomMinimumSize = new Vector2(148.0f, 72.0f), MouseFilter = MouseFilterEnum.Stop, ClipContents = true };
 		columns.AddChild(presets);
 		presets.AddChild(CreateSmallLabel("\uD504\uB9AC\uC14B", 12));
 		foreach (StoragePolicyPreset preset in GetStoragePresetOrder())
 		{
-			Button button = CreateButton(StoragePolicyHelpers.GetPresetDisplayName(preset), new Vector2(148.0f, 26.0f));
+			Button button = CreateButton(StoragePolicyHelpers.GetPresetDisplayName(preset), new Vector2(132.0f, 24.0f));
 			button.AddThemeFontSizeOverride("font_size", 11);
 			button.Pressed += () => ApplyStoragePreset(storageCell, preset);
 			ApplyButtonStyle(button, policy.Preset == preset ? ButtonTone.SelectedItem : ButtonTone.Item);
 			presets.AddChild(button);
 		}
 
-		VBoxContainer filters = new() { CustomMinimumSize = new Vector2(190.0f, 150.0f), MouseFilter = MouseFilterEnum.Stop };
+		VBoxContainer filters = new() { CustomMinimumSize = new Vector2(178.0f, 72.0f), MouseFilter = MouseFilterEnum.Stop, ClipContents = true };
 		columns.AddChild(filters);
 		filters.AddChild(CreateSmallLabel("\uC0C1\uC138 \uD544\uD130", 12));
 		foreach (StorageResourceCategory category in GetStorageCategoryOrder())
@@ -1061,7 +1234,7 @@ public partial class WorldBuildPanel : Control
 			HBoxContainer row = new() { MouseFilter = MouseFilterEnum.Stop };
 			filters.AddChild(row);
 
-			Button categoryButton = CreateButton(GetCategoryButtonText(policy, category), new Vector2(76.0f, 24.0f));
+			Button categoryButton = CreateButton(GetCategoryButtonText(policy, category), new Vector2(70.0f, 24.0f));
 			categoryButton.AddThemeFontSizeOverride("font_size", 10);
 			categoryButton.Pressed += () => ToggleStorageCategory(storageCell, category);
 			row.AddChild(categoryButton);
@@ -1070,7 +1243,7 @@ public partial class WorldBuildPanel : Control
 			{
 				bool hardAllowed = _buildManager.CanStorageCapabilityAllow(storageCell, resourceType);
 				bool allowed = hardAllowed && policy.UserAllows(resourceType);
-				Button resourceButton = CreateButton(BaseBuildManager.GetResourceMarker(resourceType), new Vector2(34.0f, 24.0f));
+				Button resourceButton = CreateButton(BaseBuildManager.GetResourceMarker(resourceType), new Vector2(30.0f, 24.0f));
 				resourceButton.AddThemeFontSizeOverride("font_size", 10);
 				resourceButton.Disabled = !hardAllowed;
 				resourceButton.Pressed += () => ToggleStorageResource(storageCell, resourceType);
@@ -1292,7 +1465,25 @@ public partial class WorldBuildPanel : Control
 		_selectedRoomRemoveMode = false;
 		_selectedMercenary = null;
 		ShowStorageInfo(originCell);
+		if (_activePanelMode == PanelMode.StorageOverview)
+		{
+			PopulateStorageOverview();
+		}
 		StorageSelected?.Invoke(originCell);
+	}
+
+	private void SelectStorageOverviewAll()
+	{
+		_selectedStorageCell = null;
+		_selectedBuildType = TileBuildType.None;
+		_selectedRoomType = RoomType.None;
+		_selectedRoomRemoveMode = false;
+		_selectedMercenary = null;
+		if (_activePanelMode == PanelMode.StorageOverview)
+		{
+			PopulateStorageOverview();
+		}
+		UpdateSelectionLabel();
 	}
 
 	private void CycleMercenaryWorkPriority(MercenaryController mercenary, MercenaryWorkType workType)
@@ -1601,6 +1792,102 @@ public partial class WorldBuildPanel : Control
 		PopulateStorageOverview();
 	}
 
+	private void RefreshStorageOverviewText()
+	{
+		if (_buildManager == null)
+		{
+			return;
+		}
+
+		IReadOnlyList<Vector2I> storageCells = _buildManager.GetStorageOriginCells();
+		if (!IsStorageOverviewStructureCurrent(storageCells))
+		{
+			PopulateStorageOverview();
+			return;
+		}
+
+		Dictionary<string, int> nameTotals = BuildStorageNameTotals(storageCells);
+		Dictionary<string, int> nameSeen = new();
+
+		foreach (Vector2I storageCell in storageCells)
+		{
+			if (_storageButtons.TryGetValue(storageCell, out Button? button)
+				&& GodotObject.IsInstanceValid(button)
+				&& !button.IsQueuedForDeletion())
+			{
+				button.Text = GetStorageSelectorButtonText(storageCell, nameTotals, nameSeen);
+			}
+		}
+
+		if (_selectedStorageCell.HasValue
+			&& _buildManager.TryResolveStorageOriginCell(_selectedStorageCell.Value, out Vector2I originCell))
+		{
+			ShowStorageInfo(originCell);
+		}
+
+		UpdateStorageButtonStyles();
+		UpdateSelectionLabel();
+	}
+
+	private bool IsStorageOverviewStructureCurrent(IReadOnlyList<Vector2I> storageCells)
+	{
+		if (_storageButtons.Count != storageCells.Count)
+		{
+			return false;
+		}
+
+		foreach (Vector2I storageCell in storageCells)
+		{
+			if (!_storageButtons.TryGetValue(storageCell, out Button? button)
+				|| !GodotObject.IsInstanceValid(button)
+				|| button.IsQueuedForDeletion())
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private Dictionary<string, int> BuildStorageNameTotals(IReadOnlyList<Vector2I> storageCells)
+	{
+		Dictionary<string, int> totals = new();
+
+		if (_buildManager == null)
+		{
+			return totals;
+		}
+
+		foreach (Vector2I storageCell in storageCells)
+		{
+			string displayName = _buildManager.GetStorageDisplayName(storageCell);
+			totals.TryGetValue(displayName, out int count);
+			totals[displayName] = count + 1;
+		}
+
+		return totals;
+	}
+
+	private string GetStorageSelectorButtonText(Vector2I storageCell, Dictionary<string, int> nameTotals, Dictionary<string, int> nameSeen)
+	{
+		if (_buildManager == null)
+		{
+			return "\uBCF4\uAD00\uD568";
+		}
+
+		string displayName = _buildManager.GetStorageDisplayName(storageCell);
+		nameSeen.TryGetValue(displayName, out int seen);
+		seen++;
+		nameSeen[displayName] = seen;
+
+		if (nameTotals.TryGetValue(displayName, out int total) && total > 1)
+		{
+			return $"{displayName} {seen}";
+		}
+
+		return displayName;
+	}
+
 	private static StoragePolicyPreset[] GetStoragePresetOrder()
 	{
 		return new[]
@@ -1651,10 +1938,8 @@ public partial class WorldBuildPanel : Control
 		int capacity = _buildManager.GetStorageWeightCapacity(storageCell);
 		string summary = BuildStorageCompactContentsText(contents);
 
-		return $"{_buildManager.GetStorageDisplayName(storageCell)}\n"
-			+ $"\uBB34\uAC8C {usedWeight}/{capacity}\n"
-			+ $"{_buildManager.GetStoragePolicySummary(storageCell)}\n"
-			+ summary;
+		return $"{_buildManager.GetStorageDisplayName(storageCell)}  {usedWeight}/{capacity}\n"
+			+ $"{_buildManager.GetStoragePolicySummary(storageCell)} / {summary}";
 	}
 
 	private static string BuildStorageContentsText(Dictionary<BaseResourceType, int> contents)
@@ -1830,7 +2115,10 @@ public partial class WorldBuildPanel : Control
 	{
 		foreach (KeyValuePair<string, Button> entry in _categoryButtons)
 		{
-			ApplyButtonStyle(entry.Value, entry.Key == _activeCategory ? ButtonTone.SelectedCategory : ButtonTone.Category);
+			bool selected = _activePanelMode == PanelMode.StorageOverview && entry.Key == StorageOverviewCategory
+				? !_selectedStorageCell.HasValue
+				: entry.Key == _activeCategory;
+			ApplyButtonStyle(entry.Value, selected ? ButtonTone.SelectedCategory : ButtonTone.Category);
 		}
 	}
 
@@ -1915,6 +2203,32 @@ public partial class WorldBuildPanel : Control
 		};
 		label.AddThemeFontSizeOverride("font_size", fontSize);
 		return label;
+	}
+
+	private static Label CreateStorageDetailLabel(string text, int fontSize)
+	{
+		Label label = new()
+		{
+			Text = text,
+			CustomMinimumSize = new Vector2(220.0f, 0.0f),
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			MouseFilter = MouseFilterEnum.Ignore,
+			VerticalAlignment = VerticalAlignment.Top,
+			HorizontalAlignment = HorizontalAlignment.Left,
+			AutowrapMode = TextServer.AutowrapMode.Off,
+			ClipText = true,
+			TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis
+		};
+		label.AddThemeFontSizeOverride("font_size", fontSize);
+		return label;
+	}
+
+	private static void PrepareSingleLineButton(Button button)
+	{
+		button.AutowrapMode = TextServer.AutowrapMode.Off;
+		button.ClipText = true;
+		button.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
+		button.SizeFlagsHorizontal = SizeFlags.Fill;
 	}
 
 	private static Button CreateButton(string text, Vector2 minimumSize)
