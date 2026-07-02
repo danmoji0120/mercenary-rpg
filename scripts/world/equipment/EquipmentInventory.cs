@@ -11,12 +11,7 @@ public sealed class EquipmentInventory
 
     public bool TryAdd(EquipmentInstance instance)
     {
-        if (instance == null || string.IsNullOrWhiteSpace(instance.InstanceId))
-        {
-            return false;
-        }
-
-        if (_itemsById.ContainsKey(instance.InstanceId))
+        if (!CanAdd(instance))
         {
             return false;
         }
@@ -24,6 +19,13 @@ public sealed class EquipmentInventory
         _items.Add(instance);
         _itemsById[instance.InstanceId] = instance;
         return true;
+    }
+
+    public bool CanAdd(EquipmentInstance instance)
+    {
+        return instance != null
+            && !string.IsNullOrWhiteSpace(instance.InstanceId)
+            && !_itemsById.ContainsKey(instance.InstanceId);
     }
 
     public bool TryRemove(string instanceId, out EquipmentInstance? instance)

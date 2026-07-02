@@ -180,6 +180,38 @@ public partial class CraftingManager : Node
         return false;
     }
 
+    public IReadOnlyList<CraftJob> GetEquipmentOutputReadyJobs()
+    {
+        PruneInactiveJobs();
+        List<CraftJob> jobs = new();
+
+        foreach (CraftJob job in _jobs)
+        {
+            job.PruneReservations();
+
+            if (IsActiveJob(job)
+                && job.State == CraftJobState.OutputReady
+                && job.HasProducedEquipmentOutputs)
+            {
+                jobs.Add(job);
+            }
+        }
+
+        return jobs;
+    }
+
+    public bool TryFindEquipmentOutputPickupJob(out CraftJob? job)
+    {
+        foreach (CraftJob candidate in GetEquipmentOutputReadyJobs())
+        {
+            job = candidate;
+            return true;
+        }
+
+        job = null;
+        return false;
+    }
+
     public bool TryGetRecipeForJob(CraftJob job, out CraftRecipeEntry recipe)
     {
         recipe = default!;

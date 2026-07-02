@@ -11,6 +11,61 @@ public partial class EquipmentInventoryManager : Node
         return Inventory.TryAdd(instance);
     }
 
+    public bool CanAddEquipment(EquipmentInstance instance)
+    {
+        return Inventory.CanAdd(instance);
+    }
+
+    public bool CanAddAllEquipment(IEnumerable<EquipmentInstance> instances)
+    {
+        if (instances == null)
+        {
+            return false;
+        }
+
+        HashSet<string> seenIds = new();
+
+        foreach (EquipmentInstance instance in instances)
+        {
+            if (instance == null
+                || string.IsNullOrWhiteSpace(instance.InstanceId)
+                || !seenIds.Add(instance.InstanceId)
+                || !CanAddEquipment(instance))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public bool TryAddAllEquipment(IEnumerable<EquipmentInstance> instances)
+    {
+        if (!CanAddAllEquipment(instances))
+        {
+            return false;
+        }
+
+        List<string> addedIds = new();
+
+        foreach (EquipmentInstance instance in instances)
+        {
+            if (!TryAddEquipment(instance))
+            {
+                foreach (string addedId in addedIds)
+                {
+                    TryRemoveEquipment(addedId, out _);
+                }
+
+                return false;
+            }
+
+            addedIds.Add(instance.InstanceId);
+        }
+
+        return true;
+    }
+
     public bool TryRemoveEquipment(string instanceId, out EquipmentInstance? instance)
     {
         return Inventory.TryRemove(instanceId, out instance);

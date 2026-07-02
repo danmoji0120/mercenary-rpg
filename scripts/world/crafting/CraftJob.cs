@@ -235,9 +235,34 @@ public sealed class CraftJob
         return outputs;
     }
 
+    public IReadOnlyList<EquipmentInstance> TakeAllProducedEquipmentOutputs()
+    {
+        List<EquipmentInstance> outputs = new();
+
+        if (IsCompleted || IsCancelled || State != CraftJobState.OutputReady)
+        {
+            return outputs;
+        }
+
+        outputs.AddRange(_producedEquipmentOutputs);
+        _producedEquipmentOutputs.Clear();
+        TryMarkCompletedIfAllOutputsEmpty();
+        return outputs;
+    }
+
     public bool TryMarkCompletedIfOutputsEmpty()
     {
+        return TryMarkCompletedIfAllOutputsEmpty();
+    }
+
+    public bool TryMarkCompletedIfAllOutputsEmpty()
+    {
         if (IsCompleted || IsCancelled || State != CraftJobState.OutputReady || _producedOutputs.Count > 0)
+        {
+            return false;
+        }
+
+        if (_producedEquipmentOutputs.Count > 0)
         {
             return false;
         }
@@ -276,7 +301,7 @@ public sealed class CraftJob
     {
         PruneReservations();
 
-        if (IsCompleted || IsCancelled || State != CraftJobState.OutputReady || !HasProducedOutputs)
+        if (IsCompleted || IsCancelled || State != CraftJobState.OutputReady || !HasAnyProducedOutputs)
         {
             return false;
         }

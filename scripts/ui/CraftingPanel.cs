@@ -268,7 +268,7 @@ public partial class CraftingPanel : Control
 
         row.AddChild(CreateLabel(recipe.DisplayName, 13, true));
         row.AddChild(CreateLabel($"\uC785\uB825: {FormatInputAmounts(recipe.Inputs)}", 11, false));
-        row.AddChild(CreateLabel($"\uACB0\uACFC: {FormatAmounts(recipe.Outputs)}", 11, false));
+        row.AddChild(CreateLabel($"\uACB0\uACFC: {FormatOutputEntries(recipe.OutputEntries)}", 11, false));
         row.AddChild(CreateLabel($"\uC791\uC5C5\uB7C9: {recipe.RequiredWork:0.0}", 11, false));
 
         CraftJob? activeJob = null;
@@ -560,6 +560,46 @@ public partial class CraftingPanel : Control
         }
 
         return parts.Count == 0 ? "-" : string.Join(", ", parts);
+    }
+
+    private static string FormatOutputEntries(IReadOnlyList<CraftOutputEntry> outputEntries)
+    {
+        List<string> parts = new();
+
+        if (outputEntries != null)
+        {
+            foreach (CraftOutputEntry outputEntry in outputEntries)
+            {
+                if (outputEntry == null || outputEntry.Count <= 0)
+                {
+                    continue;
+                }
+
+                switch (outputEntry.Kind)
+                {
+                    case CraftOutputKind.Resource:
+                        parts.Add($"{ResourceDefinitionDatabase.GetDisplayName(outputEntry.ResourceType)} x{outputEntry.Count}");
+                        break;
+                    case CraftOutputKind.Equipment:
+                        parts.Add($"{GetEquipmentOutputDisplayName(outputEntry.EquipmentDefinitionId)} x{outputEntry.Count}");
+                        break;
+                }
+            }
+        }
+
+        return parts.Count == 0 ? "-" : string.Join(", ", parts);
+    }
+
+    private static string GetEquipmentOutputDisplayName(string definitionId)
+    {
+        if (EquipmentDefinitionDatabase.TryGet(definitionId, out EquipmentDefinitionEntry? definition))
+        {
+            return definition.DisplayName;
+        }
+
+        return string.IsNullOrWhiteSpace(definitionId)
+            ? "\uC54C \uC218 \uC5C6\uB294 \uC7A5\uBE44"
+            : $"\uC54C \uC218 \uC5C6\uB294 \uC7A5\uBE44({definitionId})";
     }
 
     private bool HasMissingInput(CraftRecipeEntry recipe)

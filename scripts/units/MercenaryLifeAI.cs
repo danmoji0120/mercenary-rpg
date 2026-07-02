@@ -743,6 +743,13 @@ public partial class MercenaryLifeAI : Node
 		else if (buildManager != null
 			&& mercenary != null
 			&& IsWorkEnabled(mercenary, MercenaryWorkType.Craft)
+			&& TrySelectCraftEquipmentOutputPickup(mercenary, buildManager, previousPoint, selectableLifePoints))
+		{
+			return;
+		}
+		else if (buildManager != null
+			&& mercenary != null
+			&& IsWorkEnabled(mercenary, MercenaryWorkType.Craft)
 			&& TrySelectCraftOutputPickup(mercenary, buildManager, previousPoint, selectableLifePoints))
 		{
 			return;
@@ -1039,6 +1046,92 @@ public partial class MercenaryLifeAI : Node
 		}
 
 		return false;
+	}
+
+	private bool TrySelectCraftEquipmentOutputPickup(MercenaryController mercenary, BaseBuildManager buildManager, Node2D? previousPoint, List<Node2D> selectableLifePoints)
+	{
+		CraftingManager? craftingManager = GetCraftingManager();
+		EquipmentInventoryManager? equipmentInventoryManager = GetEquipmentInventoryManager();
+
+		if (craftingManager == null || equipmentInventoryManager == null)
+		{
+			return false;
+		}
+
+		Vector2I startCell = buildManager.WorldToCell(mercenary.GlobalPosition);
+		CraftJob? selectedJob = null;
+		Vector2I selectedFacilityAccessCell = default;
+		int bestPathLength = int.MaxValue;
+
+		foreach (CraftJob job in craftingManager.GetEquipmentOutputReadyJobs())
+		{
+			job.PruneReservations();
+
+			if (job.ReservedOutputWorker is { } reservedWorker && reservedWorker != mercenary)
+			{
+				continue;
+			}
+
+			if (!craftingManager.TryGetRecipeForJob(job, out CraftRecipeEntry recipe))
+			{
+				continue;
+			}
+
+			if (!TryValidateCraftFacility(buildManager, job, recipe, out Vector2I facilityOriginCell))
+			{
+				continue;
+			}
+
+			if (!equipmentInventoryManager.CanAddAllEquipment(job.ProducedEquipmentOutputs))
+			{
+				continue;
+			}
+
+			if (!buildManager.TryFindObjectAccessCell(startCell, facilityOriginCell, out Vector2I facilityAccessCell, out int pathLength))
+			{
+				continue;
+			}
+
+			if (pathLength >= bestPathLength)
+			{
+				continue;
+			}
+
+			bestPathLength = pathLength;
+			selectedJob = job;
+			selectedFacilityAccessCell = facilityAccessCell;
+		}
+
+		if (selectedJob == null)
+		{
+			return false;
+		}
+
+		if (!selectedJob.TryReserveOutputPickup(mercenary))
+		{
+			return false;
+		}
+
+		_targetCraftJob = selectedJob;
+		_craftStorageCell = null;
+		_craftStorageAccessCell = null;
+		_craftFacilityAccessCell = selectedFacilityAccessCell;
+		_craftInteractionTimer = 0.0f;
+		_craftInteractionDuration = 0.0f;
+		_targetPoint = GetSafePreviousLifePoint(previousPoint, selectableLifePoints)
+			?? (selectableLifePoints.Count > 0 ? selectableLifePoints[0] : null);
+		CurrentLifeAction = "CraftPickupEquipmentOutput";
+		_waitTimer = 0.0f;
+		_hasPathToTarget = false;
+		_usingFacilityTarget = false;
+		_isPatrolling = false;
+		ClearPatrolDetection();
+		SetCurrentWorkStatus(
+			MercenaryWorkType.Craft,
+			GetCraftEquipmentOutputLabel(selectedJob),
+			"Moving to workbench",
+			"Craft equipment output ready");
+		return true;
 	}
 
 	private bool TrySelectCraftOutputPickup(MercenaryController mercenary, BaseBuildManager buildManager, Node2D? previousPoint, List<Node2D> selectableLifePoints)
@@ -1574,13 +1667,13 @@ public partial class MercenaryLifeAI : Node
 			{
 				ResetCraftState(mercenary, false);
 			}
-			else if (job.State == CraftJobState.OutputReady && !IsCraftPickupOutputAction())
+			else if (job.State == CraftJobState.OutputReady && !IsCraftPickupOutputAction() && !IsCraftPickupEquipmentOutputAction())
 			{
 				ResetCraftState(mercenary, false);
 			}
 			else if (buildManager != null && !TryValidateCraftFacility(buildManager, job, out _))
 			{
-				if (IsCraftPickupOutputAction())
+				if (IsCraftPickupOutputAction() || IsCraftPickupEquipmentOutputAction())
 				{
 					warnings.Add("Craft output pickup had invalid facility");
 				}
@@ -1597,7 +1690,12 @@ public partial class MercenaryLifeAI : Node
 			{
 				ResetCraftState(mercenary, false);
 			}
-			else if (IsCraftPickupOutputAction()
+			else if (IsCraftPickupEquipmentOutputAction()
+				&& !job.HasProducedEquipmentOutputs)
+			{
+				ResetCraftState(mercenary, false);
+			}
+			else if ((IsCraftPickupOutputAction() || IsCraftPickupEquipmentOutputAction())
 				&& job.ReservedOutputWorker is { } reservedOutputWorker
 				&& reservedOutputWorker != mercenary)
 			{
@@ -1924,7 +2022,7 @@ public partial class MercenaryLifeAI : Node
 
 		if (!TryValidateCraftFacility(buildManager, job, out _))
 		{
-			if (!IsCraftPickupOutputAction())
+			if (!IsCraftPickupOutputAction() && !IsCraftPickupEquipmentOutputAction())
 			{
 				job.Cancel();
 			}
@@ -1992,6 +2090,17 @@ public partial class MercenaryLifeAI : Node
 			targetCell = _craftFacilityAccessCell.Value;
 			stateLabel = "Moving to workbench";
 		}
+		else if (IsCraftPickupEquipmentOutputAction())
+		{
+			if (job.State != CraftJobState.OutputReady || !job.HasProducedEquipmentOutputs || !_craftFacilityAccessCell.HasValue)
+			{
+				ResetCraftState(mercenary, false);
+				return false;
+			}
+
+			targetCell = _craftFacilityAccessCell.Value;
+			stateLabel = "Moving to workbench";
+		}
 		else
 		{
 			ResetCraftState(mercenary, false);
@@ -2006,9 +2115,13 @@ public partial class MercenaryLifeAI : Node
 
 		SetCurrentWorkStatus(
 			MercenaryWorkType.Craft,
-			IsCraftPickupOutputAction() ? GetCraftOutputLabel(job) : GetCraftTargetLabel(job),
+			IsCraftPickupEquipmentOutputAction()
+				? GetCraftEquipmentOutputLabel(job)
+				: IsCraftPickupOutputAction() ? GetCraftOutputLabel(job) : GetCraftTargetLabel(job),
 			stateLabel,
-			IsCraftPickupOutputAction() ? "Craft output ready" : IsCraftWorkAction() ? "Craft materials ready" : "Craft material delivery");
+			IsCraftPickupOutputAction() || IsCraftPickupEquipmentOutputAction()
+				? "Craft output ready"
+				: IsCraftWorkAction() ? "Craft materials ready" : "Craft material delivery");
 		return true;
 	}
 
@@ -2069,6 +2182,11 @@ public partial class MercenaryLifeAI : Node
 		if (IsCraftPickupOutputAction())
 		{
 			return UpdateCraftOutputPickup(mercenary, buildManager);
+		}
+
+		if (IsCraftPickupEquipmentOutputAction())
+		{
+			return UpdateCraftEquipmentOutputPickup(mercenary, buildManager);
 		}
 
 		ResetCraftState(mercenary, false);
@@ -2369,6 +2487,59 @@ public partial class MercenaryLifeAI : Node
 		return !startedDeposit;
 	}
 
+	private bool UpdateCraftEquipmentOutputPickup(MercenaryController mercenary, BaseBuildManager buildManager)
+	{
+		CraftJob? job = _targetCraftJob;
+
+		if (job == null || job.IsCancelled || job.IsCompleted)
+		{
+			ResetCraftState(mercenary, false);
+			return true;
+		}
+
+		if (job.State != CraftJobState.OutputReady || !job.HasProducedEquipmentOutputs)
+		{
+			ResetCraftState(mercenary, false);
+			return true;
+		}
+
+		if (!TryValidateCraftFacility(buildManager, job, out _))
+		{
+			ResetCraftState(mercenary, false);
+			SetIdleWorkStatus("Craft output inaccessible");
+			return true;
+		}
+
+		EquipmentInventoryManager? equipmentInventoryManager = GetEquipmentInventoryManager();
+
+		if (equipmentInventoryManager == null)
+		{
+			ResetCraftState(mercenary, false);
+			SetIdleWorkStatus("Equipment storage unavailable");
+			return true;
+		}
+
+		List<EquipmentInstance> outputs = new(job.ProducedEquipmentOutputs);
+
+		if (!equipmentInventoryManager.TryAddAllEquipment(outputs))
+		{
+			ResetCraftState(mercenary, false);
+			SetIdleWorkStatus("Equipment storage unavailable");
+			return true;
+		}
+
+		job.TakeAllProducedEquipmentOutputs();
+		job.TryMarkCompletedIfAllOutputsEmpty();
+		SetCurrentWorkStatus(
+			MercenaryWorkType.Craft,
+			GetCraftEquipmentOutputLabel(outputs),
+			"Stored craft equipment output",
+			"Craft equipment output ready");
+		ResetCraftState(mercenary, false);
+		RunLogisticsValidation(mercenary);
+		return true;
+	}
+
 	private bool UpdateConstructionWithdrawWork(MercenaryController mercenary, BaseBuildManager buildManager, double delta)
 	{
 		ConstructionSite? site = _targetConstructionSite;
@@ -2608,6 +2779,11 @@ public partial class MercenaryLifeAI : Node
 		return GetTree().CurrentScene?.GetNodeOrNull<CraftingManager>("CraftingManager");
 	}
 
+	private EquipmentInventoryManager? GetEquipmentInventoryManager()
+	{
+		return GetTree().CurrentScene?.GetNodeOrNull<EquipmentInventoryManager>("EquipmentInventoryManager");
+	}
+
 	private static string GetCraftTargetLabel(CraftJob job)
 	{
 		BaseResourceType? missingInput = job.GetFirstMissingInput();
@@ -2626,6 +2802,11 @@ public partial class MercenaryLifeAI : Node
 		return GetCraftOutputLabel(job.ProducedOutputs);
 	}
 
+	private static string GetCraftEquipmentOutputLabel(CraftJob job)
+	{
+		return GetCraftEquipmentOutputLabel(job.ProducedEquipmentOutputs);
+	}
+
 	private static string GetCraftOutputLabel(IReadOnlyDictionary<BaseResourceType, int> outputs)
 	{
 		List<string> parts = new();
@@ -2639,6 +2820,23 @@ public partial class MercenaryLifeAI : Node
 		}
 
 		return parts.Count == 0 ? "Craft output" : string.Join(", ", parts);
+	}
+
+	private static string GetCraftEquipmentOutputLabel(IReadOnlyList<EquipmentInstance> outputs)
+	{
+		List<string> parts = new();
+
+		foreach (EquipmentInstance output in outputs)
+		{
+			if (output == null)
+			{
+				continue;
+			}
+
+			parts.Add(EquipmentDefinitionDatabase.GetDisplayName(output.DefinitionId));
+		}
+
+		return parts.Count == 0 ? "Craft equipment output" : string.Join(", ", parts);
 	}
 
 	private static bool CanCarryAllCraftOutputs(MercenaryController mercenary, CraftJob job)
@@ -4337,9 +4535,18 @@ public partial class MercenaryLifeAI : Node
 		return CurrentLifeAction == "CraftPickupOutput";
 	}
 
+	private bool IsCraftPickupEquipmentOutputAction()
+	{
+		return CurrentLifeAction == "CraftPickupEquipmentOutput";
+	}
+
 	private bool IsCraftAction()
 	{
-		return IsCraftWithdrawAction() || IsCraftDeliverAction() || IsCraftWorkAction() || IsCraftPickupOutputAction();
+		return IsCraftWithdrawAction()
+			|| IsCraftDeliverAction()
+			|| IsCraftWorkAction()
+			|| IsCraftPickupOutputAction()
+			|| IsCraftPickupEquipmentOutputAction();
 	}
 
 	private bool IsPlantAction()

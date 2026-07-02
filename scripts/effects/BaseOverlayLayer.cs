@@ -10,6 +10,9 @@ public partial class BaseOverlayLayer : Node2D
     public NodePath CraftingManagerPath { get; set; } = "../../CraftingManager";
 
     [Export]
+    public NodePath EquipmentInventoryManagerPath { get; set; } = "../../EquipmentInventoryManager";
+
+    [Export]
     public bool ShowOverlayDiagnostics { get; set; } = true;
 
     [Export]
@@ -20,6 +23,7 @@ public partial class BaseOverlayLayer : Node2D
 
     private BaseBuildManager? _buildManager;
     private CraftingManager? _craftingManager;
+    private EquipmentInventoryManager? _equipmentInventoryManager;
     private CanvasLayer? _diagnosticsCanvasLayer;
     private Label? _diagnosticsLabel;
     private bool _warnedMissingManager;
@@ -30,6 +34,7 @@ public partial class BaseOverlayLayer : Node2D
         EnsureDiagnosticsLabel();
         ResolveBuildManager();
         ResolveCraftingManager();
+        ResolveEquipmentInventoryManager();
 
         if (_buildManager == null)
         {
@@ -48,6 +53,11 @@ public partial class BaseOverlayLayer : Node2D
         if (_craftingManager == null)
         {
             ResolveCraftingManager();
+        }
+
+        if (_equipmentInventoryManager == null)
+        {
+            ResolveEquipmentInventoryManager();
         }
 
         UpdateDiagnosticsLabel();
@@ -100,6 +110,16 @@ public partial class BaseOverlayLayer : Node2D
         }
 
         _craftingManager ??= GetTree().CurrentScene?.GetNodeOrNull<CraftingManager>("CraftingManager");
+    }
+
+    private void ResolveEquipmentInventoryManager()
+    {
+        if (!EquipmentInventoryManagerPath.IsEmpty)
+        {
+            _equipmentInventoryManager = GetNodeOrNull<EquipmentInventoryManager>(EquipmentInventoryManagerPath);
+        }
+
+        _equipmentInventoryManager ??= GetTree().CurrentScene?.GetNodeOrNull<EquipmentInventoryManager>("EquipmentInventoryManager");
     }
 
     private void EnsureDiagnosticsLabel()
@@ -155,7 +175,8 @@ public partial class BaseOverlayLayer : Node2D
         int siteCount = _buildManager.GetAllConstructionSites().Count;
         int zoneCount = _buildManager.GetAllStockpileZones().Count;
         string craftJobsText = GetCraftJobsDiagnosticsText();
-        _diagnosticsLabel.Text = $"BaseOverlay OK\nsites {siteCount}\nzones {zoneCount}\n{craftJobsText}";
+        string equipmentItemsText = GetEquipmentItemsDiagnosticsText();
+        _diagnosticsLabel.Text = $"BaseOverlay OK\nsites {siteCount}\nzones {zoneCount}\n{craftJobsText}\n{equipmentItemsText}";
     }
 
     private string GetCraftJobsDiagnosticsText()
@@ -177,6 +198,13 @@ public partial class BaseOverlayLayer : Node2D
         string progressText = GetCraftJobProgressDiagnosticsText(firstJob);
         string outputText = GetCraftJobOutputDiagnosticsText(firstJob);
         return $"craft jobs {activeJobCount}\n{firstJob.RecipeId} {firstJob.State} {firstJob.FacilityCell}{materialText}{progressText}{outputText}";
+    }
+
+    private string GetEquipmentItemsDiagnosticsText()
+    {
+        return _equipmentInventoryManager == null
+            ? "equipment items missing"
+            : $"equipment items {_equipmentInventoryManager.Count}";
     }
 
     private static string GetCraftJobMaterialDiagnosticsText(CraftJob job)

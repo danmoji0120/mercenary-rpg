@@ -43,6 +43,7 @@ public partial class MainWorldController : Node2D
     private WorldGridRenderer? _worldGrid;
     private BaseBuildManager? _baseBuildManager;
     private CraftingManager? _craftingManager;
+    private EquipmentInventoryManager? _equipmentInventoryManager;
     private BaseAlertState? _baseAlertState;
     private Marker2D? _rallyPoint;
     private SelectedMercenaryHud? _selectedMercenaryHud;
@@ -87,6 +88,7 @@ public partial class MainWorldController : Node2D
     private Vector2 _dragStartWorld;
     private Vector2 _dragCurrentWorld;
     private Vector2 _dragStartScreen;
+    public EquipmentInventoryManager? EquipmentInventoryManager => _equipmentInventoryManager;
 
     public override void _Ready()
     {
@@ -94,6 +96,7 @@ public partial class MainWorldController : Node2D
         _worldGrid = GetNodeOrNull<WorldGridRenderer>("TerrainLayer");
         _baseBuildManager = GetNodeOrNull<BaseBuildManager>("BuildingLayer");
         _craftingManager = GetNodeOrNull<CraftingManager>("CraftingManager");
+        _equipmentInventoryManager = GetNodeOrNull<EquipmentInventoryManager>("EquipmentInventoryManager");
         _baseAlertState = GetNodeOrNull<BaseAlertState>("BaseAlertState");
         _rallyPoint = GetNodeOrNull<Marker2D>("RallyPointLayer/RallyPoint");
         _selectionOverlay = GetNodeOrNull<SelectionOverlay>("CanvasLayer/SelectionOverlay");
