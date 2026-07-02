@@ -48,6 +48,7 @@ public partial class MainWorldController : Node2D
     private SelectedMercenaryHud? _selectedMercenaryHud;
     private BuildHud? _buildHud;
     private WorldBuildPanel? _worldBuildPanel;
+    private CraftingPanel? _craftingPanel;
     private BaseRoomManager? _baseRoomManager;
     private SelectionOverlay? _selectionOverlay;
     private PathDebugOverlay? _pathDebugOverlay;
@@ -99,10 +100,13 @@ public partial class MainWorldController : Node2D
         _selectedMercenaryHud = GetNodeOrNull<SelectedMercenaryHud>("CanvasLayer/HUD");
         _buildHud = GetNodeOrNull<BuildHud>("CanvasLayer/HUD/BuildHud");
         _worldBuildPanel = GetNodeOrNull<WorldBuildPanel>("CanvasLayer/HUD/WorldBuildPanel");
+        _craftingPanel = GetNodeOrNull<CraftingPanel>("CanvasLayer/HUD/CraftingPanel");
         _pathDebugOverlay = GetNodeOrNull<PathDebugOverlay>("EffectLayer/PathDebugOverlay");
         _facilityDebugOverlay = GetNodeOrNull<FacilityDebugOverlay>("EffectLayer/FacilityDebugOverlay");
         _baseRoomManager = GetNodeOrNull<BaseRoomManager>("EffectLayer/BaseRoomManager")
             ?? GetNodeOrNull<BaseRoomManager>("BaseRoomManager");
+
+        EnsureCraftingPanel();
 
         if (_baseBuildManager != null)
         {
@@ -140,6 +144,7 @@ public partial class MainWorldController : Node2D
             _worldBuildPanel.MercenarySelected += HandleMercenaryPanelSelected;
             _worldBuildPanel.MercenaryWorkSettingsChanged += HandleMercenaryWorkSettingsChanged;
             _worldBuildPanel.StockpileZoneDesignationSelected += HandleStockpileZoneDesignationSelected;
+            _worldBuildPanel.StorageSelected += _ => HideCraftingPanel();
         }
 
         UpdateBaseAlertState();
@@ -147,6 +152,7 @@ public partial class MainWorldController : Node2D
         UpdateBuildHud();
         UpdatePathDebugOverlayVisibility();
         UpdateFacilityDebugOverlayVisibility();
+        _craftingPanel?.SetManagers(_baseBuildManager, _craftingManager);
 
         if (_camera == null)
         {
@@ -157,6 +163,26 @@ public partial class MainWorldController : Node2D
         _camera.MakeCurrent();
         ClampCameraZoom();
         ClampCameraPosition();
+    }
+
+    private void EnsureCraftingPanel()
+    {
+        if (_craftingPanel != null)
+        {
+            return;
+        }
+
+        Control? hud = GetNodeOrNull<Control>("CanvasLayer/HUD");
+        if (hud == null)
+        {
+            return;
+        }
+
+        _craftingPanel = new CraftingPanel
+        {
+            Name = "CraftingPanel"
+        };
+        hud.AddChild(_craftingPanel);
     }
 
     public override void _Process(double delta)
@@ -479,6 +505,7 @@ public partial class MainWorldController : Node2D
 
     private void SelectOnly(MercenaryController mercenary)
     {
+        HideCraftingPanel();
         ClearSelection();
         _worldBuildPanel?.ClearInfoPanel();
         AddToSelection(mercenary);
@@ -486,6 +513,8 @@ public partial class MainWorldController : Node2D
 
     private void ToggleSelection(MercenaryController mercenary)
     {
+        HideCraftingPanel();
+
         if (_selectedMercenaries.Contains(mercenary))
         {
             _selectedMercenaries.Remove(mercenary);
@@ -1139,8 +1168,49 @@ public partial class MainWorldController : Node2D
             return false;
         }
 
+        HideCraftingPanel();
         _worldBuildPanel.ShowRoomInfo(room);
         return true;
+    }
+
+    private bool TryShowCraftingPanelAtMousePosition()
+    {
+        if (_baseBuildManager == null || _craftingPanel == null)
+        {
+            return false;
+        }
+
+        Vector2I cell = _baseBuildManager.WorldToCell(GetGlobalMousePosition());
+
+        if (!_baseBuildManager.TryGetObjectInfoAtCell(cell, out TileBuildType objectType, out Vector2I originCell, out _))
+        {
+            return false;
+        }
+
+        bool hasActiveRecipe = false;
+        foreach (CraftRecipeEntry recipe in CraftRecipeDatabase.GetRecipesForFacility(objectType))
+        {
+            if (recipe.IsEnabled)
+            {
+                hasActiveRecipe = true;
+                break;
+            }
+        }
+
+        if (!hasActiveRecipe)
+        {
+            return false;
+        }
+
+        _worldBuildPanel?.ClearInfoPanel();
+        _craftingPanel.SetManagers(_baseBuildManager, _craftingManager);
+        _craftingPanel.ShowFacility(objectType, originCell);
+        return true;
+    }
+
+    private void HideCraftingPanel()
+    {
+        _craftingPanel?.HidePanel();
     }
 
     private bool TryShowStorageInfoAtMousePosition()
@@ -1157,6 +1227,7 @@ public partial class MainWorldController : Node2D
             return false;
         }
 
+        HideCraftingPanel();
         _worldBuildPanel.ShowStorageInfo(originCell);
         return true;
     }
@@ -1175,6 +1246,7 @@ public partial class MainWorldController : Node2D
             return false;
         }
 
+        HideCraftingPanel();
         _worldBuildPanel.ShowConstructionSiteInfo(site);
         return true;
     }
@@ -1634,6 +1706,13 @@ public partial class MainWorldController : Node2D
             return;
         }
 
+        if (TryShowCraftingPanelAtMousePosition())
+        {
+            return;
+        }
+
+        HideCraftingPanel();
+
         if (TryShowStorageInfoAtMousePosition())
         {
             return;
@@ -1707,6 +1786,7 @@ public partial class MainWorldController : Node2D
 
         _selectedMercenaries.Clear();
         _worldBuildPanel?.ClearInfoPanel();
+        HideCraftingPanel();
         UpdateSelectedMercenaryHud();
     }
 
