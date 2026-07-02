@@ -8,6 +8,9 @@ public static class ResourceDefinitionDatabase
         BaseResourceType.Wood,
         BaseResourceType.Stone,
         BaseResourceType.Metal,
+        BaseResourceType.IronOre,
+        BaseResourceType.Coal,
+        BaseResourceType.Herb,
         BaseResourceType.Plank,
         BaseResourceType.Brick,
         BaseResourceType.IronIngot,
@@ -37,7 +40,9 @@ public static class ResourceDefinitionDatabase
     {
         BaseResourceType.Wood,
         BaseResourceType.Stone,
-        BaseResourceType.Metal
+        BaseResourceType.Metal,
+        BaseResourceType.IronOre,
+        BaseResourceType.Coal
     };
 
     private static readonly IReadOnlyList<BaseResourceType> ProcessedMaterialResources = new[]
@@ -49,7 +54,8 @@ public static class ResourceDefinitionDatabase
 
     private static readonly IReadOnlyList<BaseResourceType> MedicalResources = new[]
     {
-        BaseResourceType.Medicine
+        BaseResourceType.Medicine,
+        BaseResourceType.Herb
     };
 
     private static readonly Dictionary<BaseResourceType, ResourceDefinitionEntry> Entries = new()
@@ -58,6 +64,9 @@ public static class ResourceDefinitionDatabase
         { BaseResourceType.Wood, Entry(BaseResourceType.Wood, "\uB098\uBB34", "\uBAA9", 2, true, StorageResourceCategory.RawMaterial) },
         { BaseResourceType.Stone, Entry(BaseResourceType.Stone, "\uB3CC", "\uC11D", 4, true, StorageResourceCategory.RawMaterial) },
         { BaseResourceType.Metal, Entry(BaseResourceType.Metal, "\uAE08\uC18D", "\uAE08", 5, true, StorageResourceCategory.RawMaterial) },
+        { BaseResourceType.IronOre, Entry(BaseResourceType.IronOre, "\uCCA0\uAD11\uC11D", "\uAD11", 4, true, StorageResourceCategory.RawMaterial) },
+        { BaseResourceType.Coal, Entry(BaseResourceType.Coal, "\uC11D\uD0C4", "\uD0C4", 3, true, StorageResourceCategory.RawMaterial) },
+        { BaseResourceType.Herb, Entry(BaseResourceType.Herb, "\uC57D\uCD08", "\uC57D", 1, true, StorageResourceCategory.Medical) },
         { BaseResourceType.Plank, Entry(BaseResourceType.Plank, "\uD310\uC7AC", "\uD310", 2, true, StorageResourceCategory.ProcessedMaterial) },
         { BaseResourceType.Brick, Entry(BaseResourceType.Brick, "\uBCBD\uB3CC", "\uBCBD", 3, true, StorageResourceCategory.ProcessedMaterial) },
         { BaseResourceType.IronIngot, Entry(BaseResourceType.IronIngot, "\uCCA0\uAD34", "\uCCA0", 5, true, StorageResourceCategory.ProcessedMaterial) },

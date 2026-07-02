@@ -3663,9 +3663,7 @@ public partial class MercenaryLifeAI : Node
 	private static bool IsGatherableResourceNode(ResourceNode resourceNode)
 	{
 		return IsValidResourceNode(resourceNode)
-			&& (resourceNode.ResourceType == BaseResourceType.Wood
-				|| resourceNode.ResourceType == BaseResourceType.Stone
-				|| resourceNode.ResourceType == BaseResourceType.Metal);
+			&& ResourceDefinitionDatabase.IsStoredResource(resourceNode.ResourceType);
 	}
 
 	private static bool IsValidResourceNode(ResourceNode? resourceNode)

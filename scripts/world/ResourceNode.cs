@@ -75,7 +75,9 @@ public partial class ResourceNode : Node2D
 			DrawCircle(new Vector2(0.0f, -8.0f), 17.0f, bodyColor);
 			DrawArc(new Vector2(0.0f, -8.0f), 17.0f, 0.0f, Mathf.Tau, 32, outlineColor, 2.0f);
 		}
-		else if (ResourceType == BaseResourceType.Stone)
+		else if (ResourceType == BaseResourceType.Stone
+			|| ResourceType == BaseResourceType.IronOre
+			|| ResourceType == BaseResourceType.Coal)
 		{
 			Vector2[] points =
 			{
@@ -89,6 +91,16 @@ public partial class ResourceNode : Node2D
 
 			DrawColoredPolygon(points, bodyColor);
 			DrawPolyline(points, outlineColor, 2.0f, true);
+		}
+		else if (ResourceType == BaseResourceType.Herb)
+		{
+			DrawCircle(new Vector2(-8.0f, 4.0f), 10.0f, bodyColor);
+			DrawCircle(new Vector2(8.0f, 4.0f), 10.0f, bodyColor.Lightened(0.12f));
+			DrawCircle(new Vector2(0.0f, -7.0f), 11.0f, bodyColor.Darkened(0.08f));
+			DrawLine(new Vector2(0.0f, 12.0f), new Vector2(0.0f, -14.0f), outlineColor, 2.0f);
+			DrawArc(new Vector2(-8.0f, 4.0f), 10.0f, 0.0f, Mathf.Tau, 24, outlineColor, 1.5f);
+			DrawArc(new Vector2(8.0f, 4.0f), 10.0f, 0.0f, Mathf.Tau, 24, outlineColor, 1.5f);
+			DrawArc(new Vector2(0.0f, -7.0f), 11.0f, 0.0f, Mathf.Tau, 24, outlineColor, 1.5f);
 		}
 		else if (ResourceType == BaseResourceType.Metal)
 		{
@@ -300,13 +312,7 @@ public partial class ResourceNode : Node2D
 			return;
 		}
 
-		string marker = ResourceType switch
-		{
-			BaseResourceType.Wood => "W",
-			BaseResourceType.Stone => "S",
-			BaseResourceType.Metal => "M",
-			_ => "?"
-		};
+		string marker = BaseBuildManager.GetResourceMarker(ResourceType);
 
 		string designationMarker = IsHarvestDesignated ? " D" : "";
 		string reservationMarker = IsReserved ? " R" : "";
@@ -330,6 +336,9 @@ public partial class ResourceNode : Node2D
 			BaseResourceType.Wood => new Color(0.18f, 0.62f, 0.24f, alpha),
 			BaseResourceType.Stone => new Color(0.52f, 0.54f, 0.56f, alpha),
 			BaseResourceType.Metal => new Color(0.34f, 0.42f, 0.48f, alpha),
+			BaseResourceType.IronOre => new Color(0.45f, 0.39f, 0.34f, alpha),
+			BaseResourceType.Coal => new Color(0.1f, 0.1f, 0.1f, alpha),
+			BaseResourceType.Herb => new Color(0.28f, 0.72f, 0.34f, alpha),
 			_ => new Color(0.8f, 0.8f, 0.8f, alpha)
 		};
 	}

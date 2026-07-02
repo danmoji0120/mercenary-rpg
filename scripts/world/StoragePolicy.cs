@@ -121,7 +121,7 @@ public static class StoragePolicyHelpers
             StoragePolicyPreset.RawMaterials => category == StorageResourceCategory.RawMaterial,
             StoragePolicyPreset.ProcessedMaterials => category == StorageResourceCategory.ProcessedMaterial,
             StoragePolicyPreset.ConstructionMaterials => category == StorageResourceCategory.RawMaterial || category == StorageResourceCategory.ProcessedMaterial,
-            StoragePolicyPreset.Medical => type == BaseResourceType.Medicine,
+            StoragePolicyPreset.Medical => category == StorageResourceCategory.Medical,
             _ => false
         };
     }

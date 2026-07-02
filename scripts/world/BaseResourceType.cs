@@ -8,5 +8,8 @@ public enum BaseResourceType
     Brick,
     IronIngot,
     SimpleMeal,
-    Medicine
+    Medicine,
+    IronOre,
+    Coal,
+    Herb
 }

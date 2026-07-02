@@ -63,14 +63,14 @@ public readonly struct StorageCapability
                 StoragePolicyPreset.Medical,
                 StoragePriority.Important,
                 1.5f,
-                Set(BaseResourceType.Medicine),
+                Set(BaseResourceType.Medicine, BaseResourceType.Herb),
                 "\uC758\uB8CC\uC6A9\uD488\uB9CC \uBCF4\uAD00 \uAC00\uB2A5"),
             TileBuildType.MaterialShelf => new StorageCapability(
                 "\uC790\uC7AC \uC120\uBC18",
                 StoragePolicyPreset.ConstructionMaterials,
                 StoragePriority.Preferred,
                 1.25f,
-                Set(BaseResourceType.Wood, BaseResourceType.Stone, BaseResourceType.Metal, BaseResourceType.Plank, BaseResourceType.Brick, BaseResourceType.IronIngot),
+                Set(BaseResourceType.Wood, BaseResourceType.Stone, BaseResourceType.Metal, BaseResourceType.IronOre, BaseResourceType.Coal, BaseResourceType.Plank, BaseResourceType.Brick, BaseResourceType.IronIngot),
                 "\uAC74\uC124 \uC790\uC7AC\uB9CC \uBCF4\uAD00 \uAC00\uB2A5"),
             _ => new StorageCapability(
                 BaseBuildManager.GetBuildDisplayName(buildType),

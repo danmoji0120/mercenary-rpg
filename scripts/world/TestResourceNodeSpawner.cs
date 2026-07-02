@@ -93,6 +93,63 @@ public partial class TestResourceNodeSpawner : Node2D
     [Export]
     public int MetalAmountMax { get; set; } = 35;
 
+    [Export]
+    public int IronOreClusterCount { get; set; } = 1;
+
+    [Export]
+    public int IronOreNodesPerClusterMin { get; set; } = 2;
+
+    [Export]
+    public int IronOreNodesPerClusterMax { get; set; } = 4;
+
+    [Export]
+    public int IronOreClusterRadius { get; set; } = 2;
+
+    [Export]
+    public int IronOreAmountMin { get; set; } = 15;
+
+    [Export]
+    public int IronOreAmountMax { get; set; } = 35;
+
+    [Export]
+    public int CoalClusterCount { get; set; } = 1;
+
+    [Export]
+    public int CoalNodesPerClusterMin { get; set; } = 2;
+
+    [Export]
+    public int CoalNodesPerClusterMax { get; set; } = 4;
+
+    [Export]
+    public int CoalClusterRadius { get; set; } = 2;
+
+    [Export]
+    public int CoalAmountMin { get; set; } = 15;
+
+    [Export]
+    public int CoalAmountMax { get; set; } = 35;
+
+    [Export]
+    public int HerbClusterCount { get; set; } = 2;
+
+    [Export]
+    public int HerbNodesPerClusterMin { get; set; } = 2;
+
+    [Export]
+    public int HerbNodesPerClusterMax { get; set; } = 4;
+
+    [Export]
+    public int HerbClusterRadius { get; set; } = 3;
+
+    [Export]
+    public int HerbAmountMin { get; set; } = 8;
+
+    [Export]
+    public int HerbAmountMax { get; set; } = 18;
+
+    [Export]
+    public Vector2I DebugHerbNodeCell { get; set; } = new(15, 9);
+
     private readonly ResourceNodeSpawnData[] _spawnData =
     {
         new(BaseResourceType.Wood, new Vector2I(10, 10), 50),
@@ -100,7 +157,10 @@ public partial class TestResourceNodeSpawner : Node2D
         new(BaseResourceType.Wood, new Vector2I(14, 11), 50),
         new(BaseResourceType.Stone, new Vector2I(18, 12), 40),
         new(BaseResourceType.Stone, new Vector2I(20, 13), 40),
-        new(BaseResourceType.Metal, new Vector2I(24, 15), 25)
+        new(BaseResourceType.Metal, new Vector2I(24, 15), 25),
+        new(BaseResourceType.IronOre, new Vector2I(26, 16), 25),
+        new(BaseResourceType.Coal, new Vector2I(28, 16), 25),
+        new(BaseResourceType.Herb, new Vector2I(15, 9), 12)
     };
 
     private readonly HashSet<Vector2I> _occupiedResourceCells = new();
@@ -131,6 +191,9 @@ public partial class TestResourceNodeSpawner : Node2D
         int woodCount = 0;
         int stoneCount = 0;
         int metalCount = 0;
+        int ironOreCount = 0;
+        int coalCount = 0;
+        int herbCount = 0;
 
         foreach (ResourceNodeSpawnData spawnData in _spawnData)
         {
@@ -140,12 +203,13 @@ public partial class TestResourceNodeSpawner : Node2D
             }
 
             SpawnResourceNode(spawnData.ResourceType, spawnData.Cell, spawnData.Amount);
-            AddToCount(spawnData.ResourceType, ref woodCount, ref stoneCount, ref metalCount);
+            AddToCount(spawnData.ResourceType, ref woodCount, ref stoneCount, ref metalCount, ref ironOreCount, ref coalCount, ref herbCount);
         }
 
         if (SpawnDebugNodeNearStart)
         {
             TrySpawnDebugNodeNearStart(ref woodCount);
+            TrySpawnDebugHerbNearStart(ref herbCount);
         }
 
         if (SpawnFallbackNodeIfEmpty)
@@ -153,7 +217,7 @@ public partial class TestResourceNodeSpawner : Node2D
             TrySpawnFallbackNodeIfEmpty(ref woodCount);
         }
 
-        PrintGenerationSummary(woodCount, stoneCount, metalCount);
+        PrintGenerationSummary(woodCount, stoneCount, metalCount, ironOreCount, coalCount, herbCount);
     }
 
     private void SpawnClusteredResourceNodes()
@@ -161,10 +225,14 @@ public partial class TestResourceNodeSpawner : Node2D
         int woodCount = SpawnClusters(GetWoodRule());
         int stoneCount = SpawnClusters(GetStoneRule());
         int metalCount = SpawnClusters(GetMetalRule());
+        int ironOreCount = SpawnClusters(GetIronOreRule());
+        int coalCount = SpawnClusters(GetCoalRule());
+        int herbCount = SpawnClusters(GetHerbRule());
 
         if (SpawnDebugNodeNearStart)
         {
             TrySpawnDebugNodeNearStart(ref woodCount);
+            TrySpawnDebugHerbNearStart(ref herbCount);
         }
 
         if (SpawnFallbackNodeIfEmpty)
@@ -172,7 +240,7 @@ public partial class TestResourceNodeSpawner : Node2D
             TrySpawnFallbackNodeIfEmpty(ref woodCount);
         }
 
-        PrintGenerationSummary(woodCount, stoneCount, metalCount);
+        PrintGenerationSummary(woodCount, stoneCount, metalCount, ironOreCount, coalCount, herbCount);
     }
 
     private int SpawnClusters(ResourceClusterRule rule)
@@ -303,7 +371,11 @@ public partial class TestResourceNodeSpawner : Node2D
 
     private int GetSafeRadiusFor(BaseResourceType resourceType)
     {
-        return resourceType == BaseResourceType.Metal ? SafeRadius + 4 : SafeRadius;
+        return resourceType == BaseResourceType.Metal
+            || resourceType == BaseResourceType.IronOre
+            || resourceType == BaseResourceType.Coal
+            ? SafeRadius + 4
+            : SafeRadius;
     }
 
     private void ConfigureRandom()
@@ -375,11 +447,47 @@ public partial class TestResourceNodeSpawner : Node2D
             MetalAmountMax);
     }
 
-    private void PrintGenerationSummary(int woodCount, int stoneCount, int metalCount)
+    private ResourceClusterRule GetIronOreRule()
     {
-        int totalCount = woodCount + stoneCount + metalCount;
+        return new ResourceClusterRule(
+            BaseResourceType.IronOre,
+            IronOreClusterCount,
+            IronOreNodesPerClusterMin,
+            IronOreNodesPerClusterMax,
+            IronOreClusterRadius,
+            IronOreAmountMin,
+            IronOreAmountMax);
+    }
+
+    private ResourceClusterRule GetCoalRule()
+    {
+        return new ResourceClusterRule(
+            BaseResourceType.Coal,
+            CoalClusterCount,
+            CoalNodesPerClusterMin,
+            CoalNodesPerClusterMax,
+            CoalClusterRadius,
+            CoalAmountMin,
+            CoalAmountMax);
+    }
+
+    private ResourceClusterRule GetHerbRule()
+    {
+        return new ResourceClusterRule(
+            BaseResourceType.Herb,
+            HerbClusterCount,
+            HerbNodesPerClusterMin,
+            HerbNodesPerClusterMax,
+            HerbClusterRadius,
+            HerbAmountMin,
+            HerbAmountMax);
+    }
+
+    private void PrintGenerationSummary(int woodCount, int stoneCount, int metalCount, int ironOreCount, int coalCount, int herbCount)
+    {
+        int totalCount = woodCount + stoneCount + metalCount + ironOreCount + coalCount + herbCount;
         string seedLabel = UseRandomSeed ? "random" : Seed.ToString();
-        GD.Print($"Resource node generation complete. Seed={seedLabel}, UseRandomSeed={UseRandomSeed}, UseFixedTestNodes={UseFixedTestNodes}, Wood={woodCount}, Stone={stoneCount}, Metal={metalCount}, Total={totalCount}");
+        GD.Print($"Resource node generation complete. Seed={seedLabel}, UseRandomSeed={UseRandomSeed}, UseFixedTestNodes={UseFixedTestNodes}, Wood={woodCount}, Stone={stoneCount}, Metal={metalCount}, IronOre={ironOreCount}, Coal={coalCount}, Herb={herbCount}, Total={totalCount}");
 
         if (totalCount == 0)
         {
@@ -399,6 +507,17 @@ public partial class TestResourceNodeSpawner : Node2D
 
         SpawnResourceNode(BaseResourceType.Wood, DebugNodeCell, 50);
         woodCount++;
+    }
+
+    private void TrySpawnDebugHerbNearStart(ref int herbCount)
+    {
+        if (!CanSpawnAt(DebugHerbNodeCell, SafeRadius))
+        {
+            return;
+        }
+
+        SpawnResourceNode(BaseResourceType.Herb, DebugHerbNodeCell, 12);
+        herbCount++;
     }
 
     private void TrySpawnFallbackNodeIfEmpty(ref int woodCount)
@@ -432,7 +551,7 @@ public partial class TestResourceNodeSpawner : Node2D
         GD.Print($"resource_nodes group count: {GetTree().GetNodesInGroup("resource_nodes").Count}");
     }
 
-    private static void AddToCount(BaseResourceType resourceType, ref int woodCount, ref int stoneCount, ref int metalCount)
+    private static void AddToCount(BaseResourceType resourceType, ref int woodCount, ref int stoneCount, ref int metalCount, ref int ironOreCount, ref int coalCount, ref int herbCount)
     {
         if (resourceType == BaseResourceType.Wood)
         {
@@ -445,6 +564,18 @@ public partial class TestResourceNodeSpawner : Node2D
         else if (resourceType == BaseResourceType.Metal)
         {
             metalCount++;
+        }
+        else if (resourceType == BaseResourceType.IronOre)
+        {
+            ironOreCount++;
+        }
+        else if (resourceType == BaseResourceType.Coal)
+        {
+            coalCount++;
+        }
+        else if (resourceType == BaseResourceType.Herb)
+        {
+            herbCount++;
         }
     }
 
