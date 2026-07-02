@@ -13,6 +13,9 @@ public partial class BaseOverlayLayer : Node2D
     public NodePath EquipmentInventoryManagerPath { get; set; } = "../../EquipmentInventoryManager";
 
     [Export]
+    public NodePath MercenaryEquipmentLoadoutManagerPath { get; set; } = "../../MercenaryEquipmentLoadoutManager";
+
+    [Export]
     public bool ShowOverlayDiagnostics { get; set; } = true;
 
     [Export]
@@ -24,6 +27,7 @@ public partial class BaseOverlayLayer : Node2D
     private BaseBuildManager? _buildManager;
     private CraftingManager? _craftingManager;
     private EquipmentInventoryManager? _equipmentInventoryManager;
+    private MercenaryEquipmentLoadoutManager? _mercenaryEquipmentLoadoutManager;
     private CanvasLayer? _diagnosticsCanvasLayer;
     private Label? _diagnosticsLabel;
     private bool _warnedMissingManager;
@@ -35,6 +39,7 @@ public partial class BaseOverlayLayer : Node2D
         ResolveBuildManager();
         ResolveCraftingManager();
         ResolveEquipmentInventoryManager();
+        ResolveMercenaryEquipmentLoadoutManager();
 
         if (_buildManager == null)
         {
@@ -58,6 +63,11 @@ public partial class BaseOverlayLayer : Node2D
         if (_equipmentInventoryManager == null)
         {
             ResolveEquipmentInventoryManager();
+        }
+
+        if (_mercenaryEquipmentLoadoutManager == null)
+        {
+            ResolveMercenaryEquipmentLoadoutManager();
         }
 
         UpdateDiagnosticsLabel();
@@ -122,6 +132,16 @@ public partial class BaseOverlayLayer : Node2D
         _equipmentInventoryManager ??= GetTree().CurrentScene?.GetNodeOrNull<EquipmentInventoryManager>("EquipmentInventoryManager");
     }
 
+    private void ResolveMercenaryEquipmentLoadoutManager()
+    {
+        if (!MercenaryEquipmentLoadoutManagerPath.IsEmpty)
+        {
+            _mercenaryEquipmentLoadoutManager = GetNodeOrNull<MercenaryEquipmentLoadoutManager>(MercenaryEquipmentLoadoutManagerPath);
+        }
+
+        _mercenaryEquipmentLoadoutManager ??= GetTree().CurrentScene?.GetNodeOrNull<MercenaryEquipmentLoadoutManager>("MercenaryEquipmentLoadoutManager");
+    }
+
     private void EnsureDiagnosticsLabel()
     {
         if (_diagnosticsCanvasLayer != null && _diagnosticsLabel != null)
@@ -176,7 +196,8 @@ public partial class BaseOverlayLayer : Node2D
         int zoneCount = _buildManager.GetAllStockpileZones().Count;
         string craftJobsText = GetCraftJobsDiagnosticsText();
         string equipmentItemsText = GetEquipmentItemsDiagnosticsText();
-        _diagnosticsLabel.Text = $"BaseOverlay OK\nsites {siteCount}\nzones {zoneCount}\n{craftJobsText}\n{equipmentItemsText}";
+        string loadoutsText = GetLoadoutsDiagnosticsText();
+        _diagnosticsLabel.Text = $"BaseOverlay OK\nsites {siteCount}\nzones {zoneCount}\n{craftJobsText}\n{equipmentItemsText}\n{loadoutsText}";
     }
 
     private string GetCraftJobsDiagnosticsText()
@@ -205,6 +226,13 @@ public partial class BaseOverlayLayer : Node2D
         return _equipmentInventoryManager == null
             ? "equipment items missing"
             : $"equipment items {_equipmentInventoryManager.Count}";
+    }
+
+    private string GetLoadoutsDiagnosticsText()
+    {
+        return _mercenaryEquipmentLoadoutManager == null
+            ? "loadouts missing"
+            : $"loadouts {_mercenaryEquipmentLoadoutManager.Count}";
     }
 
     private static string GetCraftJobMaterialDiagnosticsText(CraftJob job)

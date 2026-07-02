@@ -44,6 +44,7 @@ public partial class MainWorldController : Node2D
     private BaseBuildManager? _baseBuildManager;
     private CraftingManager? _craftingManager;
     private EquipmentInventoryManager? _equipmentInventoryManager;
+    private MercenaryEquipmentLoadoutManager? _mercenaryEquipmentLoadoutManager;
     private BaseAlertState? _baseAlertState;
     private Marker2D? _rallyPoint;
     private SelectedMercenaryHud? _selectedMercenaryHud;
@@ -89,6 +90,7 @@ public partial class MainWorldController : Node2D
     private Vector2 _dragCurrentWorld;
     private Vector2 _dragStartScreen;
     public EquipmentInventoryManager? EquipmentInventoryManager => _equipmentInventoryManager;
+    public MercenaryEquipmentLoadoutManager? MercenaryEquipmentLoadoutManager => _mercenaryEquipmentLoadoutManager;
 
     public override void _Ready()
     {
@@ -97,6 +99,7 @@ public partial class MainWorldController : Node2D
         _baseBuildManager = GetNodeOrNull<BaseBuildManager>("BuildingLayer");
         _craftingManager = GetNodeOrNull<CraftingManager>("CraftingManager");
         _equipmentInventoryManager = GetNodeOrNull<EquipmentInventoryManager>("EquipmentInventoryManager");
+        _mercenaryEquipmentLoadoutManager = GetNodeOrNull<MercenaryEquipmentLoadoutManager>("MercenaryEquipmentLoadoutManager");
         _baseAlertState = GetNodeOrNull<BaseAlertState>("BaseAlertState");
         _rallyPoint = GetNodeOrNull<Marker2D>("RallyPointLayer/RallyPoint");
         _selectionOverlay = GetNodeOrNull<SelectionOverlay>("CanvasLayer/SelectionOverlay");
@@ -2001,6 +2004,20 @@ public partial class MainWorldController : Node2D
     private void UpdateSelectedMercenaryHud()
     {
         _selectedMercenaryHud?.UpdateSelectionSummary(_selectedMercenaries);
+        _worldBuildPanel?.SetEquipmentTargetMercenary(GetSingleSelectedMercenary());
+    }
+
+    private MercenaryController? GetSingleSelectedMercenary()
+    {
+        if (_selectedMercenaries.Count != 1)
+        {
+            return null;
+        }
+
+        MercenaryController mercenary = _selectedMercenaries[0];
+        return GodotObject.IsInstanceValid(mercenary) && !mercenary.IsQueuedForDeletion()
+            ? mercenary
+            : null;
     }
 
     private void UpdateBaseAlertState()

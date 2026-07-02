@@ -17,6 +17,7 @@
 [ext_resource type="Script" uid="uid://86ptct0i2mft" path="res://scripts/effects/BaseOverlayLayer.cs" id="15_baseoverlay"]
 [ext_resource type="Script" uid="uid://bclndd22vfksa" path="res://scripts/world/crafting/CraftingManager.cs" id="16_crafting"]
 [ext_resource type="Script" path="res://scripts/world/equipment/EquipmentInventoryManager.cs" id="17_equipment_inventory"]
+[ext_resource type="Script" path="res://scripts/world/equipment/MercenaryEquipmentLoadoutManager.cs" id="18_equipment_loadouts"]
 
 [node name="MainWorld" type="Node2D" unique_id=1694616011]
 script = ExtResource("1_wktxm")
@@ -30,6 +31,9 @@ script = ExtResource("16_crafting")
 
 [node name="EquipmentInventoryManager" type="Node" parent="."]
 script = ExtResource("17_equipment_inventory")
+
+[node name="MercenaryEquipmentLoadoutManager" type="Node" parent="."]
+script = ExtResource("18_equipment_loadouts")
 
 [node name="TerrainLayer" type="Node2D" parent="." unique_id=1928559420]
 script = ExtResource("2_w4bmx")

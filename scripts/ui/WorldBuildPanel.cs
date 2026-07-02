@@ -68,7 +68,10 @@ public partial class WorldBuildPanel : Control
 	private PanelContainer? _infoPanel;
 	private Label? _selectionLabel;
 	private Label? _infoLabel;
-	private Label? _equipmentInventoryLabel;
+	private Label? _equipmentLoadoutSummaryLabel;
+	private VBoxContainer? _equipmentInventoryList;
+	private Label? _equipmentActionStatusLabel;
+	private string _equipmentActionStatusText = "-";
 	private GridContainer? _inventoryGrid;
 	private string _activeMainTab = "";
 	private string _activeCategory = StructureCategory;
@@ -77,6 +80,7 @@ public partial class WorldBuildPanel : Control
 	private BuildMaterialType _selectedBuildMaterialType = BuildMaterialType.Wood;
 	private RoomType _selectedRoomType = RoomType.None;
 	private MercenaryController? _selectedMercenary;
+	private MercenaryController? _equipmentTargetMercenary;
 	private Vector2I? _selectedStorageCell;
 	private bool _selectedRoomRemoveMode;
 	private float _inventoryRefreshTimer;
@@ -84,6 +88,16 @@ public partial class WorldBuildPanel : Control
 	private float _storageListRefreshTimer;
 
 	public bool IsBaseManagementPanelActive => _activePanelMode == PanelMode.BaseManagement && _activeMainTab == MainTabBaseManagement;
+
+	public void SetEquipmentTargetMercenary(MercenaryController? mercenary)
+	{
+		_equipmentTargetMercenary = IsValidMercenaryReference(mercenary) ? mercenary : null;
+
+		if (_activePanelMode == PanelMode.StorageOverview)
+		{
+			RefreshEquipmentInventoryList();
+		}
+	}
 
 	public override void _Ready()
 	{
@@ -1167,10 +1181,33 @@ public partial class WorldBuildPanel : Control
 			VerticalScrollMode = ScrollContainer.ScrollMode.Auto,
 			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
 		};
-		panel.AddChild(contentScroll);
 
-		_equipmentInventoryLabel = CreateStorageDetailLabel(BuildEquipmentInventoryText(), 12);
-		contentScroll.AddChild(_equipmentInventoryLabel);
+		VBoxContainer root = new()
+		{
+			MouseFilter = MouseFilterEnum.Stop,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			SizeFlagsVertical = SizeFlags.ExpandFill,
+			ClipContents = true
+		};
+		root.AddThemeConstantOverride("separation", 6);
+		panel.AddChild(root);
+
+		_equipmentLoadoutSummaryLabel = CreateStorageDetailLabel(BuildEquipmentLoadoutSummaryText(), 11);
+		root.AddChild(_equipmentLoadoutSummaryLabel);
+		root.AddChild(contentScroll);
+
+		_equipmentInventoryList = new VBoxContainer
+		{
+			Name = "EquipmentInventoryList",
+			MouseFilter = MouseFilterEnum.Stop,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill
+		};
+		_equipmentInventoryList.AddThemeConstantOverride("separation", 4);
+		contentScroll.AddChild(_equipmentInventoryList);
+
+		_equipmentActionStatusLabel = CreateStorageDetailLabel(_equipmentActionStatusText, 10);
+		root.AddChild(_equipmentActionStatusLabel);
+		RefreshEquipmentInventoryList();
 		_itemRow.AddChild(panel);
 	}
 
@@ -1384,7 +1421,9 @@ public partial class WorldBuildPanel : Control
 			child.QueueFree();
 		}
 
-		_equipmentInventoryLabel = null;
+		_equipmentLoadoutSummaryLabel = null;
+		_equipmentInventoryList = null;
+		_equipmentActionStatusLabel = null;
 	}
 
 	private void AddComingSoonLabel()
@@ -1808,26 +1847,42 @@ public partial class WorldBuildPanel : Control
 			: "\uC5C6\uC74C";
 	}
 
-	private string BuildEquipmentInventoryText()
+	private void RefreshEquipmentInventoryList()
 	{
+		if (_equipmentInventoryList == null
+			|| !GodotObject.IsInstanceValid(_equipmentInventoryList)
+			|| _equipmentInventoryList.IsQueuedForDeletion())
+		{
+			return;
+		}
+
+		if (_equipmentLoadoutSummaryLabel != null
+			&& GodotObject.IsInstanceValid(_equipmentLoadoutSummaryLabel)
+			&& !_equipmentLoadoutSummaryLabel.IsQueuedForDeletion())
+		{
+			_equipmentLoadoutSummaryLabel.Text = BuildEquipmentLoadoutSummaryText();
+		}
+
+		foreach (Node child in _equipmentInventoryList.GetChildren())
+		{
+			child.QueueFree();
+		}
+
 		EquipmentInventoryManager? equipmentInventoryManager = GetEquipmentInventoryManager();
 
 		if (equipmentInventoryManager == null)
 		{
-			return "\uC7A5\uBE44\n\uC7A5\uBE44 \uAD00\uB9AC\uC790 \uC5C6\uC74C";
+			_equipmentInventoryList.AddChild(CreateStorageDetailLabel("\uC7A5\uBE44 \uAD00\uB9AC\uC790 \uC5C6\uC74C", 12));
+			return;
 		}
 
 		IReadOnlyList<EquipmentInstance> equipment = equipmentInventoryManager.GetAllEquipment();
 
 		if (equipment.Count <= 0)
 		{
-			return "\uC7A5\uBE44\n\uC81C\uC791\uB41C \uC7A5\uBE44 \uC5C6\uC74C";
+			_equipmentInventoryList.AddChild(CreateStorageDetailLabel("\uC81C\uC791\uB41C \uC7A5\uBE44 \uC5C6\uC74C", 12));
+			return;
 		}
-
-		List<string> lines = new()
-		{
-			$"\uC7A5\uBE44 {equipment.Count}"
-		};
 
 		foreach (EquipmentInstance item in equipment)
 		{
@@ -1836,29 +1891,275 @@ public partial class WorldBuildPanel : Control
 				continue;
 			}
 
-			string equippedText = item.IsEquipped ? "\uC7A5\uCC29" : "\uBBF8\uC7A5\uCC29";
+			_equipmentInventoryList.AddChild(CreateEquipmentRow(item));
+		}
+	}
 
-			if (EquipmentDefinitionDatabase.TryGet(item.DefinitionId, out EquipmentDefinitionEntry? definition))
-			{
-				lines.Add(
-					$"{definition.DisplayName} / {GetEquipmentSlotDisplayName(definition.SlotType)} / "
-					+ $"\uACF5\uACA9 +{definition.AttackBonus} / \uBC29\uC5B4 +{definition.DefenseBonus} / "
-					+ $"\uB0B4\uAD6C\uB3C4 {item.Durability}/{item.MaxDurability} / {equippedText}");
-			}
-			else
-			{
-				lines.Add(
-					$"{item.DefinitionId} / \uC54C \uC218 \uC5C6\uB294 \uC2AC\uB86F / "
-					+ $"\uB0B4\uAD6C\uB3C4 {item.Durability}/{item.MaxDurability} / {equippedText}");
-			}
+	private Control CreateEquipmentRow(EquipmentInstance item)
+	{
+		HBoxContainer row = new()
+		{
+			MouseFilter = MouseFilterEnum.Stop,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill
+		};
+		row.AddThemeConstantOverride("separation", 6);
+
+		Label label = CreateStorageDetailLabel(GetEquipmentRowText(item), 10);
+		label.CustomMinimumSize = new Vector2(190.0f, 0.0f);
+		row.AddChild(label);
+
+		Button button = CreateButton(GetEquipmentActionButtonText(item), new Vector2(58.0f, 24.0f));
+		button.AddThemeFontSizeOverride("font_size", 10);
+		PrepareSingleLineButton(button);
+		ConfigureEquipmentActionButton(button, item);
+		row.AddChild(button);
+
+		return row;
+	}
+
+	private string GetEquipmentRowText(EquipmentInstance item)
+	{
+		string equippedText = GetEquipmentEquippedText(item);
+
+		if (EquipmentDefinitionDatabase.TryGet(item.DefinitionId, out EquipmentDefinitionEntry? definition))
+		{
+			return $"{definition.DisplayName} / {GetEquipmentSlotDisplayName(definition.SlotType)} / "
+				+ $"\uACF5\uACA9 +{definition.AttackBonus} / \uBC29\uC5B4 +{definition.DefenseBonus} / "
+				+ $"\uB0B4\uAD6C\uB3C4 {item.Durability}/{item.MaxDurability} / {equippedText}";
 		}
 
-		return string.Join("\n", lines);
+		return $"{item.DefinitionId} / \uC54C \uC218 \uC5C6\uB294 \uC2AC\uB86F / "
+			+ $"\uB0B4\uAD6C\uB3C4 {item.Durability}/{item.MaxDurability} / {equippedText}";
+	}
+
+	private void ConfigureEquipmentActionButton(Button button, EquipmentInstance item)
+	{
+		MercenaryController? targetMercenary = GetValidEquipmentTargetMercenary();
+
+		if (targetMercenary == null)
+		{
+			button.Disabled = true;
+			button.Text = "\uC7A5\uCC29";
+			return;
+		}
+
+		string mercenaryId = GetMercenaryEquipmentId(targetMercenary);
+
+		if (!EquipmentDefinitionDatabase.TryGet(item.DefinitionId, out EquipmentDefinitionEntry? definition))
+		{
+			button.Disabled = true;
+			button.Text = "\uC7A5\uCC29";
+			return;
+		}
+
+		if (item.IsEquipped)
+		{
+			if (item.EquippedMercenaryId == mercenaryId)
+			{
+				button.Text = "\uD574\uC81C";
+				button.Disabled = false;
+				button.Pressed += () => TryUnequipSelectedMercenaryEquipment(definition.SlotType);
+				return;
+			}
+
+			button.Text = "\uC7A5\uCC29 \uC911";
+			button.Disabled = true;
+			return;
+		}
+
+		button.Text = "\uC7A5\uCC29";
+		button.Disabled = false;
+		button.Pressed += () => TryEquipSelectedMercenaryEquipment(item.InstanceId, definition.SlotType);
+	}
+
+	private string GetEquipmentActionButtonText(EquipmentInstance item)
+	{
+		return item.IsEquipped ? "\uC7A5\uCC29 \uC911" : "\uC7A5\uCC29";
+	}
+
+	private string GetEquipmentEquippedText(EquipmentInstance item)
+	{
+		if (!item.IsEquipped)
+		{
+			return "\uBBF8\uC7A5\uCC29";
+		}
+
+		if (GetValidEquipmentTargetMercenary() is { } targetMercenary
+			&& item.EquippedMercenaryId == GetMercenaryEquipmentId(targetMercenary))
+		{
+			return "\uC120\uD0DD \uC6A9\uBCD1 \uC7A5\uCC29";
+		}
+
+		return "\uC7A5\uCC29 \uC911";
+	}
+
+	private string BuildEquipmentLoadoutSummaryText()
+	{
+		MercenaryController? targetMercenary = GetValidEquipmentTargetMercenary();
+
+		if (targetMercenary == null)
+		{
+			return "\uC7A5\uBE44\n\uC7A5\uCC29 \uB300\uC0C1: \uC6A9\uBCD1 1\uBA85 \uC120\uD0DD \uD544\uC694";
+		}
+
+		string mercenaryId = GetMercenaryEquipmentId(targetMercenary);
+		MercenaryEquipmentLoadoutManager? loadoutManager = GetMercenaryEquipmentLoadoutManager();
+		MercenaryEquipmentLoadout? loadout = null;
+		loadoutManager?.TryGetLoadout(mercenaryId, out loadout);
+
+		return $"\uC7A5\uBE44\n\uC7A5\uCC29 \uB300\uC0C1: {targetMercenary.Profile.DisplayName}\n"
+			+ $"Weapon: {GetLoadoutSlotText(loadout, EquipmentSlotType.Weapon)}\n"
+			+ $"Armor: {GetLoadoutSlotText(loadout, EquipmentSlotType.Armor)}\n"
+			+ $"Shield: {GetLoadoutSlotText(loadout, EquipmentSlotType.Shield)}\n"
+			+ $"Accessory: {GetLoadoutSlotText(loadout, EquipmentSlotType.Accessory)}\n"
+			+ $"Tool: {GetLoadoutSlotText(loadout, EquipmentSlotType.Tool)}";
+	}
+
+	private string GetLoadoutSlotText(MercenaryEquipmentLoadout? loadout, EquipmentSlotType slot)
+	{
+		if (loadout == null || !loadout.TryGetEquipped(slot, out string? instanceId) || string.IsNullOrWhiteSpace(instanceId))
+		{
+			return "\uC5C6\uC74C";
+		}
+
+		EquipmentInventoryManager? equipmentInventoryManager = GetEquipmentInventoryManager();
+		if (equipmentInventoryManager != null
+			&& equipmentInventoryManager.TryGetEquipment(instanceId, out EquipmentInstance? instance)
+			&& instance != null)
+		{
+			return EquipmentDefinitionDatabase.GetDisplayName(instance.DefinitionId);
+		}
+
+		return instanceId;
+	}
+
+	private void TryEquipSelectedMercenaryEquipment(string instanceId, EquipmentSlotType slot)
+	{
+		MercenaryController? targetMercenary = GetValidEquipmentTargetMercenary();
+		EquipmentInventoryManager? equipmentInventoryManager = GetEquipmentInventoryManager();
+		MercenaryEquipmentLoadoutManager? loadoutManager = GetMercenaryEquipmentLoadoutManager();
+
+		if (targetMercenary == null)
+		{
+			SetEquipmentActionStatus("\uC120\uD0DD\uB41C \uC6A9\uBCD1 \uC5C6\uC74C");
+			return;
+		}
+
+		if (equipmentInventoryManager == null || loadoutManager == null)
+		{
+			SetEquipmentActionStatus("\uC7A5\uBE44 \uAD00\uB9AC\uC790 \uC5C6\uC74C");
+			return;
+		}
+
+		if (loadoutManager.TryEquip(GetMercenaryEquipmentId(targetMercenary), slot, instanceId, equipmentInventoryManager, out string? reason))
+		{
+			SetEquipmentActionStatus("\uC7A5\uCC29 \uC644\uB8CC");
+			RefreshEquipmentPanel();
+			return;
+		}
+
+		SetEquipmentActionStatus(GetEquipmentActionReasonText(reason, "\uC7A5\uCC29 \uC2E4\uD328"));
+		RefreshEquipmentPanel();
+	}
+
+	private void TryUnequipSelectedMercenaryEquipment(EquipmentSlotType slot)
+	{
+		MercenaryController? targetMercenary = GetValidEquipmentTargetMercenary();
+		EquipmentInventoryManager? equipmentInventoryManager = GetEquipmentInventoryManager();
+		MercenaryEquipmentLoadoutManager? loadoutManager = GetMercenaryEquipmentLoadoutManager();
+
+		if (targetMercenary == null)
+		{
+			SetEquipmentActionStatus("\uC120\uD0DD\uB41C \uC6A9\uBCD1 \uC5C6\uC74C");
+			return;
+		}
+
+		if (equipmentInventoryManager == null || loadoutManager == null)
+		{
+			SetEquipmentActionStatus("\uC7A5\uBE44 \uAD00\uB9AC\uC790 \uC5C6\uC74C");
+			return;
+		}
+
+		if (loadoutManager.TryUnequip(GetMercenaryEquipmentId(targetMercenary), slot, equipmentInventoryManager, out _, out string? reason))
+		{
+			SetEquipmentActionStatus(GetEquipmentActionReasonText(reason, "\uD574\uC81C \uC644\uB8CC"));
+			RefreshEquipmentPanel();
+			return;
+		}
+
+		SetEquipmentActionStatus(GetEquipmentActionReasonText(reason, "\uD574\uC81C \uC2E4\uD328"));
+		RefreshEquipmentPanel();
+	}
+
+	private void RefreshEquipmentPanel()
+	{
+		RefreshEquipmentInventoryList();
+	}
+
+	private void SetEquipmentActionStatus(string text)
+	{
+		_equipmentActionStatusText = text;
+
+		if (_equipmentActionStatusLabel != null
+			&& GodotObject.IsInstanceValid(_equipmentActionStatusLabel)
+			&& !_equipmentActionStatusLabel.IsQueuedForDeletion())
+		{
+			_equipmentActionStatusLabel.Text = text;
+		}
+	}
+
+	private static string GetEquipmentActionReasonText(string? reason, string fallback)
+	{
+		if (string.IsNullOrWhiteSpace(reason))
+		{
+			return fallback;
+		}
+
+		return reason switch
+		{
+			"Mercenary id is empty." => "\uC120\uD0DD\uB41C \uC6A9\uBCD1 \uC5C6\uC74C",
+			"Equipment instance id is empty." => "\uC7A5\uBE44 \uC815\uBCF4 \uC5C6\uC74C",
+			"Equipment inventory is missing." => "\uC7A5\uBE44 \uAD00\uB9AC\uC790 \uC5C6\uC74C",
+			"Equipment instance was not found." => "\uC7A5\uBE44\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC74C",
+			"Equipment slot mismatch." => "\uC7A5\uBE44 \uC885\uB958\uAC00 \uC2AC\uB86F\uACFC \uB9DE\uC9C0 \uC54A\uC74C",
+			"Equipment slot is already occupied." => "\uC2AC\uB86F\uC774 \uC774\uBBF8 \uCC28 \uC788\uC74C",
+			"Equipment instance is already equipped." => "\uC774\uBBF8 \uC7A5\uCC29\uB41C \uC7A5\uBE44",
+			"Equipment instance is marked equipped by another mercenary." => "\uB2E4\uB978 \uC6A9\uBCD1\uC774 \uC7A5\uCC29 \uC911",
+			"Failed to assign equipment to loadout." => "\uC7A5\uCC29 \uC2E4\uD328",
+			"Equipment slot is empty." => "\uD574\uC81C\uD560 \uC7A5\uBE44 \uC5C6\uC74C",
+			"Failed to clear equipment slot." => "\uD574\uC81C \uC2E4\uD328",
+			"Cleared orphaned equipment reference." => "\uC7A5\uBE44 \uCC38\uC870 \uC815\uB9AC\uB428",
+			_ => reason
+		};
 	}
 
 	private EquipmentInventoryManager? GetEquipmentInventoryManager()
 	{
 		return GetTree().CurrentScene?.GetNodeOrNull<EquipmentInventoryManager>("EquipmentInventoryManager");
+	}
+
+	private MercenaryEquipmentLoadoutManager? GetMercenaryEquipmentLoadoutManager()
+	{
+		return GetTree().CurrentScene?.GetNodeOrNull<MercenaryEquipmentLoadoutManager>("MercenaryEquipmentLoadoutManager");
+	}
+
+	private MercenaryController? GetValidEquipmentTargetMercenary()
+	{
+		return IsValidMercenaryReference(_equipmentTargetMercenary) ? _equipmentTargetMercenary : null;
+	}
+
+	private static string GetMercenaryEquipmentId(MercenaryController mercenary)
+	{
+		return string.IsNullOrWhiteSpace(mercenary.Profile.MercenaryId)
+			? mercenary.GetInstanceId().ToString()
+			: mercenary.Profile.MercenaryId;
+	}
+
+	private static bool IsValidMercenaryReference(MercenaryController? mercenary)
+	{
+		return mercenary != null
+			&& GodotObject.IsInstanceValid(mercenary)
+			&& !mercenary.IsQueuedForDeletion();
 	}
 
 	private static string GetEquipmentSlotDisplayName(EquipmentSlotType slotType)
@@ -1958,12 +2259,7 @@ public partial class WorldBuildPanel : Control
 			ShowStorageInfo(originCell);
 		}
 
-		if (_equipmentInventoryLabel != null
-			&& GodotObject.IsInstanceValid(_equipmentInventoryLabel)
-			&& !_equipmentInventoryLabel.IsQueuedForDeletion())
-		{
-			_equipmentInventoryLabel.Text = BuildEquipmentInventoryText();
-		}
+		RefreshEquipmentInventoryList();
 
 		UpdateStorageButtonStyles();
 		UpdateSelectionLabel();

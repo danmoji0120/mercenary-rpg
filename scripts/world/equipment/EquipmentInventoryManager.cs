@@ -71,6 +71,11 @@ public partial class EquipmentInventoryManager : Node
         return Inventory.TryRemove(instanceId, out instance);
     }
 
+    public bool TryGetEquipment(string instanceId, out EquipmentInstance? instance)
+    {
+        return Inventory.TryGet(instanceId, out instance);
+    }
+
     public IReadOnlyList<EquipmentInstance> GetAllEquipment()
     {
         return Inventory.Items;
