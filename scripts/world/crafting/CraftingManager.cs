@@ -10,11 +10,32 @@ public partial class CraftingManager : Node
     {
         get
         {
+            PruneInactiveJobs();
             int count = 0;
 
             foreach (CraftJob job in _jobs)
             {
                 if (IsActiveJob(job))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+    }
+
+    public int InactiveJobCount
+    {
+        get
+        {
+            int count = 0;
+
+            foreach (CraftJob job in _jobs)
+            {
+                job.PruneReservations();
+
+                if (!IsActiveJob(job))
                 {
                     count++;
                 }
@@ -31,6 +52,7 @@ public partial class CraftingManager : Node
 
     public IReadOnlyList<CraftJob> GetActiveJobs()
     {
+        PruneInactiveJobs();
         List<CraftJob> jobs = new();
 
         foreach (CraftJob job in _jobs)
@@ -44,8 +66,26 @@ public partial class CraftingManager : Node
         return jobs;
     }
 
+    public IReadOnlyList<CraftJob> GetInactiveJobs()
+    {
+        List<CraftJob> jobs = new();
+
+        foreach (CraftJob job in _jobs)
+        {
+            job.PruneReservations();
+
+            if (!IsActiveJob(job))
+            {
+                jobs.Add(job);
+            }
+        }
+
+        return jobs;
+    }
+
     public IReadOnlyList<CraftJob> GetMaterialDeliveryJobs()
     {
+        PruneInactiveJobs();
         List<CraftJob> jobs = new();
 
         foreach (CraftJob job in _jobs)
@@ -78,6 +118,7 @@ public partial class CraftingManager : Node
 
     public IReadOnlyList<CraftJob> GetReadyToCraftJobs()
     {
+        PruneInactiveJobs();
         List<CraftJob> jobs = new();
 
         foreach (CraftJob job in _jobs)
@@ -109,6 +150,7 @@ public partial class CraftingManager : Node
 
     public IReadOnlyList<CraftJob> GetOutputReadyJobs()
     {
+        PruneInactiveJobs();
         List<CraftJob> jobs = new();
 
         foreach (CraftJob job in _jobs)
@@ -201,6 +243,7 @@ public partial class CraftingManager : Node
             }
         }
 
+        PruneInactiveJobs();
         return cancelledCount;
     }
 
@@ -251,6 +294,8 @@ public partial class CraftingManager : Node
 
     public void ValidateJobs()
     {
+        PruneInactiveJobs();
+
         foreach (CraftJob job in _jobs)
         {
             job.PruneReservations();
@@ -262,6 +307,29 @@ public partial class CraftingManager : Node
                 job.TryFinalizeOutputs();
             }
         }
+
+        PruneInactiveJobs();
+    }
+
+    public int PruneInactiveJobs()
+    {
+        int removedCount = 0;
+
+        for (int index = _jobs.Count - 1; index >= 0; index--)
+        {
+            CraftJob job = _jobs[index];
+            job.PruneReservations();
+
+            if (IsActiveJob(job))
+            {
+                continue;
+            }
+
+            _jobs.RemoveAt(index);
+            removedCount++;
+        }
+
+        return removedCount;
     }
 
     private static bool IsActiveJob(CraftJob job)

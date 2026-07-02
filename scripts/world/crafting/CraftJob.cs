@@ -315,6 +315,14 @@ public sealed class CraftJob
 
     public void PruneReservations()
     {
+        if (IsCompleted || IsCancelled)
+        {
+            _reservedWorker = null;
+            _reservedDeliveryWorker = null;
+            _reservedOutputWorker = null;
+            return;
+        }
+
         bool clearedCraftWorker = false;
 
         if (!IsValidWorker(_reservedWorker))
