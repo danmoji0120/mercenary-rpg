@@ -3,11 +3,28 @@ using Godot;
 
 public partial class SelectedMercenaryHud : Control
 {
+    private const float HudLeftMargin = 12.0f;
+    private const float HudRightMargin = 12.0f;
+    private const float HudBottomMargin = 12.0f;
+    private const float HudRightReservedWidth = 240.0f;
+    private const float HudMaxHeight = 156.0f;
+    private const float HudMinHeight = 124.0f;
+    private const float HudMinWidth = 520.0f;
+    private const int InventoryVisibleItemLines = 2;
+
     [Export]
     public bool ShowDebugStatusText { get; set; } = false;
 
     private Label? _statusLabel;
-    private Label? _profileLabel;
+    private PanelContainer? _rimHudPanel;
+    private Label? _identityNameLabel;
+    private Label? _identityMetaLabel;
+    private Label? _identityStateLabel;
+    private Label? _workLabel;
+    private Label? _inventoryLabel;
+    private Label? _needsLabel;
+    private Label? _statsLabel;
+    private Label? _warningLabel;
     private BaseBuildManager? _buildManager;
     private BaseAlertState? _baseAlertState;
 
@@ -29,20 +46,12 @@ public partial class SelectedMercenaryHud : Control
 
         AddChild(_statusLabel);
 
-        _profileLabel = new Label
-        {
-            Name = "MercenaryProfileLabel",
-            Text = "",
-            Position = new Vector2(220.0f, 12.0f),
-            Size = new Vector2(460.0f, 320.0f),
-            MouseFilter = MouseFilterEnum.Ignore,
-            Visible = false,
-            AutowrapMode = TextServer.AutowrapMode.WordSmart
-        };
-        _profileLabel.AddThemeFontSizeOverride("font_size", 13);
-        _profileLabel.AddThemeColorOverride("font_outline_color", new Color(0.0f, 0.0f, 0.0f, 0.82f));
-        _profileLabel.AddThemeConstantOverride("outline_size", 2);
-        AddChild(_profileLabel);
+        BuildRimHudPanel();
+    }
+
+    public override void _Process(double delta)
+    {
+        UpdateRimHudPanelLayout();
     }
 
     public void SetDebugStatusVisible(bool visible)
@@ -53,6 +62,141 @@ public partial class SelectedMercenaryHud : Control
         {
             _statusLabel.Visible = visible;
         }
+    }
+
+    private void BuildRimHudPanel()
+    {
+        _rimHudPanel = new PanelContainer
+        {
+            Name = "SelectedMercenaryRimHud",
+            MouseFilter = MouseFilterEnum.Ignore,
+            Visible = false
+        };
+        _rimHudPanel.AnchorLeft = 0.0f;
+        _rimHudPanel.AnchorRight = 0.0f;
+        _rimHudPanel.AnchorTop = 0.0f;
+        _rimHudPanel.AnchorBottom = 0.0f;
+
+        StyleBoxFlat panelStyle = new()
+        {
+            BgColor = new Color(0.05f, 0.06f, 0.075f, 0.88f),
+            BorderColor = new Color(0.42f, 0.48f, 0.55f, 0.72f)
+        };
+        panelStyle.SetBorderWidthAll(1);
+        panelStyle.SetCornerRadiusAll(4);
+        _rimHudPanel.AddThemeStyleboxOverride("panel", panelStyle);
+
+        MarginContainer margin = new()
+        {
+            MouseFilter = MouseFilterEnum.Ignore
+        };
+        margin.AddThemeConstantOverride("margin_left", 8);
+        margin.AddThemeConstantOverride("margin_top", 6);
+        margin.AddThemeConstantOverride("margin_right", 8);
+        margin.AddThemeConstantOverride("margin_bottom", 6);
+        _rimHudPanel.AddChild(margin);
+
+        HBoxContainer row = new()
+        {
+            MouseFilter = MouseFilterEnum.Ignore
+        };
+        row.AddThemeConstantOverride("separation", 6);
+        margin.AddChild(row);
+
+        VBoxContainer identitySection = CreateHudSection("\uC6A9\uBCD1", 160.0f);
+        _identityNameLabel = CreateHudLabel(14, new Color(0.96f, 0.91f, 0.72f));
+        _identityMetaLabel = CreateHudLabel();
+        _identityStateLabel = CreateHudLabel();
+        identitySection.AddChild(_identityNameLabel);
+        identitySection.AddChild(_identityMetaLabel);
+        identitySection.AddChild(_identityStateLabel);
+        row.AddChild(identitySection);
+
+        VBoxContainer workSection = CreateHudSection("\uD604\uC7AC \uC791\uC5C5", 220.0f);
+        _workLabel = CreateHudLabel();
+        workSection.AddChild(_workLabel);
+        row.AddChild(workSection);
+
+        VBoxContainer inventorySection = CreateHudSection("\uC18C\uC9C0\uD488", 170.0f);
+        _inventoryLabel = CreateHudLabel();
+        inventorySection.AddChild(_inventoryLabel);
+        row.AddChild(inventorySection);
+
+        VBoxContainer needsSection = CreateHudSection("\uC695\uAD6C / \uC0C1\uD0DC", 190.0f);
+        _needsLabel = CreateHudLabel();
+        needsSection.AddChild(_needsLabel);
+        row.AddChild(needsSection);
+
+        VBoxContainer statsSection = CreateHudSection("\uC8FC\uC694 \uB2A5\uB825\uCE58", 210.0f);
+        _statsLabel = CreateHudLabel();
+        _warningLabel = CreateHudLabel(10, new Color(1.0f, 0.68f, 0.48f));
+        statsSection.AddChild(_statsLabel);
+        statsSection.AddChild(_warningLabel);
+        row.AddChild(statsSection);
+
+        AddChild(_rimHudPanel);
+        UpdateRimHudPanelLayout();
+    }
+
+    private void UpdateRimHudPanelLayout()
+    {
+        if (_rimHudPanel == null)
+        {
+            return;
+        }
+
+        Vector2 viewportSize = GetViewportRect().Size;
+        float availableWidth = viewportSize.X - HudLeftMargin - HudRightReservedWidth - HudRightMargin;
+        float fallbackWidth = Mathf.Max(0.0f, viewportSize.X - HudLeftMargin - HudRightMargin);
+        float panelWidth = availableWidth >= HudMinWidth ? availableWidth : fallbackWidth;
+        panelWidth = Mathf.Max(280.0f, panelWidth);
+        panelWidth = Mathf.Min(panelWidth, fallbackWidth);
+
+        float maxHeightForViewport = Mathf.Max(80.0f, viewportSize.Y - HudBottomMargin * 2.0f);
+        float panelHeight = Mathf.Clamp(HudMaxHeight, 80.0f, maxHeightForViewport);
+
+        if (panelHeight < HudMinHeight && maxHeightForViewport >= HudMinHeight)
+        {
+            panelHeight = HudMinHeight;
+        }
+
+        float maxY = Mathf.Max(0.0f, viewportSize.Y - panelHeight);
+        float panelY = Mathf.Clamp(viewportSize.Y - panelHeight - HudBottomMargin, 0.0f, maxY);
+        _rimHudPanel.Position = new Vector2(HudLeftMargin, panelY);
+        _rimHudPanel.Size = new Vector2(panelWidth, panelHeight);
+        _rimHudPanel.CustomMinimumSize = new Vector2(280.0f, 80.0f);
+    }
+
+    private static VBoxContainer CreateHudSection(string title, float width)
+    {
+        VBoxContainer section = new()
+        {
+            MouseFilter = MouseFilterEnum.Ignore,
+            CustomMinimumSize = new Vector2(width, 0.0f)
+        };
+        section.AddThemeConstantOverride("separation", 2);
+
+        Label titleLabel = CreateHudLabel(10, new Color(0.58f, 0.68f, 0.78f));
+        titleLabel.Text = title;
+        titleLabel.Text = titleLabel.Text.ToUpperInvariant();
+        section.AddChild(titleLabel);
+
+        return section;
+    }
+
+    private static Label CreateHudLabel(int fontSize = 11, Color? color = null)
+    {
+        Label label = new()
+        {
+            Text = "-",
+            MouseFilter = MouseFilterEnum.Ignore,
+            AutowrapMode = TextServer.AutowrapMode.Off
+        };
+        label.AddThemeFontSizeOverride("font_size", fontSize);
+        label.AddThemeColorOverride("font_color", color ?? new Color(0.86f, 0.89f, 0.9f));
+        label.AddThemeColorOverride("font_outline_color", new Color(0.0f, 0.0f, 0.0f, 0.72f));
+        label.AddThemeConstantOverride("outline_size", 1);
+        return label;
     }
 
     public void UpdateSelectionSummary(IEnumerable<MercenaryController> selectedMercenaries)
@@ -154,9 +298,9 @@ public partial class SelectedMercenaryHud : Control
             summary += BuildPathFeedbackSummary(singleSelectedMercenary);
             ShowProfileSummary(singleSelectedMercenary);
         }
-        else if (_profileLabel != null)
+        else
         {
-            _profileLabel.Visible = false;
+            HideProfileSummary();
         }
 
         summary += BuildResourceSummary();
@@ -169,7 +313,7 @@ public partial class SelectedMercenaryHud : Control
 
     private void ShowProfileSummary(MercenaryController mercenary)
     {
-        if (_profileLabel == null)
+        if (_rimHudPanel == null)
         {
             return;
         }
@@ -177,51 +321,171 @@ public partial class SelectedMercenaryHud : Control
         MercenaryProfile profile = mercenary.Profile;
         MercenaryStats stats = profile.Stats;
         MercenaryCondition condition = profile.Condition;
-        int hunger = Mathf.RoundToInt(condition.Hunger);
-        int sleepiness = Mathf.RoundToInt(condition.Sleepiness);
-        int mood = Mathf.RoundToInt(condition.Mood);
-        int stress = Mathf.RoundToInt(condition.Stress);
-        int hygiene = Mathf.RoundToInt(condition.Hygiene);
-        int injurySeverity = Mathf.RoundToInt(condition.InjurySeverity);
-
-        string traits = profile.Traits.Count == 0 ? "-" : string.Join(", ", profile.Traits);
-        string useProgressLabel = mercenary.GetCurrentUseProgressLabel();
-        string useProgressText = string.IsNullOrWhiteSpace(useProgressLabel)
-            ? ""
-            : $"\n\uC9C4\uD589: {useProgressLabel}";
+        string secondaryRole = profile.SecondaryRole == profile.PrimaryRole ? "" : $" / {profile.SecondaryRole}";
+        string progressLabel = mercenary.GetCurrentUseProgressLabel();
         string roomEffectLabel = mercenary.GetCurrentRoomEffectLabel();
-        string roomEffectText = string.IsNullOrWhiteSpace(roomEffectLabel)
-            ? ""
-            : $"\n\uBC29 \uD6A8\uACFC: {roomEffectLabel}";
-        string inventoryContents = mercenary.GetInventoryContentsSummary();
         string logisticsWarning = mercenary.GetLogisticsValidationWarning();
-        string logisticsWarningText = string.IsNullOrWhiteSpace(logisticsWarning)
-            ? ""
-            : $"\n\uACBD\uACE0: {logisticsWarning}";
-        _profileLabel.Text =
-            $"{profile.DisplayName} [{profile.Rank}]\n"
-            + $"{profile.Race} / {profile.PrimaryRole}"
-            + (profile.SecondaryRole == profile.PrimaryRole ? "" : $" / {profile.SecondaryRole}")
-            + $"\nHP {condition.Health}/{stats.MaxHealth}"
-            + $"\n\uC0C1\uD0DC \uC694\uC57D: {mercenary.GetConditionStatusSummary()}"
-            + $"\n\uAE30\uBD84 {mood} / \uC2A4\uD2B8\uB808\uC2A4 {stress} / \uC704\uC0DD {hygiene}"
-            + $"\n\uBC30\uACE0\uD514 {hunger} / \uC878\uB9BC {sleepiness} / \uBD80\uC0C1 {injurySeverity}"
-            + $"\n\uC6B4\uBC18 \uAC00\uB2A5 \uBB34\uAC8C {stats.MaxCarryWeight}"
-            + $"\n\uAC00\uBC29: {mercenary.GetInventoryWeightSummary()}"
-            + $"\n\uAC00\uBC29 \uB0B4\uC6A9: {inventoryContents}"
-            + logisticsWarningText
-            + $"\n\n\uD604\uC7AC \uC791\uC5C5: {mercenary.GetCurrentWorkLabel()}"
-            + $"\n\uBAA9\uD45C: {mercenary.GetCurrentWorkTargetLabel()}"
-            + $"\n\uC0C1\uD0DC: {mercenary.GetCurrentWorkStateLabel()}"
-            + $"\n\uC774\uC720: {mercenary.GetCurrentWorkDecisionReason()}"
-            + useProgressText
-            + roomEffectText
-            + $"\nSTR {stats.Strength} DEX {stats.Dexterity} END {stats.Endurance} INT {stats.Intelligence} WIL {stats.Willpower}"
-            + $"\n\uC219\uB828 C{stats.CombatSkill} H{stats.HaulingSkill} F{stats.FarmingSkill} Cr{stats.CraftingSkill} M{stats.MedicalSkill} Co{stats.CookingSkill}"
-            + $"\n\uC791\uC5C5: {profile.GetWorkSettings().GetCompactSummary()}"
-            + $"\n\uD2B9\uC131: {traits}"
-            + (string.IsNullOrWhiteSpace(profile.ShortDescription) ? "" : $"\n{profile.ShortDescription}");
-        _profileLabel.Visible = true;
+
+        SetLabelText(_identityNameLabel, TruncateText($"{profile.DisplayName} [{profile.Rank}]", 24));
+        SetLabelText(_identityMetaLabel, TruncateText($"{profile.Race} / {profile.PrimaryRole}{secondaryRole}", 30));
+        SetLabelText(
+            _identityStateLabel,
+            TruncateText($"\uD604\uC7AC: {mercenary.GetCurrentWorkSummary()}", 30));
+
+        List<string> workLines = new()
+        {
+            $"\uC791\uC5C5: {mercenary.GetCurrentWorkLabel()}",
+            $"\uBAA9\uD45C: {mercenary.GetCurrentWorkTargetLabel()}",
+            $"\uC0C1\uD0DC: {mercenary.GetCurrentWorkStateLabel()}"
+        };
+
+        if (!string.IsNullOrWhiteSpace(progressLabel))
+        {
+            workLines.Add($"\uC9C4\uD589: {progressLabel}");
+        }
+        else if (!string.IsNullOrWhiteSpace(roomEffectLabel))
+        {
+            workLines.Add($"\uBC29 \uD6A8\uACFC: {roomEffectLabel}");
+        }
+        else
+        {
+            workLines.Add($"\uC774\uC720: {mercenary.GetCurrentWorkDecisionReason()}");
+        }
+
+        SetLabelText(_workLabel, BuildLimitedLines(workLines, 4, 34));
+        SetLabelText(_inventoryLabel, BuildInventoryHudText(mercenary));
+        SetLabelText(
+            _needsLabel,
+            BuildLimitedLines(
+                new[]
+                {
+                    $"HP {condition.Health}/{stats.MaxHealth}",
+                    $"\uBC30\uACE0\uD514 {Mathf.RoundToInt(condition.Hunger)} / \uD53C\uB85C {Mathf.RoundToInt(condition.Sleepiness)}",
+                    $"\uAE30\uBD84 {Mathf.RoundToInt(condition.Mood)} / \uC2A4\uD2B8\uB808\uC2A4 {Mathf.RoundToInt(condition.Stress)}",
+                    $"\uC704\uC0DD {Mathf.RoundToInt(condition.Hygiene)} / \uBD80\uC0C1 {Mathf.RoundToInt(condition.InjurySeverity)}",
+                    $"\uC694\uC57D: {mercenary.GetConditionStatusSummary()}"
+                },
+                5,
+                32));
+
+        SetLabelText(
+            _statsLabel,
+            BuildLimitedLines(
+                new[]
+                {
+                    $"\uC804\uD22C {stats.CombatSkill}  \uC6B4\uBC18 {stats.HaulingSkill}",
+                    $"\uC81C\uC791 {stats.CraftingSkill}  \uB18D\uC0AC {stats.FarmingSkill}",
+                    $"\uC758\uB8CC {stats.MedicalSkill}  \uC694\uB9AC {stats.CookingSkill}",
+                    $"STR {stats.Strength}  DEX {stats.Dexterity}  END {stats.Endurance}",
+                    $"INT {stats.Intelligence}  WIL {stats.Willpower}  \uC6B4\uBC18 {stats.MaxCarryWeight}"
+                },
+                5,
+                34));
+
+        SetLabelText(
+            _warningLabel,
+            string.IsNullOrWhiteSpace(logisticsWarning)
+                ? ""
+                : BuildLimitedLines(new[] { $"\uACBD\uACE0: {logisticsWarning}" }, 1, 38));
+
+        UpdateRimHudPanelLayout();
+        _rimHudPanel.Visible = true;
+    }
+
+    private void HideProfileSummary()
+    {
+        if (_rimHudPanel != null)
+        {
+            _rimHudPanel.Visible = false;
+        }
+    }
+
+    private static void SetLabelText(Label? label, string text)
+    {
+        if (label == null)
+        {
+            return;
+        }
+
+        label.Text = GetNonEmptyText(text, "-");
+    }
+
+    private static string BuildInventoryHudText(MercenaryController mercenary)
+    {
+        List<string> lines = new()
+        {
+            $"\uAC00\uBC29: {mercenary.GetInventoryWeightSummary()}"
+        };
+        int hiddenCount = 0;
+        int shownCount = 0;
+
+        foreach (MercenaryInventoryStack stack in mercenary.Inventory.Stacks)
+        {
+            if (stack.Amount <= 0)
+            {
+                continue;
+            }
+
+            if (shownCount < InventoryVisibleItemLines)
+            {
+                lines.Add($"{BaseBuildManager.GetResourceDisplayName(stack.ResourceType)} x{stack.Amount}");
+                shownCount++;
+            }
+            else
+            {
+                hiddenCount++;
+            }
+        }
+
+        if (shownCount == 0)
+        {
+            lines.Add("\uBE44\uC5B4 \uC788\uC74C");
+        }
+        else if (hiddenCount > 0)
+        {
+            lines.Add($"\uC678 {hiddenCount}\uAC1C");
+        }
+
+        return BuildLimitedLines(lines, 4, 28);
+    }
+
+    private static string BuildLimitedLines(IEnumerable<string> lines, int maxLines, int maxCharactersPerLine)
+    {
+        List<string> result = new();
+
+        foreach (string line in lines)
+        {
+            if (result.Count >= maxLines)
+            {
+                break;
+            }
+
+            string compactLine = TruncateText(line, maxCharactersPerLine);
+
+            if (!string.IsNullOrWhiteSpace(compactLine))
+            {
+                result.Add(compactLine);
+            }
+        }
+
+        return result.Count == 0 ? "-" : string.Join("\n", result);
+    }
+
+    private static string TruncateText(string? text, int maxCharacters)
+    {
+        string value = GetNonEmptyText(text, "-").Replace('\n', ' ').Trim();
+
+        if (maxCharacters <= 3 || value.Length <= maxCharacters)
+        {
+            return value;
+        }
+
+        return value[..(maxCharacters - 3)] + "...";
+    }
+
+    private static string GetNonEmptyText(string? text, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(text) ? fallback : text;
     }
 
     private static string BuildNeedSummary(MercenaryController mercenary)
