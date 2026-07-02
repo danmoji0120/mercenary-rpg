@@ -129,7 +129,8 @@ public partial class CraftingPanel : Control
         HBoxContainer cancelRow = new()
         {
             Name = "CraftingCancelRow",
-            MouseFilter = MouseFilterEnum.Ignore
+            MouseFilter = MouseFilterEnum.Ignore,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill
         };
         cancelRow.AddThemeConstantOverride("separation", 6);
         content.AddChild(cancelRow);
@@ -137,7 +138,7 @@ public partial class CraftingPanel : Control
         _cancelJobButton = new Button
         {
             Text = "\uC791\uC5C5 \uCDE8\uC18C",
-            CustomMinimumSize = new Vector2(92.0f, 26.0f),
+            CustomMinimumSize = new Vector2(84.0f, 26.0f),
             FocusMode = FocusModeEnum.None,
             MouseFilter = MouseFilterEnum.Stop,
             Visible = false
@@ -147,6 +148,11 @@ public partial class CraftingPanel : Control
         cancelRow.AddChild(_cancelJobButton);
 
         _cancelReasonLabel = CreateLabel("", 10, false);
+        _cancelReasonLabel.CustomMinimumSize = new Vector2(170.0f, 0.0f);
+        _cancelReasonLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        _cancelReasonLabel.AutowrapMode = TextServer.AutowrapMode.Off;
+        _cancelReasonLabel.ClipText = true;
+        _cancelReasonLabel.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
         _cancelReasonLabel.Visible = false;
         cancelRow.AddChild(_cancelReasonLabel);
 
@@ -406,7 +412,7 @@ public partial class CraftingPanel : Control
         _cancelJobButton.Visible = true;
         _cancelJobButton.Disabled = !canCancel;
         _cancelReasonLabel.Visible = true;
-        _cancelReasonLabel.Text = canCancel ? "\uC548\uC804 \uCDE8\uC18C \uAC00\uB2A5" : reason;
+        _cancelReasonLabel.Text = canCancel ? "\uCDE8\uC18C \uAC00\uB2A5" : reason;
     }
 
     private void TryCancelActiveJob()
@@ -452,13 +458,13 @@ public partial class CraftingPanel : Control
 
         if (job.ProducedOutputs.Count > 0)
         {
-            reason = "\uCD9C\uB825 \uB300\uAE30 \uC911 \uCDE8\uC18C\uB294 \uC544\uC9C1 \uBD88\uAC00";
+            reason = "\uCD9C\uB825 \uB300\uAE30 \uC911 \uCDE8\uC18C \uBD88\uAC00";
             return false;
         }
 
         if (HasDeliveredInputs(job))
         {
-            reason = "\uC7AC\uB8CC \uD22C\uC785 \uD6C4 \uCDE8\uC18C\uB294 \uC544\uC9C1 \uBD88\uAC00";
+            reason = "\uC7AC\uB8CC \uD22C\uC785 \uD6C4 \uCDE8\uC18C \uBD88\uAC00";
             return false;
         }
 
@@ -470,10 +476,10 @@ public partial class CraftingPanel : Control
 
         reason = job.State switch
         {
-            CraftJobState.ReadyToCraft => "\uC7AC\uB8CC \uD22C\uC785 \uD6C4 \uCDE8\uC18C\uB294 \uC544\uC9C1 \uBD88\uAC00",
-            CraftJobState.Crafting => "\uC81C\uC791 \uC911 \uCDE8\uC18C\uB294 \uC544\uC9C1 \uBD88\uAC00",
-            CraftJobState.OutputReady => "\uCD9C\uB825 \uB300\uAE30 \uC911 \uCDE8\uC18C\uB294 \uC544\uC9C1 \uBD88\uAC00",
-            _ => "\uC791\uC5C5 \uC0C1\uD0DC\uC0C1 \uCDE8\uC18C \uBD88\uAC00"
+            CraftJobState.ReadyToCraft => "\uC7AC\uB8CC \uD22C\uC785 \uD6C4 \uCDE8\uC18C \uBD88\uAC00",
+            CraftJobState.Crafting => "\uC81C\uC791 \uC911 \uCDE8\uC18C \uBD88\uAC00",
+            CraftJobState.OutputReady => "\uCD9C\uB825 \uB300\uAE30 \uC911 \uCDE8\uC18C \uBD88\uAC00",
+            _ => "\uCDE8\uC18C \uBD88\uAC00"
         };
         return false;
     }
