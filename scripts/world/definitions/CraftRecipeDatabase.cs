@@ -36,7 +36,7 @@ public static class CraftRecipeDatabase
             TileBuildType.Forge,
             CraftRecipeCategory.Smithing,
             30,
-            false,
+            true,
             "\uAE08\uC18D \uC6D0\uC7AC\uB8CC\uB97C \uC81C\uB828\uD574 \uCCA0\uAD34\uB85C \uB9CC\uB4DC\uB294 \uD6C4\uBCF4 \uB808\uC2DC\uD53C\uC785\uB2C8\uB2E4."),
         Entry(
             "cook_simple_meal",

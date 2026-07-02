@@ -1187,17 +1187,9 @@ public partial class MainWorldController : Node2D
             return false;
         }
 
-        bool hasActiveRecipe = false;
-        foreach (CraftRecipeEntry recipe in CraftRecipeDatabase.GetRecipesForFacility(objectType))
-        {
-            if (recipe.IsEnabled)
-            {
-                hasActiveRecipe = true;
-                break;
-            }
-        }
+        bool hasFacilityRecipe = CraftRecipeDatabase.GetRecipesForFacility(objectType).Count > 0;
 
-        if (!hasActiveRecipe)
+        if (!hasFacilityRecipe)
         {
             return false;
         }

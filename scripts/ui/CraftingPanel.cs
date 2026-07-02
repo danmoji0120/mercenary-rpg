@@ -12,6 +12,7 @@ public partial class CraftingPanel : Control
     private CraftingManager? _craftingManager;
     private PanelContainer? _panel;
     private Label? _facilityLabel;
+    private Label? _jobStatusLabel;
     private VBoxContainer? _recipeList;
     private Label? _statusLabel;
     private Vector2I _facilityOriginCell;
@@ -38,7 +39,7 @@ public partial class CraftingPanel : Control
         _refreshTimer -= (float)delta;
         if (_refreshTimer <= 0.0f)
         {
-            _refreshTimer = 0.75f;
+            _refreshTimer = 0.45f;
             RefreshRecipes();
         }
     }
@@ -120,6 +121,9 @@ public partial class CraftingPanel : Control
         _facilityLabel = CreateLabel("-", 12, false);
         content.AddChild(_facilityLabel);
 
+        _jobStatusLabel = CreateLabel("-", 11, false);
+        content.AddChild(_jobStatusLabel);
+
         content.AddChild(new HSeparator
         {
             MouseFilter = MouseFilterEnum.Ignore
@@ -147,6 +151,8 @@ public partial class CraftingPanel : Control
                 : BaseBuildManager.GetBuildDisplayName(_facilityType);
             _facilityLabel.Text = $"\uC81C\uC791\uB300: {facilityName} ({_facilityOriginCell.X}, {_facilityOriginCell.Y})";
         }
+
+        UpdateJobStatusLabel();
 
         if (_recipeList == null)
         {
@@ -229,9 +235,20 @@ public partial class CraftingPanel : Control
         rowPanel.AddChild(row);
 
         row.AddChild(CreateLabel(recipe.DisplayName, 13, true));
-        row.AddChild(CreateLabel($"\uC785\uB825: {FormatAmounts(recipe.Inputs)}", 11, false));
-        row.AddChild(CreateLabel($"\uCD9C\uB825: {FormatAmounts(recipe.Outputs)}", 11, false));
+        row.AddChild(CreateLabel($"\uC785\uB825: {FormatInputAmounts(recipe.Inputs)}", 11, false));
+        row.AddChild(CreateLabel($"\uACB0\uACFC: {FormatAmounts(recipe.Outputs)}", 11, false));
         row.AddChild(CreateLabel($"\uC791\uC5C5\uB7C9: {recipe.RequiredWork:0.0}", 11, false));
+
+        CraftJob? activeJob = null;
+        bool hasExistingJob = _craftingManager != null && _craftingManager.TryGetJobAtFacility(_facilityOriginCell, out activeJob);
+        if (hasExistingJob && activeJob != null && activeJob.RecipeId == recipe.RecipeId)
+        {
+            row.AddChild(CreateLabel($"\uC0C1\uD0DC: {FormatJobState(activeJob)}", 11, false));
+        }
+        else if (!hasExistingJob && HasMissingInput(recipe))
+        {
+            row.AddChild(CreateLabel("\uC7AC\uB8CC \uBD80\uC871: \uB300\uAE30 \uC608\uC57D \uAC00\uB2A5", 10, false));
+        }
 
         Button reserveButton = new()
         {
@@ -242,14 +259,17 @@ public partial class CraftingPanel : Control
         };
         reserveButton.AddThemeFontSizeOverride("font_size", 12);
 
-        bool hasExistingJob = _craftingManager != null && _craftingManager.TryGetJobAtFacility(_facilityOriginCell, out _);
-        reserveButton.Disabled = hasExistingJob;
+        reserveButton.Disabled = _craftingManager == null || hasExistingJob;
         reserveButton.Pressed += () => TryReserveRecipe(recipe.RecipeId);
         row.AddChild(reserveButton);
 
         if (hasExistingJob)
         {
-            row.AddChild(CreateLabel("\uC774\uBBF8 \uC791\uC5C5\uC774 \uC788\uC74C", 10, false));
+            row.AddChild(CreateLabel("\uC608\uC57D \uBD88\uAC00: \uC774\uBBF8 \uC791\uC5C5\uC774 \uC788\uC74C", 10, false));
+        }
+        else if (_craftingManager == null)
+        {
+            row.AddChild(CreateLabel("\uC608\uC57D \uBD88\uAC00: \uC81C\uC791 \uAD00\uB9AC\uC790 \uC5C6\uC74C", 10, false));
         }
     }
 
@@ -268,9 +288,14 @@ public partial class CraftingPanel : Control
             return;
         }
 
+        bool hasMissingMaterials = CraftRecipeDatabase.TryGet(recipeId, out CraftRecipeEntry recipe)
+            && HasMissingInput(recipe);
+
         if (_craftingManager.TryCreateJob(recipeId, _facilityOriginCell, out _))
         {
-            SetStatus("\uC608\uC57D \uC644\uB8CC");
+            SetStatus(hasMissingMaterials
+                ? "\uC7AC\uB8CC \uBD80\uC871: \uC791\uC5C5\uC740 \uB300\uAE30 \uC0C1\uD0DC\uB85C \uC608\uC57D\uB428"
+                : "\uC608\uC57D \uC644\uB8CC");
             RefreshRecipes();
             return;
         }
@@ -299,6 +324,51 @@ public partial class CraftingPanel : Control
         float maxHeight = Mathf.Max(180.0f, viewportSize.Y - PanelTopMargin - 170.0f);
         _panel.Position = new Vector2(x, PanelTopMargin);
         _panel.Size = new Vector2(PanelWidth, Mathf.Min(360.0f, maxHeight));
+    }
+
+    private void UpdateJobStatusLabel()
+    {
+        if (_jobStatusLabel == null)
+        {
+            return;
+        }
+
+        if (_facilityType == TileBuildType.None)
+        {
+            _jobStatusLabel.Text = "\uD604\uC7AC \uC791\uC5C5: -";
+            return;
+        }
+
+        if (_craftingManager == null)
+        {
+            _jobStatusLabel.Text = "\uD604\uC7AC \uC791\uC5C5: \uC81C\uC791 \uAD00\uB9AC\uC790 \uC5C6\uC74C";
+            return;
+        }
+
+        if (!_craftingManager.TryGetJobAtFacility(_facilityOriginCell, out CraftJob? job) || job == null)
+        {
+            _jobStatusLabel.Text = "\uD604\uC7AC \uC791\uC5C5: \uC5C6\uC74C";
+            return;
+        }
+
+        string recipeName = CraftRecipeDatabase.TryGet(job.RecipeId, out CraftRecipeEntry recipe)
+            ? recipe.DisplayName
+            : job.RecipeId;
+        _jobStatusLabel.Text = $"\uD604\uC7AC \uC791\uC5C5: {recipeName} / {FormatJobState(job)}";
+    }
+
+    private static string FormatJobState(CraftJob job)
+    {
+        return job.State switch
+        {
+            CraftJobState.Crafting => $"Crafting {(int)(job.GetProgressRatio() * 100.0f)}%",
+            CraftJobState.WaitingForMaterials => "WaitingForMaterials",
+            CraftJobState.ReadyToCraft => "ReadyToCraft",
+            CraftJobState.OutputReady => "OutputReady",
+            CraftJobState.Completed => "Completed",
+            CraftJobState.Cancelled => "Cancelled",
+            _ => job.State.ToString()
+        };
     }
 
     private static Label CreateLabel(string text, int fontSize, bool highlighted)
@@ -334,5 +404,39 @@ public partial class CraftingPanel : Control
         }
 
         return parts.Count == 0 ? "-" : string.Join(", ", parts);
+    }
+
+    private string FormatInputAmounts(IReadOnlyDictionary<BaseResourceType, int> amounts)
+    {
+        List<string> parts = new();
+
+        foreach (KeyValuePair<BaseResourceType, int> pair in amounts)
+        {
+            if (pair.Value > 0)
+            {
+                int storedAmount = _buildManager?.GetTotalStoredAmount(pair.Key) ?? 0;
+                parts.Add($"{BaseBuildManager.GetResourceDisplayName(pair.Key)} x{pair.Value} / \uBCF4\uC720 {storedAmount}");
+            }
+        }
+
+        return parts.Count == 0 ? "-" : string.Join(", ", parts);
+    }
+
+    private bool HasMissingInput(CraftRecipeEntry recipe)
+    {
+        if (_buildManager == null)
+        {
+            return false;
+        }
+
+        foreach (KeyValuePair<BaseResourceType, int> input in recipe.Inputs)
+        {
+            if (input.Value > 0 && _buildManager.GetTotalStoredAmount(input.Key) < input.Value)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
