@@ -22,17 +22,23 @@ public partial class SelectedMercenaryHud : Control
     private Label? _identityStateLabel;
     private Label? _workLabel;
     private Label? _inventoryLabel;
+    private Label? _equipmentLabel;
     private Label? _needsLabel;
     private Label? _statsLabel;
     private Label? _warningLabel;
     private BaseBuildManager? _buildManager;
     private BaseAlertState? _baseAlertState;
+    private EquipmentInventoryManager? _equipmentInventoryManager;
+    private MercenaryEquipmentLoadoutManager? _mercenaryEquipmentLoadoutManager;
+    private MercenaryController? _displayedMercenary;
 
     public override void _Ready()
     {
         MouseFilter = MouseFilterEnum.Ignore;
         _buildManager = GetTree().CurrentScene?.GetNodeOrNull<BaseBuildManager>("BuildingLayer");
         _baseAlertState = GetTree().CurrentScene?.GetNodeOrNull<BaseAlertState>("BaseAlertState");
+        _equipmentInventoryManager = GetTree().CurrentScene?.GetNodeOrNull<EquipmentInventoryManager>("EquipmentInventoryManager");
+        _mercenaryEquipmentLoadoutManager = GetTree().CurrentScene?.GetNodeOrNull<MercenaryEquipmentLoadoutManager>("MercenaryEquipmentLoadoutManager");
 
         _statusLabel = new Label
         {
@@ -52,6 +58,7 @@ public partial class SelectedMercenaryHud : Control
     public override void _Process(double delta)
     {
         UpdateRimHudPanelLayout();
+        RefreshEquipmentHudText();
     }
 
     public void SetDebugStatusVisible(bool visible)
@@ -103,7 +110,7 @@ public partial class SelectedMercenaryHud : Control
         row.AddThemeConstantOverride("separation", 6);
         margin.AddChild(row);
 
-        VBoxContainer identitySection = CreateHudSection("\uC6A9\uBCD1", 160.0f);
+        VBoxContainer identitySection = CreateHudSection("\uC6A9\uBCD1", 145.0f);
         _identityNameLabel = CreateHudLabel(14, new Color(0.96f, 0.91f, 0.72f));
         _identityMetaLabel = CreateHudLabel();
         _identityStateLabel = CreateHudLabel();
@@ -112,22 +119,27 @@ public partial class SelectedMercenaryHud : Control
         identitySection.AddChild(_identityStateLabel);
         row.AddChild(identitySection);
 
-        VBoxContainer workSection = CreateHudSection("\uD604\uC7AC \uC791\uC5C5", 220.0f);
+        VBoxContainer workSection = CreateHudSection("\uD604\uC7AC \uC791\uC5C5", 185.0f);
         _workLabel = CreateHudLabel();
         workSection.AddChild(_workLabel);
         row.AddChild(workSection);
 
-        VBoxContainer inventorySection = CreateHudSection("\uC18C\uC9C0\uD488", 170.0f);
+        VBoxContainer inventorySection = CreateHudSection("\uC18C\uC9C0\uD488", 130.0f);
         _inventoryLabel = CreateHudLabel();
         inventorySection.AddChild(_inventoryLabel);
         row.AddChild(inventorySection);
 
-        VBoxContainer needsSection = CreateHudSection("\uC695\uAD6C / \uC0C1\uD0DC", 190.0f);
+        VBoxContainer equipmentSection = CreateHudSection("\uC7A5\uBE44", 150.0f);
+        _equipmentLabel = CreateHudLabel(10);
+        equipmentSection.AddChild(_equipmentLabel);
+        row.AddChild(equipmentSection);
+
+        VBoxContainer needsSection = CreateHudSection("\uC695\uAD6C / \uC0C1\uD0DC", 170.0f);
         _needsLabel = CreateHudLabel();
         needsSection.AddChild(_needsLabel);
         row.AddChild(needsSection);
 
-        VBoxContainer statsSection = CreateHudSection("\uC8FC\uC694 \uB2A5\uB825\uCE58", 210.0f);
+        VBoxContainer statsSection = CreateHudSection("\uC8FC\uC694 \uB2A5\uB825\uCE58", 180.0f);
         _statsLabel = CreateHudLabel();
         _warningLabel = CreateHudLabel(10, new Color(1.0f, 0.68f, 0.48f));
         statsSection.AddChild(_statsLabel);
@@ -172,8 +184,10 @@ public partial class SelectedMercenaryHud : Control
         VBoxContainer section = new()
         {
             MouseFilter = MouseFilterEnum.Ignore,
-            CustomMinimumSize = new Vector2(width, 0.0f)
+            CustomMinimumSize = new Vector2(width, 0.0f),
+            ClipContents = true
         };
+        section.SizeFlagsHorizontal = SizeFlags.Fill;
         section.AddThemeConstantOverride("separation", 2);
 
         Label titleLabel = CreateHudLabel(10, new Color(0.58f, 0.68f, 0.78f));
@@ -190,7 +204,10 @@ public partial class SelectedMercenaryHud : Control
         {
             Text = "-",
             MouseFilter = MouseFilterEnum.Ignore,
-            AutowrapMode = TextServer.AutowrapMode.Off
+            AutowrapMode = TextServer.AutowrapMode.Off,
+            ClipText = true,
+            TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill
         };
         label.AddThemeFontSizeOverride("font_size", fontSize);
         label.AddThemeColorOverride("font_color", color ?? new Color(0.86f, 0.89f, 0.9f));
@@ -354,6 +371,7 @@ public partial class SelectedMercenaryHud : Control
 
         SetLabelText(_workLabel, BuildLimitedLines(workLines, 4, 34));
         SetLabelText(_inventoryLabel, BuildInventoryHudText(mercenary));
+        SetLabelText(_equipmentLabel, BuildEquipmentHudText(mercenary));
         SetLabelText(
             _needsLabel,
             BuildLimitedLines(
@@ -389,6 +407,7 @@ public partial class SelectedMercenaryHud : Control
                 : BuildLimitedLines(new[] { $"\uACBD\uACE0: {logisticsWarning}" }, 1, 38));
 
         UpdateRimHudPanelLayout();
+        _displayedMercenary = mercenary;
         _rimHudPanel.Visible = true;
     }
 
@@ -398,6 +417,8 @@ public partial class SelectedMercenaryHud : Control
         {
             _rimHudPanel.Visible = false;
         }
+
+        _displayedMercenary = null;
     }
 
     private static void SetLabelText(Label? label, string text)
@@ -447,6 +468,103 @@ public partial class SelectedMercenaryHud : Control
         }
 
         return BuildLimitedLines(lines, 4, 28);
+    }
+
+    private string BuildEquipmentHudText(MercenaryController mercenary)
+    {
+        MercenaryEquipmentLoadoutManager? loadoutManager = GetMercenaryEquipmentLoadoutManager();
+        MercenaryEquipmentLoadout? loadout = null;
+
+        if (loadoutManager != null)
+        {
+            loadoutManager.TryGetLoadout(GetMercenaryEquipmentId(mercenary), out loadout);
+        }
+
+        List<string> lines = new()
+        {
+            $"{GetEquipmentSlotDisplayName(EquipmentSlotType.Weapon)}: {GetEquipmentSlotText(loadout, EquipmentSlotType.Weapon)}",
+            $"{GetEquipmentSlotDisplayName(EquipmentSlotType.Armor)}: {GetEquipmentSlotText(loadout, EquipmentSlotType.Armor)}",
+            $"{GetEquipmentSlotDisplayName(EquipmentSlotType.Shield)}: {GetEquipmentSlotText(loadout, EquipmentSlotType.Shield)}",
+            $"{GetEquipmentSlotDisplayName(EquipmentSlotType.Accessory)}: {GetEquipmentSlotText(loadout, EquipmentSlotType.Accessory)}",
+            $"{GetEquipmentSlotDisplayName(EquipmentSlotType.Tool)}: {GetEquipmentSlotText(loadout, EquipmentSlotType.Tool)}"
+        };
+
+        return BuildLimitedLines(lines, 5, 22);
+    }
+
+    private string GetEquipmentSlotText(MercenaryEquipmentLoadout? loadout, EquipmentSlotType slot)
+    {
+        if (loadout == null
+            || !loadout.TryGetEquipped(slot, out string? instanceId)
+            || string.IsNullOrWhiteSpace(instanceId))
+        {
+            return "\uC5C6\uC74C";
+        }
+
+        EquipmentInventoryManager? equipmentInventoryManager = GetEquipmentInventoryManager();
+        if (equipmentInventoryManager == null
+            || !equipmentInventoryManager.TryGetEquipment(instanceId, out EquipmentInstance? instance)
+            || instance == null)
+        {
+            return "\uB204\uB77D\uB41C \uC7A5\uBE44";
+        }
+
+        if (EquipmentDefinitionDatabase.TryGet(instance.DefinitionId, out EquipmentDefinitionEntry? definition))
+        {
+            return definition.DisplayName;
+        }
+
+        return string.IsNullOrWhiteSpace(instance.DefinitionId)
+            ? "\uC54C \uC218 \uC5C6\uB294 \uC7A5\uBE44"
+            : instance.DefinitionId;
+    }
+
+    private void RefreshEquipmentHudText()
+    {
+        if (_rimHudPanel == null
+            || !_rimHudPanel.Visible
+            || _equipmentLabel == null
+            || _displayedMercenary == null
+            || !GodotObject.IsInstanceValid(_displayedMercenary)
+            || _displayedMercenary.IsQueuedForDeletion())
+        {
+            return;
+        }
+
+        SetLabelText(_equipmentLabel, BuildEquipmentHudText(_displayedMercenary));
+    }
+
+    private EquipmentInventoryManager? GetEquipmentInventoryManager()
+    {
+        _equipmentInventoryManager ??= GetTree().CurrentScene?.GetNodeOrNull<EquipmentInventoryManager>("EquipmentInventoryManager");
+        return _equipmentInventoryManager;
+    }
+
+    private MercenaryEquipmentLoadoutManager? GetMercenaryEquipmentLoadoutManager()
+    {
+        _mercenaryEquipmentLoadoutManager ??= GetTree().CurrentScene?.GetNodeOrNull<MercenaryEquipmentLoadoutManager>("MercenaryEquipmentLoadoutManager");
+        return _mercenaryEquipmentLoadoutManager;
+    }
+
+    private static string GetMercenaryEquipmentId(MercenaryController mercenary)
+    {
+        // Fallback is a runtime-only id used only when a profile id is missing.
+        return string.IsNullOrWhiteSpace(mercenary.Profile.MercenaryId)
+            ? mercenary.GetInstanceId().ToString()
+            : mercenary.Profile.MercenaryId;
+    }
+
+    private static string GetEquipmentSlotDisplayName(EquipmentSlotType slotType)
+    {
+        return slotType switch
+        {
+            EquipmentSlotType.Weapon => "\uBB34\uAE30",
+            EquipmentSlotType.Armor => "\uBC29\uC5B4\uAD6C",
+            EquipmentSlotType.Shield => "\uBC29\uD328",
+            EquipmentSlotType.Accessory => "\uC7A5\uC2E0\uAD6C",
+            EquipmentSlotType.Tool => "\uB3C4\uAD6C",
+            _ => slotType.ToString()
+        };
     }
 
     private static string BuildLimitedLines(IEnumerable<string> lines, int maxLines, int maxCharactersPerLine)
