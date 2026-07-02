@@ -76,7 +76,7 @@ public partial class TestResourceNodeSpawner : Node2D
     public int StoneAmountMax { get; set; } = 55;
 
     [Export]
-    public int MetalClusterCount { get; set; } = 2;
+    public int MetalClusterCount { get; set; } = 0;
 
     [Export]
     public int MetalNodesPerClusterMin { get; set; } = 2;
@@ -94,7 +94,7 @@ public partial class TestResourceNodeSpawner : Node2D
     public int MetalAmountMax { get; set; } = 35;
 
     [Export]
-    public int IronOreClusterCount { get; set; } = 1;
+    public int IronOreClusterCount { get; set; } = 2;
 
     [Export]
     public int IronOreNodesPerClusterMin { get; set; } = 2;
@@ -112,7 +112,7 @@ public partial class TestResourceNodeSpawner : Node2D
     public int IronOreAmountMax { get; set; } = 35;
 
     [Export]
-    public int CoalClusterCount { get; set; } = 1;
+    public int CoalClusterCount { get; set; } = 2;
 
     [Export]
     public int CoalNodesPerClusterMin { get; set; } = 2;
@@ -157,7 +157,6 @@ public partial class TestResourceNodeSpawner : Node2D
         new(BaseResourceType.Wood, new Vector2I(14, 11), 50),
         new(BaseResourceType.Stone, new Vector2I(18, 12), 40),
         new(BaseResourceType.Stone, new Vector2I(20, 13), 40),
-        new(BaseResourceType.Metal, new Vector2I(24, 15), 25),
         new(BaseResourceType.IronOre, new Vector2I(26, 16), 25),
         new(BaseResourceType.Coal, new Vector2I(28, 16), 25),
         new(BaseResourceType.Herb, new Vector2I(15, 9), 12)

@@ -22,6 +22,9 @@ public static class ResourceDefinitionDatabase
     {
         BaseResourceType.Wood,
         BaseResourceType.Stone,
+        BaseResourceType.IronOre,
+        BaseResourceType.Coal,
+        BaseResourceType.IronIngot,
         BaseResourceType.Metal,
         BaseResourceType.Food
     };
@@ -63,6 +66,7 @@ public static class ResourceDefinitionDatabase
         { BaseResourceType.Food, Entry(BaseResourceType.Food, "\uC2DD\uB7C9", "\uC2DD", 1, true, StorageResourceCategory.Food) },
         { BaseResourceType.Wood, Entry(BaseResourceType.Wood, "\uB098\uBB34", "\uBAA9", 2, true, StorageResourceCategory.RawMaterial) },
         { BaseResourceType.Stone, Entry(BaseResourceType.Stone, "\uB3CC", "\uC11D", 4, true, StorageResourceCategory.RawMaterial) },
+        // Legacy compatibility resource; new iron ingot production uses IronOre + Coal.
         { BaseResourceType.Metal, Entry(BaseResourceType.Metal, "\uAE08\uC18D", "\uAE08", 5, true, StorageResourceCategory.RawMaterial) },
         { BaseResourceType.IronOre, Entry(BaseResourceType.IronOre, "\uCCA0\uAD11\uC11D", "\uAD11", 4, true, StorageResourceCategory.RawMaterial) },
         { BaseResourceType.Coal, Entry(BaseResourceType.Coal, "\uC11D\uD0C4", "\uD0C4", 3, true, StorageResourceCategory.RawMaterial) },

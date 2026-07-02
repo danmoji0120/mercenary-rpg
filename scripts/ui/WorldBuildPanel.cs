@@ -1012,6 +1012,7 @@ public partial class WorldBuildPanel : Control
 
 		if (_selectedStorageCell.HasValue)
 		{
+			AddStorageManagementSummaryPanel(_selectedStorageCell);
 			AddStorageManagementContentsPanel(_selectedStorageCell);
 			AddStorageManagementPolicyPanel(_selectedStorageCell);
 		}
@@ -1107,14 +1108,25 @@ public partial class WorldBuildPanel : Control
 			return;
 		}
 
-		PanelContainer panel = CreatePanel(new Color(0.07f, 0.07f, 0.07f, 0.78f), new Color(0.45f, 0.58f, 0.72f, 0.55f), 6);
-		panel.CustomMinimumSize = new Vector2(360.0f, 80.0f);
-		panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		panel.ClipContents = true;
+		PanelContainer summaryPanel = CreatePanel(new Color(0.07f, 0.07f, 0.07f, 0.78f), new Color(0.45f, 0.58f, 0.72f, 0.55f), 6);
+		summaryPanel.CustomMinimumSize = new Vector2(240.0f, 80.0f);
+		summaryPanel.SizeFlagsHorizontal = SizeFlags.Fill;
+		summaryPanel.ClipContents = true;
+		summaryPanel.AddChild(CreateStorageDetailLabel(
+			$"{StorageOverviewCategory}\n"
+			+ $"\uBCF4\uAD00\uD568 {storageCells.Count}\n"
+			+ $"\uC804\uCCB4 \uC790\uC6D0 \uD569\uC0B0",
+			12));
+		_itemRow.AddChild(summaryPanel);
+
+		PanelContainer contentsPanel = CreatePanel(new Color(0.07f, 0.07f, 0.07f, 0.78f), new Color(0.45f, 0.58f, 0.72f, 0.55f), 6);
+		contentsPanel.CustomMinimumSize = new Vector2(520.0f, 80.0f);
+		contentsPanel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		contentsPanel.ClipContents = true;
 		ScrollContainer contentScroll = new()
 		{
 			Name = "StorageOverviewTotalsScroll",
-			CustomMinimumSize = new Vector2(260.0f, 0.0f),
+			CustomMinimumSize = new Vector2(360.0f, 0.0f),
 			MouseFilter = MouseFilterEnum.Stop,
 			SizeFlagsHorizontal = SizeFlags.ExpandFill,
 			SizeFlagsVertical = SizeFlags.ExpandFill,
@@ -1122,11 +1134,34 @@ public partial class WorldBuildPanel : Control
 			VerticalScrollMode = ScrollContainer.ScrollMode.Auto,
 			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
 		};
-		panel.AddChild(contentScroll);
+		contentsPanel.AddChild(contentScroll);
 		contentScroll.AddChild(CreateStorageDetailLabel(
-			$"{StorageOverviewCategory}\n"
-			+ $"\uBCF4\uAD00\uD568 {storageCells.Count}\n\n"
-			+ BuildStorageTotalSummary(),
+			$"\uC804\uCCB4 \uBCF4\uC720\n{BuildStorageTotalSummary()}",
+			12));
+		_itemRow.AddChild(contentsPanel);
+	}
+
+	private void AddStorageManagementSummaryPanel(Vector2I? selectedStorageCell)
+	{
+		if (_itemRow == null || _buildManager == null || !selectedStorageCell.HasValue)
+		{
+			return;
+		}
+
+		Vector2I storageCell = selectedStorageCell.Value;
+		int usedWeight = _buildManager.GetStorageUsedWeight(storageCell);
+		int capacity = _buildManager.GetStorageWeightCapacity(storageCell);
+		string useText = _buildManager.GetStorageInteractionUserLabel(storageCell);
+
+		PanelContainer panel = CreatePanel(new Color(0.07f, 0.07f, 0.07f, 0.78f), new Color(0.45f, 0.58f, 0.72f, 0.55f), 6);
+		panel.CustomMinimumSize = new Vector2(240.0f, 80.0f);
+		panel.SizeFlagsHorizontal = SizeFlags.Fill;
+		panel.ClipContents = true;
+		panel.AddChild(CreateStorageDetailLabel(
+			$"{_buildManager.GetStorageDisplayName(storageCell)}\n"
+			+ $"\uBB34\uAC8C {usedWeight} / {capacity}\n"
+			+ $"\uC815\uCC45: {_buildManager.GetStoragePolicySummary(storageCell)}\n"
+			+ $"\uC0AC\uC6A9 \uC911: {useText}",
 			12));
 		_itemRow.AddChild(panel);
 	}
@@ -1140,18 +1175,14 @@ public partial class WorldBuildPanel : Control
 
 		Vector2I storageCell = selectedStorageCell.Value;
 		_buildManager.TryGetStorageContents(storageCell, out Dictionary<BaseResourceType, int> contents);
-		int usedWeight = _buildManager.GetStorageUsedWeight(storageCell);
-		int capacity = _buildManager.GetStorageWeightCapacity(storageCell);
-		string useText = _buildManager.GetStorageInteractionUserLabel(storageCell);
-
 		PanelContainer panel = CreatePanel(new Color(0.07f, 0.07f, 0.07f, 0.78f), new Color(0.45f, 0.58f, 0.72f, 0.55f), 6);
-		panel.CustomMinimumSize = new Vector2(250.0f, 80.0f);
+		panel.CustomMinimumSize = new Vector2(320.0f, 80.0f);
 		panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		panel.ClipContents = true;
 		ScrollContainer contentScroll = new()
 		{
 			Name = "StorageContentsScroll",
-			CustomMinimumSize = new Vector2(220.0f, 0.0f),
+			CustomMinimumSize = new Vector2(260.0f, 0.0f),
 			MouseFilter = MouseFilterEnum.Stop,
 			SizeFlagsHorizontal = SizeFlags.ExpandFill,
 			SizeFlagsVertical = SizeFlags.ExpandFill,
@@ -1161,11 +1192,7 @@ public partial class WorldBuildPanel : Control
 		};
 		panel.AddChild(contentScroll);
 		contentScroll.AddChild(CreateStorageDetailLabel(
-			$"{_buildManager.GetStorageDisplayName(storageCell)}\n"
-			+ $"\uBB34\uAC8C {usedWeight} / {capacity}\n"
-			+ $"\uC815\uCC45: {_buildManager.GetStoragePolicySummary(storageCell)}\n"
-			+ $"\uC0AC\uC6A9 \uC911: {useText}\n\n"
-			+ $"\uB0B4\uC6A9\uBB3C:\n{BuildStorageContentsText(contents)}",
+			$"\uB0B4\uC6A9\uBB3C\n{BuildStorageContentsText(contents)}",
 			12));
 		_itemRow.AddChild(panel);
 	}
@@ -1180,7 +1207,8 @@ public partial class WorldBuildPanel : Control
 		Vector2I storageCell = selectedStorageCell.Value;
 		StoragePolicy policy = _buildManager.GetStoragePolicy(storageCell);
 		PanelContainer panel = CreatePanel(new Color(0.07f, 0.07f, 0.07f, 0.78f), new Color(0.72f, 0.62f, 0.30f, 0.55f), 6);
-		panel.CustomMinimumSize = new Vector2(500.0f, 80.0f);
+		panel.CustomMinimumSize = new Vector2(420.0f, 80.0f);
+		panel.SizeFlagsHorizontal = SizeFlags.Fill;
 		panel.ClipContents = true;
 		ScrollContainer policyScroll = new()
 		{
@@ -1724,21 +1752,25 @@ public partial class WorldBuildPanel : Control
 	{
 		if (_buildManager == null)
 		{
-			return "\uC804\uCCB4 \uBCF4\uC720\n-";
+			return "-";
 		}
 
-		List<string> lines = new()
-		{
-            "\uC804\uCCB4 \uBCF4\uC720"
-		};
+		List<string> lines = new();
 
 		foreach (BaseResourceType resourceType in BaseBuildManager.GetAllResourceTypes())
 		{
 			int amount = _buildManager.GetTotalStoredAmount(resourceType);
+			if (amount <= 0)
+			{
+				continue;
+			}
+
 			lines.Add($"{BaseBuildManager.GetResourceDisplayName(resourceType)} {amount}");
 		}
 
-		return string.Join("\n", lines);
+		return lines.Count > 0
+			? string.Join("\n", lines)
+			: "\uC5C6\uC74C";
 	}
 
 	private void CycleStoragePriority(Vector2I storageCell)

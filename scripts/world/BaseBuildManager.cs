@@ -562,6 +562,11 @@ public partial class BaseBuildManager : Node2D
 				return resourceNode.CanBeRemoved ? "" : "Resource is not depleted";
 			}
 
+			if (TryGetConstructionSiteAtCell(cell, out _))
+			{
+				return "";
+			}
+
 			if (hasExistingState && IsStorageBuildType(existingState.ObjectType) && !IsStorageInventoryEmpty(cell))
 			{
 				return "Storage not empty";
@@ -660,6 +665,11 @@ public partial class BaseBuildManager : Node2D
 			if (resourceNode != null)
 			{
 				return resourceNode.CanBeRemoved;
+			}
+
+			if (TryGetConstructionSiteAtCell(cell, out _))
+			{
+				return true;
 			}
 
 			if (_buildings.TryGetValue(cell, out BuildableTileState eraseStateForStorage)
@@ -3411,7 +3421,8 @@ public partial class BaseBuildManager : Node2D
 		inventory[BaseResourceType.Wood] = 30;
 		inventory[BaseResourceType.Stone] = 10;
 		inventory[BaseResourceType.Food] = 20;
-		inventory[BaseResourceType.Metal] = 5;
+		inventory[BaseResourceType.IronOre] = 4;
+		inventory[BaseResourceType.Coal] = 2;
 	}
 
 	private bool IsStarterSupplyChest(Vector2I storageCell)
@@ -3589,7 +3600,9 @@ public partial class BaseBuildManager : Node2D
 	{
 		return type == BaseResourceType.Wood
 			|| type == BaseResourceType.Stone
-			|| type == BaseResourceType.Metal;
+			|| type == BaseResourceType.IronOre
+			|| type == BaseResourceType.Coal
+			|| type == BaseResourceType.IronIngot;
 	}
 
 	private static bool IsStoredResource(BaseResourceType type)
