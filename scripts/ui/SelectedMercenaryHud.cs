@@ -474,10 +474,11 @@ public partial class SelectedMercenaryHud : Control
     {
         MercenaryEquipmentLoadoutManager? loadoutManager = GetMercenaryEquipmentLoadoutManager();
         MercenaryEquipmentLoadout? loadout = null;
+        string mercenaryId = GetMercenaryEquipmentId(mercenary);
 
         if (loadoutManager != null)
         {
-            loadoutManager.TryGetLoadout(GetMercenaryEquipmentId(mercenary), out loadout);
+            loadoutManager.TryGetLoadout(mercenaryId, out loadout);
         }
 
         List<string> lines = new()
@@ -485,11 +486,11 @@ public partial class SelectedMercenaryHud : Control
             $"{GetEquipmentSlotDisplayName(EquipmentSlotType.Weapon)}: {GetEquipmentSlotText(loadout, EquipmentSlotType.Weapon)}",
             $"{GetEquipmentSlotDisplayName(EquipmentSlotType.Armor)}: {GetEquipmentSlotText(loadout, EquipmentSlotType.Armor)}",
             $"{GetEquipmentSlotDisplayName(EquipmentSlotType.Shield)}: {GetEquipmentSlotText(loadout, EquipmentSlotType.Shield)}",
-            $"{GetEquipmentSlotDisplayName(EquipmentSlotType.Accessory)}: {GetEquipmentSlotText(loadout, EquipmentSlotType.Accessory)}",
-            $"{GetEquipmentSlotDisplayName(EquipmentSlotType.Tool)}: {GetEquipmentSlotText(loadout, EquipmentSlotType.Tool)}"
+            $"{GetEquipmentSlotDisplayName(EquipmentSlotType.Accessory)}: {GetEquipmentSlotText(loadout, EquipmentSlotType.Accessory)} / {GetEquipmentSlotDisplayName(EquipmentSlotType.Tool)}: {GetEquipmentSlotText(loadout, EquipmentSlotType.Tool)}",
+            FormatEquipmentBonusText(EquipmentStatCalculator.Calculate(mercenaryId, loadoutManager, GetEquipmentInventoryManager()))
         };
 
-        return BuildLimitedLines(lines, 5, 22);
+        return BuildLimitedLines(lines, 5, 24);
     }
 
     private string GetEquipmentSlotText(MercenaryEquipmentLoadout? loadout, EquipmentSlotType slot)
@@ -565,6 +566,33 @@ public partial class SelectedMercenaryHud : Control
             EquipmentSlotType.Tool => "\uB3C4\uAD6C",
             _ => slotType.ToString()
         };
+    }
+
+    private static string FormatEquipmentBonusText(EquipmentStatSummary summary)
+    {
+        if (summary.HasMissingReferences)
+        {
+            return "\uBCF4\uB108\uC2A4: \uC7A5\uBE44 \uC77C\uBD80 \uB204\uB77D";
+        }
+
+        if (!summary.HasAnyBonus)
+        {
+            return "\uBCF4\uB108\uC2A4: \uC5C6\uC74C";
+        }
+
+        List<string> parts = new();
+
+        if (summary.AttackBonus != 0)
+        {
+            parts.Add($"\uACF5\uACA9 +{summary.AttackBonus}");
+        }
+
+        if (summary.DefenseBonus != 0)
+        {
+            parts.Add($"\uBC29\uC5B4 +{summary.DefenseBonus}");
+        }
+
+        return $"\uBCF4\uB108\uC2A4: {string.Join(" / ", parts)}";
     }
 
     private static string BuildLimitedLines(IEnumerable<string> lines, int maxLines, int maxCharactersPerLine)
