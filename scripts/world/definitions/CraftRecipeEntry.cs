@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -18,8 +19,33 @@ public sealed class CraftRecipeEntry
         RecipeId = recipeId ?? string.Empty;
         DisplayName = displayName ?? string.Empty;
         Inputs = CopyPositiveAmounts(inputs);
-        Outputs = CopyPositiveAmounts(outputs);
-        OutputEntries = BuildResourceOutputEntries(Outputs);
+        OutputEntries = BuildResourceOutputEntries(CopyPositiveAmounts(outputs));
+        Outputs = BuildResourceOutputs(OutputEntries);
+        RequiredWork = requiredWork > 0.0f ? requiredWork : 0.0f;
+        RequiredFacilityType = requiredFacilityType;
+        Category = category;
+        SortOrder = sortOrder;
+        IsEnabled = isEnabled;
+        Description = description ?? string.Empty;
+    }
+
+    public CraftRecipeEntry(
+        string recipeId,
+        string displayName,
+        IReadOnlyDictionary<BaseResourceType, int> inputs,
+        IReadOnlyList<CraftOutputEntry> outputEntries,
+        float requiredWork,
+        TileBuildType requiredFacilityType,
+        CraftRecipeCategory category,
+        int sortOrder,
+        bool isEnabled,
+        string description)
+    {
+        RecipeId = recipeId ?? string.Empty;
+        DisplayName = displayName ?? string.Empty;
+        Inputs = CopyPositiveAmounts(inputs);
+        OutputEntries = CopyOutputEntries(outputEntries);
+        Outputs = BuildResourceOutputs(OutputEntries);
         RequiredWork = requiredWork > 0.0f ? requiredWork : 0.0f;
         RequiredFacilityType = requiredFacilityType;
         Category = category;
@@ -72,5 +98,53 @@ public sealed class CraftRecipeEntry
         }
 
         return new ReadOnlyCollection<CraftOutputEntry>(entries);
+    }
+
+    private static IReadOnlyList<CraftOutputEntry> CopyOutputEntries(IReadOnlyList<CraftOutputEntry> outputEntries)
+    {
+        if (outputEntries == null)
+        {
+            throw new ArgumentNullException(nameof(outputEntries));
+        }
+
+        List<CraftOutputEntry> copy = new();
+
+        foreach (CraftOutputEntry entry in outputEntries)
+        {
+            if (entry == null)
+            {
+                continue;
+            }
+
+            if (entry.Count > 0)
+            {
+                copy.Add(entry);
+            }
+        }
+
+        if (copy.Count <= 0)
+        {
+            throw new ArgumentException("Craft recipe requires at least one output entry.", nameof(outputEntries));
+        }
+
+        return new ReadOnlyCollection<CraftOutputEntry>(copy);
+    }
+
+    private static IReadOnlyDictionary<BaseResourceType, int> BuildResourceOutputs(IReadOnlyList<CraftOutputEntry> outputEntries)
+    {
+        Dictionary<BaseResourceType, int> outputs = new();
+
+        foreach (CraftOutputEntry entry in outputEntries)
+        {
+            if (entry.Kind != CraftOutputKind.Resource || entry.Count <= 0)
+            {
+                continue;
+            }
+
+            outputs.TryGetValue(entry.ResourceType, out int currentAmount);
+            outputs[entry.ResourceType] = currentAmount + entry.Count;
+        }
+
+        return new ReadOnlyDictionary<BaseResourceType, int>(outputs);
     }
 }
