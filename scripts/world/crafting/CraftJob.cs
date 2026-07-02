@@ -7,9 +7,12 @@ public sealed class CraftJob
     private readonly Dictionary<BaseResourceType, int> _inputsDelivered = new();
     private readonly Dictionary<BaseResourceType, int> _requiredOutputs = new();
     private readonly Dictionary<BaseResourceType, int> _producedOutputs = new();
+    private readonly List<CraftOutputEntry> _requiredOutputEntries = new();
+    private readonly List<EquipmentInstance> _producedEquipmentOutputs = new();
     private MercenaryController? _reservedWorker;
     private MercenaryController? _reservedDeliveryWorker;
     private MercenaryController? _reservedOutputWorker;
+    private bool _outputsFinalized;
 
     public int JobId { get; set; }
     public string RecipeId { get; set; } = string.Empty;
@@ -19,6 +22,8 @@ public sealed class CraftJob
     public IReadOnlyDictionary<BaseResourceType, int> InputsDelivered => _inputsDelivered;
     public IReadOnlyDictionary<BaseResourceType, int> RequiredOutputs => _requiredOutputs;
     public IReadOnlyDictionary<BaseResourceType, int> ProducedOutputs => _producedOutputs;
+    public IReadOnlyList<CraftOutputEntry> RequiredOutputEntries => _requiredOutputEntries;
+    public IReadOnlyList<EquipmentInstance> ProducedEquipmentOutputs => _producedEquipmentOutputs;
     public float WorkProgress { get; private set; }
     public float RequiredWork { get; set; } = 1.0f;
     public MercenaryController? ReservedWorker => IsValidWorker(_reservedWorker) ? _reservedWorker : null;
@@ -28,6 +33,8 @@ public sealed class CraftJob
     public bool IsCancelled => State == CraftJobState.Cancelled;
     public bool HasAllMaterials => GetFirstMissingInput() == null;
     public bool HasProducedOutputs => _producedOutputs.Count > 0;
+    public bool HasProducedEquipmentOutputs => _producedEquipmentOutputs.Count > 0;
+    public bool HasAnyProducedOutputs => _producedOutputs.Count > 0 || _producedEquipmentOutputs.Count > 0;
 
     public void SetRequirements(CraftRecipeEntry recipe)
     {
@@ -35,6 +42,9 @@ public sealed class CraftJob
         _inputsDelivered.Clear();
         _requiredOutputs.Clear();
         _producedOutputs.Clear();
+        _requiredOutputEntries.Clear();
+        _producedEquipmentOutputs.Clear();
+        _outputsFinalized = false;
 
         if (recipe != null)
         {
@@ -55,6 +65,14 @@ public sealed class CraftJob
                 if (output.Value > 0)
                 {
                     _requiredOutputs[output.Key] = output.Value;
+                }
+            }
+
+            foreach (CraftOutputEntry outputEntry in recipe.OutputEntries)
+            {
+                if (outputEntry != null && outputEntry.Count > 0)
+                {
+                    _requiredOutputEntries.Add(outputEntry);
                 }
             }
         }
@@ -129,10 +147,12 @@ public sealed class CraftJob
 
     public bool TryFinalizeOutputs()
     {
-        if (IsCompleted || IsCancelled || State != CraftJobState.OutputReady || _producedOutputs.Count > 0)
+        if (IsCompleted || IsCancelled || State != CraftJobState.OutputReady || _outputsFinalized)
         {
             return false;
         }
+
+        _outputsFinalized = true;
 
         foreach (KeyValuePair<BaseResourceType, int> output in _requiredOutputs)
         {
@@ -142,7 +162,27 @@ public sealed class CraftJob
             }
         }
 
-        return _producedOutputs.Count > 0;
+        foreach (CraftOutputEntry outputEntry in _requiredOutputEntries)
+        {
+            if (outputEntry.Kind != CraftOutputKind.Equipment || outputEntry.Count <= 0)
+            {
+                continue;
+            }
+
+            for (int index = 0; index < outputEntry.Count; index++)
+            {
+                if (EquipmentInstanceFactory.TryCreateFromDefinition(outputEntry.EquipmentDefinitionId, out EquipmentInstance? instance))
+                {
+                    _producedEquipmentOutputs.Add(instance);
+                }
+                else
+                {
+                    GD.PushWarning($"Craft job {JobId} failed to create equipment output: {outputEntry.EquipmentDefinitionId}");
+                }
+            }
+        }
+
+        return HasAnyProducedOutputs;
     }
 
     public int TakeProducedOutput(BaseResourceType type, int amount)
