@@ -64,6 +64,12 @@ public partial class WorldManagerV2 : Node
     public int V3MinorForestPatchCount => _generator.V3MinorForestPatchCount;
     public int V3LargeForestClusterCount => _generator.V3LargeForestClusterCount;
     public bool V3ForestLayerEnabled => _generator.V3ForestLayerEnabled;
+    public int V3QuarryClusterCount => _generator.V3QuarryClusterCount;
+    public int V3QuarryRegionCount => _generator.V3QuarryRegionCount;
+    public int V3MajorQuarryCount => _generator.V3MajorQuarryCount;
+    public int V3MinorQuarryCount => _generator.V3MinorQuarryCount;
+    public int V3RejectedQuarryPlacementCount => _generator.V3RejectedQuarryPlacementCount;
+    public bool V3QuarryLayerEnabled => _generator.V3QuarryLayerEnabled;
 
     private readonly ProceduralWorldGeneratorV2 _generator = new();
     private readonly Dictionary<Vector2I, SectorMetadata> _metadataBySector = new();
@@ -260,6 +266,7 @@ public partial class WorldManagerV2 : Node
         GD.Print(V3VillageDebugSummary);
         GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} extra={V3ExtraRoadCount}");
         GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount}");
+        GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount}");
         _streamManager?.PrintLoadedChunks();
         GD.Print(WorldGenerationLayerSettingsV2.GetSummary());
     }
@@ -281,6 +288,7 @@ public partial class WorldManagerV2 : Node
         GD.Print(V3VillageDebugSummary);
         GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} extra={V3ExtraRoadCount}");
         GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount}");
+        GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount}");
         WorldV2PerformanceProfiler.Instance.PrintSummary();
     }
 

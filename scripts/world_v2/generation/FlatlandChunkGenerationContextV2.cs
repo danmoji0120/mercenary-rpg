@@ -10,6 +10,8 @@ public sealed class FlatlandChunkGenerationContextV2
     private readonly HashSet<int> _landmarkIds = new();
     private readonly HashSet<int> _forestClusterIds = new();
     private readonly HashSet<int> _forestRegionIds = new();
+    private readonly HashSet<int> _quarryClusterIds = new();
+    private readonly HashSet<int> _quarryRegionIds = new();
     private readonly HashSet<int> _riverIds = new();
     private readonly HashSet<int> _roadIds = new();
 
@@ -31,6 +33,8 @@ public sealed class FlatlandChunkGenerationContextV2
     public List<LandmarkSiteV2> RelevantLandmarks { get; } = new();
     public List<ForestClusterSiteV2> RelevantForestClusters { get; } = new();
     public List<ForestRegionV3> RelevantForestRegions { get; } = new();
+    public List<QuarryClusterV3> RelevantQuarryClusters { get; } = new();
+    public List<QuarryRegionV3> RelevantQuarryRegions { get; } = new();
     public List<RiverPathV2> RelevantRivers { get; } = new();
     public List<RoadPathV2> RelevantRoads { get; } = new();
 
@@ -41,12 +45,16 @@ public sealed class FlatlandChunkGenerationContextV2
     public int RelevantForestClusterCount => RelevantForestClusters.Count;
     public int RelevantForestRegionCount => RelevantForestRegions.Count;
     public int RelevantForestCandidateCount => RelevantForestClusterCount + RelevantForestRegionCount;
+    public int RelevantQuarryClusterCount => RelevantQuarryClusters.Count;
+    public int RelevantQuarryRegionCount => RelevantQuarryRegions.Count;
+    public int RelevantQuarryCandidateCount => RelevantQuarryClusterCount + RelevantQuarryRegionCount;
     public float NearestVillageDistance { get; set; } = float.MaxValue;
     public bool HasVillageTile { get; set; }
     public bool HasRoadTile { get; set; }
     public bool HasLandmarkTile { get; set; }
     public int DirtTileCount { get; set; }
     public int ForestEdgeClearCount { get; set; }
+    public int OreSpotTileCount { get; set; }
     public int SiteOverlapResolvedCount { get; set; }
     public int RejectedSitePlacementCount { get; set; }
     public int RoadCacheReadyRegionCount { get; set; }
@@ -60,6 +68,7 @@ public sealed class FlatlandChunkGenerationContextV2
         RelevantRoadCount > 12
         || RelevantLandmarkCount > 12
         || RelevantForestCandidateCount > 12
+        || RelevantQuarryCandidateCount > 10
         || RelevantVillageCount > 4;
 
     public float[] RiverDistance { get; } = new float[ChunkDataV2.CellCount];
@@ -101,7 +110,7 @@ public sealed class FlatlandChunkGenerationContextV2
         string nearestVillage = NearestVillageDistance >= float.MaxValue * 0.5f
             ? "-"
             : NearestVillageDistance.ToString("0.0");
-        return $"warn={HasSlowContextWarning} villageCtx={ContainsVillage} villages={RelevantVillageCount} roads={RelevantRoadCount} forests={RelevantForestCandidateCount} forestRegions={RelevantForestRegionCount} quarries={QuarryCount} ruins={RuinCount} dungeons={DungeonCount} bandits={BanditCampCount} faction={FactionOutpostCount} nearestVillage={nearestVillage} hasVillageTile={HasVillageTile} hasRoadTile={HasRoadTile} hasLandmarkTile={HasLandmarkTile} dirt={DirtTileCount} forestClears={ForestEdgeClearCount} overlapResolved={SiteOverlapResolvedCount} rejectedSites={RejectedSitePlacementCount} roadReady={RoadCacheReadyRegionCount} roadMissing={RoadCacheMissingRegionCount}";
+        return $"warn={HasSlowContextWarning} villageCtx={ContainsVillage} villages={RelevantVillageCount} roads={RelevantRoadCount} forests={RelevantForestCandidateCount} forestRegions={RelevantForestRegionCount} quarries={RelevantQuarryCandidateCount + QuarryCount} quarryRegions={RelevantQuarryRegionCount} oreSpots={OreSpotTileCount} ruins={RuinCount} dungeons={DungeonCount} bandits={BanditCampCount} faction={FactionOutpostCount} nearestVillage={nearestVillage} hasVillageTile={HasVillageTile} hasRoadTile={HasRoadTile} hasLandmarkTile={HasLandmarkTile} dirt={DirtTileCount} forestClears={ForestEdgeClearCount} overlapResolved={SiteOverlapResolvedCount} rejectedSites={RejectedSitePlacementCount} roadReady={RoadCacheReadyRegionCount} roadMissing={RoadCacheMissingRegionCount}";
     }
 
     private int CountLandmarks(LandmarkKindV2 kind)
@@ -147,6 +156,22 @@ public sealed class FlatlandChunkGenerationContextV2
         if (_forestRegionIds.Add(region.RegionId))
         {
             RelevantForestRegions.Add(region);
+        }
+    }
+
+    public void AddQuarryCluster(QuarryClusterV3 quarry)
+    {
+        if (_quarryClusterIds.Add(quarry.Id))
+        {
+            RelevantQuarryClusters.Add(quarry);
+        }
+    }
+
+    public void AddQuarryRegion(QuarryRegionV3 quarry)
+    {
+        if (_quarryRegionIds.Add(quarry.Id))
+        {
+            RelevantQuarryRegions.Add(quarry);
         }
     }
 

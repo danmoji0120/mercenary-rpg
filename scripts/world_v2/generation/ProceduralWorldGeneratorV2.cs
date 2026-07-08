@@ -351,6 +351,53 @@ public sealed class ProceduralWorldGeneratorV2
 
     public bool V3ForestLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.ForestLayerEnabled;
 
+    public int V3QuarryClusterCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.QuarryClusterCount : 0;
+        }
+    }
+
+    public int V3QuarryRegionCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.QuarryRegionCount : 0;
+        }
+    }
+
+    public int V3MajorQuarryCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.MajorQuarryCount : 0;
+        }
+    }
+
+    public int V3MinorQuarryCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.MinorQuarryCount : 0;
+        }
+    }
+
+    public int V3RejectedQuarryPlacementCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RejectedQuarryPlacementCount : 0;
+        }
+    }
+
+    public bool V3QuarryLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.QuarryLayerEnabled;
+
     public static int MakeSectorSeed(int worldSeed, Vector2I sectorCoord)
     {
         uint hash = 2166136261u;

@@ -147,6 +147,33 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public float V3MinorForestNoiseScale { get; set; } = 0.020f;
     [Export] public float V3MajorForestWarpStrength { get; set; } = 64.0f;
     [Export] public float V3MinorForestWarpStrength { get; set; } = 26.0f;
+    [Export] public int V3SmallMajorQuarryMinCount { get; set; } = 1;
+    [Export] public int V3SmallMajorQuarryMaxCount { get; set; } = 2;
+    [Export] public int V3SmallMinorQuarryMinCount { get; set; } = 4;
+    [Export] public int V3SmallMinorQuarryMaxCount { get; set; } = 6;
+    [Export] public int V3MediumMajorQuarryMinCount { get; set; } = 3;
+    [Export] public int V3MediumMajorQuarryMaxCount { get; set; } = 5;
+    [Export] public int V3MediumMinorQuarryMinCount { get; set; } = 10;
+    [Export] public int V3MediumMinorQuarryMaxCount { get; set; } = 16;
+    [Export] public int V3LargeMajorQuarryMinCount { get; set; } = 8;
+    [Export] public int V3LargeMajorQuarryMaxCount { get; set; } = 12;
+    [Export] public int V3LargeMinorQuarryMinCount { get; set; } = 28;
+    [Export] public int V3LargeMinorQuarryMaxCount { get; set; } = 45;
+    [Export] public float V3MajorQuarryMinRadius { get; set; } = 70.0f;
+    [Export] public float V3MajorQuarryMaxRadius { get; set; } = 145.0f;
+    [Export] public float V3MinorQuarryMinRadius { get; set; } = 30.0f;
+    [Export] public float V3MinorQuarryMaxRadius { get; set; } = 72.0f;
+    [Export] public int V3MajorQuarryMinPatchCount { get; set; } = 5;
+    [Export] public int V3MajorQuarryMaxPatchCount { get; set; } = 10;
+    [Export] public int V3MinorQuarryMinPatchCount { get; set; } = 2;
+    [Export] public int V3MinorQuarryMaxPatchCount { get; set; } = 5;
+    [Export] public int V3QuarryPlacementMaxAttemptsPerCluster { get; set; } = 80;
+    [Export] public float V3QuarryPotentialThreshold { get; set; } = 0.49f;
+    [Export] public float V3MajorQuarryNoiseScale { get; set; } = 0.021f;
+    [Export] public float V3MinorQuarryNoiseScale { get; set; } = 0.035f;
+    [Export] public float V3MajorQuarryWarpStrength { get; set; } = 24.0f;
+    [Export] public float V3MinorQuarryWarpStrength { get; set; } = 10.0f;
+    [Export] public float V3QuarryOreSpotChance { get; set; } = 0.018f;
 
     public Vector2I StartCenter => new(StartCenterX, StartCenterY);
 
@@ -333,5 +360,32 @@ public partial class WorldGenerationSettingsV2 : Node
         V3MinorForestNoiseScale = 0.020f;
         V3MajorForestWarpStrength = 64.0f;
         V3MinorForestWarpStrength = 26.0f;
+        V3SmallMajorQuarryMinCount = 1;
+        V3SmallMajorQuarryMaxCount = 2;
+        V3SmallMinorQuarryMinCount = 4;
+        V3SmallMinorQuarryMaxCount = 6;
+        V3MediumMajorQuarryMinCount = 3;
+        V3MediumMajorQuarryMaxCount = 5;
+        V3MediumMinorQuarryMinCount = 10;
+        V3MediumMinorQuarryMaxCount = 16;
+        V3LargeMajorQuarryMinCount = 8;
+        V3LargeMajorQuarryMaxCount = 12;
+        V3LargeMinorQuarryMinCount = 28;
+        V3LargeMinorQuarryMaxCount = 45;
+        V3MajorQuarryMinRadius = 70.0f;
+        V3MajorQuarryMaxRadius = 145.0f;
+        V3MinorQuarryMinRadius = 30.0f;
+        V3MinorQuarryMaxRadius = 72.0f;
+        V3MajorQuarryMinPatchCount = 5;
+        V3MajorQuarryMaxPatchCount = 10;
+        V3MinorQuarryMinPatchCount = 2;
+        V3MinorQuarryMaxPatchCount = 5;
+        V3QuarryPlacementMaxAttemptsPerCluster = 80;
+        V3QuarryPotentialThreshold = 0.49f;
+        V3MajorQuarryNoiseScale = 0.021f;
+        V3MinorQuarryNoiseScale = 0.035f;
+        V3MajorQuarryWarpStrength = 24.0f;
+        V3MinorQuarryWarpStrength = 10.0f;
+        V3QuarryOreSpotChance = 0.018f;
     }
 }

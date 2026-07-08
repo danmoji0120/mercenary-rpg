@@ -11,6 +11,8 @@ public sealed class FlatlandWorldPlanV3
     private readonly List<RoadPathV2> _roads = new();
     private readonly List<ForestClusterSiteV2> _forestClusters = new();
     private readonly List<ForestRegionV3> _forestRegions = new();
+    private readonly List<QuarryClusterV3> _quarryClusters = new();
+    private readonly List<QuarryRegionV3> _quarryRegions = new();
     private bool _isBuilt;
     private int _startingVillageId = -1;
     private Vector2I _playerSpawnCell;
@@ -42,6 +44,14 @@ public sealed class FlatlandWorldPlanV3
     public bool ForestLayerEnabled => WorldGenerationLayerSettingsV2.EnableForests;
     public IReadOnlyList<ForestClusterSiteV2> ForestClusters => _forestClusters;
     public IReadOnlyList<ForestRegionV3> ForestRegions => _forestRegions;
+    public int QuarryClusterCount => _quarryRegions.Count;
+    public int QuarryRegionCount => _quarryRegions.Count;
+    public int MajorQuarryCount { get; private set; }
+    public int MinorQuarryCount { get; private set; }
+    public int RejectedQuarryPlacementCount { get; private set; }
+    public bool QuarryLayerEnabled => WorldGenerationLayerSettingsV2.EnableQuarries;
+    public IReadOnlyList<QuarryClusterV3> QuarryClusters => _quarryClusters;
+    public IReadOnlyList<QuarryRegionV3> QuarryRegions => _quarryRegions;
     public bool IsBuilt => _isBuilt;
 
     public void Initialize(WorldGenerationRequestV2 request, WorldGenerationSettingsV2? settings)
@@ -63,8 +73,8 @@ public sealed class FlatlandWorldPlanV3
         GenerateRiversPlaceholder();
         GenerateVillagesPlaceholder();
         GenerateRoads();
+        GenerateQuarries();
         GenerateForests();
-        GenerateQuarriesPlaceholder();
         GenerateLandmarksPlaceholder();
         BuildSpatialIndexPlaceholder();
         _isBuilt = true;
@@ -76,10 +86,15 @@ public sealed class FlatlandWorldPlanV3
         _roads.Clear();
         _forestClusters.Clear();
         _forestRegions.Clear();
+        _quarryClusters.Clear();
+        _quarryRegions.Clear();
         PrimaryRoadCount = 0;
         ExtraRoadCount = 0;
         MajorForestRegionCount = 0;
         MinorForestPatchCount = 0;
+        MajorQuarryCount = 0;
+        MinorQuarryCount = 0;
+        RejectedQuarryPlacementCount = 0;
         _startingVillageId = -1;
         _playerSpawnCell = Vector2I.Zero;
         _nearestToWorldCenterDistance = 0.0f;
@@ -139,6 +154,17 @@ public sealed class FlatlandWorldPlanV3
             }
         }
 
+        if (WorldGenerationLayerSettingsV2.EnableQuarries)
+        {
+            foreach (QuarryRegionV3 quarry in _quarryRegions)
+            {
+                if (quarry.Bounds.Intersects(chunkRect, includeBorders: true))
+                {
+                    context.AddQuarryRegion(quarry);
+                }
+            }
+        }
+
         if (WorldGenerationLayerSettingsV2.EnableForests)
         {
             foreach (ForestRegionV3 forest in _forestRegions)
@@ -161,6 +187,11 @@ public sealed class FlatlandWorldPlanV3
         if (WorldGenerationLayerSettingsV2.EnableRoads)
         {
             RasterRoads(context);
+        }
+
+        if (WorldGenerationLayerSettingsV2.EnableQuarries)
+        {
+            RasterQuarries(context);
         }
 
         if (WorldGenerationLayerSettingsV2.EnableForests)
@@ -187,6 +218,9 @@ public sealed class FlatlandWorldPlanV3
             IsRoad = context.IsRoad[index],
             IsVillage = context.IsVillage[index],
             IsStartingVillage = context.IsStartingVillage[index],
+            IsLandmark = context.IsLandmark[index],
+            IsQuarry = context.IsQuarry[index],
+            HasOreSpot = context.HasOreSpot[index],
             LandmarkKind = context.LandmarkKind[index],
             ForestStrength = context.ForestStrength[index],
             IsForest = context.ForestStrength[index] > 0.42f
@@ -379,6 +413,41 @@ public sealed class FlatlandWorldPlanV3
 
     private void GenerateQuarriesPlaceholder()
     {
+    }
+
+    private void GenerateQuarries()
+    {
+        _quarryClusters.Clear();
+        _quarryRegions.Clear();
+        MajorQuarryCount = 0;
+        MinorQuarryCount = 0;
+        RejectedQuarryPlacementCount = 0;
+
+        if (!WorldGenerationLayerSettingsV2.EnableQuarries)
+        {
+            return;
+        }
+
+        GetTargetQuarryCounts(out int majorTarget, out int minorTarget);
+        if (majorTarget + minorTarget <= 0)
+        {
+            return;
+        }
+
+        DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 7101));
+        float edgeMargin = Mathf.Max(96.0f, _settings.V3MajorQuarryMaxRadius + 48.0f);
+        int minX = Mathf.CeilToInt(edgeMargin);
+        int minY = Mathf.CeilToInt(edgeMargin);
+        int maxX = Mathf.FloorToInt(WorldSize.WidthCells - edgeMargin - 1.0f);
+        int maxY = Mathf.FloorToInt(WorldSize.HeightCells - edgeMargin - 1.0f);
+        if (minX > maxX || minY > maxY)
+        {
+            return;
+        }
+
+        int nextId = 1;
+        PlaceQuarryClusters(majorTarget, true, minX, minY, maxX, maxY, ref nextId, ref random);
+        PlaceQuarryClusters(minorTarget, false, minX, minY, maxX, maxY, ref nextId, ref random);
     }
 
     private void GenerateLandmarksPlaceholder()
@@ -575,6 +644,65 @@ public sealed class FlatlandWorldPlanV3
                 context.IsRoad[index] = true;
                 context.RoadStrength[index] = Mathf.Max(context.RoadStrength[index], strength);
                 context.HasRoadTile = true;
+            }
+        }
+    }
+
+    private void RasterQuarries(FlatlandChunkGenerationContextV2 context)
+    {
+        WorldV2PerformanceProfiler profiler = WorldV2PerformanceProfiler.Instance;
+        long start = profiler.BeginSample();
+
+        foreach (QuarryRegionV3 quarry in context.RelevantQuarryRegions)
+        {
+            RasterQuarryRegion(context, quarry);
+        }
+
+        profiler.EndSample(WorldV2PerformanceProfiler.FlatlandQuarrySample, start, context.ChunkCoord);
+    }
+
+    private void RasterQuarryRegion(FlatlandChunkGenerationContextV2 context, QuarryRegionV3 quarry)
+    {
+        int minGlobalX = Mathf.FloorToInt(quarry.Bounds.Position.X);
+        int minGlobalY = Mathf.FloorToInt(quarry.Bounds.Position.Y);
+        int maxGlobalX = Mathf.CeilToInt(quarry.Bounds.End.X);
+        int maxGlobalY = Mathf.CeilToInt(quarry.Bounds.End.Y);
+        if (!TryGetLocalBounds(context, minGlobalX, minGlobalY, maxGlobalX, maxGlobalY, out int minX, out int minY, out int maxX, out int maxY))
+        {
+            return;
+        }
+
+        for (int y = minY; y <= maxY; y++)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                int index = FlatlandChunkGenerationContextV2.ToIndex(x, y);
+                if (context.IsVillage[index] || context.IsStartingVillage[index] || context.IsRoad[index])
+                {
+                    continue;
+                }
+
+                Vector2I cell = context.ToGlobalCell(x, y);
+                float strength = GetRockPotentialAt(quarry, cell);
+                if (strength <= 0.0f)
+                {
+                    continue;
+                }
+
+                context.IsQuarry[index] = true;
+                context.IsLandmark[index] = true;
+                context.LandmarkKind[index] = LandmarkKindV2.Quarry;
+                context.HasLandmarkTile = true;
+                float oreRoll = StableUnitFloat(cell.X + quarry.Id * 11, cell.Y - quarry.Id * 17, quarry.Seed + 73);
+                if (strength > 0.84f && oreRoll < Mathf.Clamp(_settings.V3QuarryOreSpotChance, 0.0f, 0.12f))
+                {
+                    if (!context.HasOreSpot[index])
+                    {
+                        context.OreSpotTileCount++;
+                    }
+
+                    context.HasOreSpot[index] = true;
+                }
             }
         }
     }
@@ -791,6 +919,66 @@ public sealed class FlatlandWorldPlanV3
         return Mathf.Clamp(Mathf.Lerp(0.46f, 1.0f, t) * forest.Density, 0.0f, 1.0f);
     }
 
+    private static float GetQuarryPatchStrength(QuarryClusterV3 quarry, QuarryPatchV3 patch, Vector2I cell)
+    {
+        Vector2 point = new(cell.X + 0.5f, cell.Y + 0.5f);
+        Vector2 delta = point - patch.Center;
+        float cos = Mathf.Cos(patch.Angle);
+        float sin = Mathf.Sin(patch.Angle);
+        float localX = delta.X * cos + delta.Y * sin;
+        float localY = -delta.X * sin + delta.Y * cos;
+        float aspect = Mathf.Clamp(patch.Aspect, 0.50f, 1.70f);
+        float radiusX = Mathf.Max(3.0f, patch.Radius * aspect);
+        float radiusY = Mathf.Max(3.0f, patch.Radius / aspect);
+        float nx = localX / radiusX;
+        float ny = localY / radiusY;
+        float distance = Mathf.Sqrt(nx * nx + ny * ny);
+        float edgeNoise = (StableUnitFloat(cell.X + quarry.Id * 19, cell.Y - patch.Id * 23, quarry.Seed + 41) - 0.5f) * 0.42f;
+        float edge = 1.0f + edgeNoise;
+        if (distance >= edge)
+        {
+            return 0.0f;
+        }
+
+        float scatter = StableUnitFloat(cell.X / 2 + quarry.Id * 31, cell.Y / 2 - patch.Id * 17, quarry.Seed + 83);
+        float core = 1.0f - distance / Mathf.Max(0.01f, edge);
+        float strength = Mathf.Pow(Mathf.Clamp(core, 0.0f, 1.0f), 0.52f) * quarry.Density * patch.Density;
+        float keepThreshold = Mathf.Lerp(0.62f, 0.34f, Mathf.Clamp(strength, 0.0f, 1.0f));
+        return scatter >= keepThreshold ? strength : 0.0f;
+    }
+
+    private static float GetRockPotentialAt(QuarryRegionV3 quarry, Vector2I cell)
+    {
+        Vector2 point = new(cell.X + 0.5f, cell.Y + 0.5f);
+        float warpScale = quarry.NoiseScale * 0.52f;
+        float warpX = (FractalValueNoise(point.X * warpScale, point.Y * warpScale, quarry.Seed + 101, 2) - 0.5f) * 2.0f;
+        float warpY = (FractalValueNoise(point.X * warpScale, point.Y * warpScale, quarry.Seed + 211, 2) - 0.5f) * 2.0f;
+        Vector2 warped = point + new Vector2(warpX, warpY) * quarry.WarpStrength;
+        float radius = Mathf.Max(6.0f, quarry.ApproxRadius);
+        float normalizedDistance = warped.DistanceTo(quarry.Center) / radius;
+        if (normalizedDistance > 1.26f)
+        {
+            return 0.0f;
+        }
+
+        float low = FractalValueNoise(warped.X * quarry.NoiseScale, warped.Y * quarry.NoiseScale, quarry.Seed + 307, 3);
+        float edge = FractalValueNoise(warped.X * quarry.NoiseScale * 2.15f, warped.Y * quarry.NoiseScale * 2.15f, quarry.Seed + 409, 2);
+        float boundaryShift = (low - 0.5f) * 0.30f + (edge - 0.5f) * 0.12f;
+        float potential = 1.0f - normalizedDistance + boundaryShift;
+        if (normalizedDistance < 0.44f)
+        {
+            potential = Mathf.Max(potential, 0.68f + low * 0.15f);
+        }
+
+        if (potential < quarry.Threshold)
+        {
+            return 0.0f;
+        }
+
+        float t = Mathf.Clamp((potential - quarry.Threshold) / Mathf.Max(0.05f, 1.05f - quarry.Threshold), 0.0f, 1.0f);
+        return Mathf.Clamp(Mathf.Lerp(0.52f, 1.0f, t) * quarry.Density, 0.0f, 1.0f);
+    }
+
     private static void RasterForestFallbackEllipse(FlatlandChunkGenerationContextV2 context, ForestClusterSiteV2 forest)
     {
         float range = Mathf.Max(forest.Length, forest.Width) * 0.62f + 18.0f;
@@ -841,6 +1029,14 @@ public sealed class FlatlandWorldPlanV3
             return;
         }
 
+        if (sample.IsQuarry)
+        {
+            sample.Biome = BiomeTypeV2.QuarryField;
+            sample.LandmarkKind = LandmarkKindV2.Quarry;
+            sample.TileType = sample.HasOreSpot ? TileType.OreSpot : TileType.StoneField;
+            return;
+        }
+
         if (sample.ForestStrength > 0.42f)
         {
             sample.Biome = BiomeTypeV2.Forest;
@@ -857,6 +1053,172 @@ public sealed class FlatlandWorldPlanV3
             WorldMapSizePresetV2.Large => Mathf.Max(1, _settings.V3LargeVillageCount),
             _ => Mathf.Max(1, _settings.V3SmallVillageCount)
         };
+    }
+
+    private void GetTargetQuarryCounts(out int majorCount, out int minorCount)
+    {
+        DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 7113));
+        switch (MapSizePreset)
+        {
+            case WorldMapSizePresetV2.Medium:
+                majorCount = random.RangeInclusive(Mathf.Max(0, _settings.V3MediumMajorQuarryMinCount), Mathf.Max(0, _settings.V3MediumMajorQuarryMaxCount));
+                minorCount = random.RangeInclusive(Mathf.Max(0, _settings.V3MediumMinorQuarryMinCount), Mathf.Max(0, _settings.V3MediumMinorQuarryMaxCount));
+                break;
+            case WorldMapSizePresetV2.Large:
+                majorCount = random.RangeInclusive(Mathf.Max(0, _settings.V3LargeMajorQuarryMinCount), Mathf.Max(0, _settings.V3LargeMajorQuarryMaxCount));
+                minorCount = random.RangeInclusive(Mathf.Max(0, _settings.V3LargeMinorQuarryMinCount), Mathf.Max(0, _settings.V3LargeMinorQuarryMaxCount));
+                break;
+            case WorldMapSizePresetV2.Small:
+            default:
+                majorCount = random.RangeInclusive(Mathf.Max(0, _settings.V3SmallMajorQuarryMinCount), Mathf.Max(0, _settings.V3SmallMajorQuarryMaxCount));
+                minorCount = random.RangeInclusive(Mathf.Max(0, _settings.V3SmallMinorQuarryMinCount), Mathf.Max(0, _settings.V3SmallMinorQuarryMaxCount));
+                break;
+        }
+    }
+
+    private void PlaceQuarryClusters(
+        int targetCount,
+        bool major,
+        int minX,
+        int minY,
+        int maxX,
+        int maxY,
+        ref int nextId,
+        ref DeterministicRandom random)
+    {
+        int placed = 0;
+        int maxAttempts = Mathf.Max(targetCount * 10, targetCount * Mathf.Max(1, _settings.V3QuarryPlacementMaxAttemptsPerCluster));
+        for (int attempt = 0; placed < targetCount && attempt < maxAttempts; attempt++)
+        {
+            float radius = PickQuarryRadius(major, ref random);
+            Vector2 center = new(random.RangeInclusive(minX, maxX), random.RangeInclusive(minY, maxY));
+            if (!CanPlaceQuarry(center, radius, major))
+            {
+                RejectedQuarryPlacementCount++;
+                continue;
+            }
+
+            _quarryRegions.Add(CreateQuarryRegion(nextId++, center, radius, major, ref random));
+            placed++;
+            if (major)
+            {
+                MajorQuarryCount++;
+            }
+            else
+            {
+                MinorQuarryCount++;
+            }
+        }
+    }
+
+    private float PickQuarryRadius(bool major, ref DeterministicRandom random)
+    {
+        float min = major ? Mathf.Max(12.0f, _settings.V3MajorQuarryMinRadius) : Mathf.Max(8.0f, _settings.V3MinorQuarryMinRadius);
+        float max = major ? Mathf.Max(min, _settings.V3MajorQuarryMaxRadius) : Mathf.Max(min, _settings.V3MinorQuarryMaxRadius);
+        return major
+            ? Mathf.Lerp(min, max, random.Range(0.35f, 1.0f))
+            : Mathf.Lerp(min, max, random.Range(0.0f, 1.0f));
+    }
+
+    private bool CanPlaceQuarry(Vector2 center, float radius, bool major)
+    {
+        foreach (VillageSiteV2 village in _villages)
+        {
+            float required = village.Radius + radius + (village.IsStartingVillage && major ? 130.0f : 44.0f);
+            if (center.DistanceTo(village.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (RoadPathV2 road in _roads)
+        {
+            float required = road.Width + radius * 0.42f + 8.0f;
+            if (road.DistanceToPath(new Vector2I(Mathf.RoundToInt(center.X), Mathf.RoundToInt(center.Y))) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (QuarryRegionV3 quarry in _quarryRegions)
+        {
+            float required = (radius + quarry.ApproxRadius) * 0.82f + 48.0f;
+            if (center.DistanceTo(quarry.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private QuarryRegionV3 CreateQuarryRegion(int id, Vector2 center, float radius, bool major, ref DeterministicRandom random)
+    {
+        float warp = major
+            ? Mathf.Max(0.0f, _settings.V3MajorQuarryWarpStrength) * random.Range(0.78f, 1.22f)
+            : Mathf.Max(0.0f, _settings.V3MinorQuarryWarpStrength) * random.Range(0.70f, 1.18f);
+        float noiseScale = major
+            ? Mathf.Max(0.001f, _settings.V3MajorQuarryNoiseScale) * random.Range(0.84f, 1.18f)
+            : Mathf.Max(0.001f, _settings.V3MinorQuarryNoiseScale) * random.Range(0.84f, 1.25f);
+        float threshold = Mathf.Clamp(_settings.V3QuarryPotentialThreshold + (random.NextUnit() - 0.5f) * 0.06f + (major ? -0.02f : 0.03f), 0.34f, 0.70f);
+        float boundsRadius = radius * 1.32f + warp + 10.0f;
+        return new QuarryRegionV3
+        {
+            Id = id,
+            Center = center,
+            ApproxRadius = radius,
+            Bounds = new Rect2(center - new Vector2(boundsRadius, boundsRadius), new Vector2(boundsRadius * 2.0f, boundsRadius * 2.0f)),
+            Seed = HashIntId(id, WorldSeed, major ? 7301 : 7401),
+            Threshold = threshold,
+            NoiseScale = noiseScale,
+            WarpStrength = warp,
+            Density = major ? random.Range(0.86f, 1.0f) : random.Range(0.72f, 0.94f),
+            IsMajorQuarry = major
+        };
+    }
+
+    private QuarryClusterV3 CreateQuarryCluster(int id, Vector2 center, float radius, bool major, ref DeterministicRandom random)
+    {
+        int minPatch = major ? Mathf.Max(1, _settings.V3MajorQuarryMinPatchCount) : Mathf.Max(1, _settings.V3MinorQuarryMinPatchCount);
+        int maxPatch = major ? Mathf.Max(minPatch, _settings.V3MajorQuarryMaxPatchCount) : Mathf.Max(minPatch, _settings.V3MinorQuarryMaxPatchCount);
+        int patchCount = random.RangeInclusive(minPatch, maxPatch);
+        List<QuarryPatchV3> patches = BuildQuarryPatches(id, center, radius, patchCount, ref random);
+        Rect2 bounds = CalculateQuarryBounds(center, radius, patches);
+        return new QuarryClusterV3
+        {
+            Id = id,
+            Center = center,
+            ApproxRadius = radius,
+            Bounds = bounds,
+            Seed = HashIntId(id, WorldSeed, major ? 7301 : 7401),
+            Density = major ? random.Range(0.82f, 1.0f) : random.Range(0.68f, 0.92f),
+            PatchCount = patchCount,
+            SizeClass = major ? QuarrySizeClassV3.Major : QuarrySizeClassV3.Minor,
+            Patches = patches
+        };
+    }
+
+    private static List<QuarryPatchV3> BuildQuarryPatches(int clusterId, Vector2 center, float radius, int patchCount, ref DeterministicRandom random)
+    {
+        List<QuarryPatchV3> patches = new(patchCount);
+        for (int i = 0; i < patchCount; i++)
+        {
+            float angle = random.NextUnit() * Mathf.Tau;
+            float distance = i == 0 ? 0.0f : radius * random.Range(0.10f, 0.78f);
+            Vector2 offset = new(Mathf.Cos(angle) * distance, Mathf.Sin(angle) * distance);
+            float patchRadius = radius * random.Range(i == 0 ? 0.34f : 0.18f, i == 0 ? 0.62f : 0.46f);
+            patches.Add(new QuarryPatchV3
+            {
+                Id = i + 1,
+                Center = center + offset,
+                Radius = Mathf.Max(5.0f, patchRadius),
+                Aspect = random.Range(0.72f, 1.38f),
+                Angle = angle + (random.NextUnit() - 0.5f) * 1.4f + clusterId * 0.013f,
+                Density = random.Range(0.74f, 1.05f)
+            });
+        }
+
+        return patches;
     }
 
     private void GetTargetForestRegionCounts(out int majorCount, out int minorCount)
@@ -1441,6 +1803,30 @@ public sealed class FlatlandWorldPlanV3
         return lobe.Radius * Mathf.Max(aspect, 1.0f / aspect);
     }
 
+    private static Rect2 CalculateQuarryBounds(Vector2 center, float radius, IReadOnlyList<QuarryPatchV3> patches)
+    {
+        float minX = center.X - radius;
+        float minY = center.Y - radius;
+        float maxX = center.X + radius;
+        float maxY = center.Y + radius;
+        foreach (QuarryPatchV3 patch in patches)
+        {
+            float patchRadius = GetQuarryPatchBoundsRadius(patch) + 8.0f;
+            minX = Mathf.Min(minX, patch.Center.X - patchRadius);
+            minY = Mathf.Min(minY, patch.Center.Y - patchRadius);
+            maxX = Mathf.Max(maxX, patch.Center.X + patchRadius);
+            maxY = Mathf.Max(maxY, patch.Center.Y + patchRadius);
+        }
+
+        return new Rect2(minX, minY, Mathf.Max(0.0f, maxX - minX), Mathf.Max(0.0f, maxY - minY));
+    }
+
+    private static float GetQuarryPatchBoundsRadius(QuarryPatchV3 patch)
+    {
+        float aspect = Mathf.Clamp(patch.Aspect, 0.50f, 1.70f);
+        return patch.Radius * Mathf.Max(aspect, 1.0f / aspect);
+    }
+
     private static bool TryGetLocalCircleBounds(
         FlatlandChunkGenerationContextV2 context,
         Vector2I center,
@@ -1605,7 +1991,7 @@ public sealed class FlatlandWorldPlanV3
 
     public string GetDebugSummary()
     {
-        return $"V3 villages: count={VillageCount} startId={StartingVillageId} startCenter={StartingVillageCenter} spawn={PlayerSpawnCell} nearestCenter={NearestToWorldCenterDistance:0.0} roads={RoadCount} primary={PrimaryRoadCount} extra={ExtraRoadCount} roadLayer={RoadLayerEnabled} forestRegions={ForestRegionCount} majorForests={MajorForestRegionCount} minorForests={MinorForestPatchCount} forestLayer={ForestLayerEnabled}";
+        return $"V3 villages: count={VillageCount} startId={StartingVillageId} startCenter={StartingVillageCenter} spawn={PlayerSpawnCell} nearestCenter={NearestToWorldCenterDistance:0.0} roads={RoadCount} primary={PrimaryRoadCount} extra={ExtraRoadCount} roadLayer={RoadLayerEnabled} forestRegions={ForestRegionCount} majorForests={MajorForestRegionCount} minorForests={MinorForestPatchCount} forestLayer={ForestLayerEnabled} quarryRegions={QuarryRegionCount} majorQuarries={MajorQuarryCount} minorQuarries={MinorQuarryCount} quarryLayer={QuarryLayerEnabled} rejectedQuarries={RejectedQuarryPlacementCount}";
     }
 
     private static FlatlandCellSampleV2 CreateOutOfBoundsSample(Vector2I globalCell)

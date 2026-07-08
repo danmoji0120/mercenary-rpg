@@ -67,6 +67,9 @@ public partial class WorldV2DebugHud : Control
         string v3ForestLine = manager.PlanVersion == WorldPlanVersionV2.V3
             ? $"v3 forests: enabled={manager.V3ForestLayerEnabled} regions={manager.V3ForestRegionCount} major={manager.V3MajorForestRegionCount} minor={manager.V3MinorForestPatchCount}"
             : "v3 forests: inactive";
+        string v3QuarryLine = manager.PlanVersion == WorldPlanVersionV2.V3
+            ? $"v3 quarries: enabled={manager.V3QuarryLayerEnabled} regions={manager.V3QuarryRegionCount} major={manager.V3MajorQuarryCount} minor={manager.V3MinorQuarryCount} rejected={manager.V3RejectedQuarryPlacementCount}"
+            : "v3 quarries: inactive";
         string dangerLine = metadata == null
             ? "danger/resources: -"
             : $"danger: {metadata.DangerLevel:0.00}  resources: {metadata.ResourceRichness:0.00}";
@@ -144,7 +147,7 @@ public partial class WorldV2DebugHud : Control
         {
             flatlandSample = manager.SampleFlatlandAt(streamManager.CenterGlobalCellCoord);
             sampleLine = $"sample: tile={flatlandSample.TileType} biome={flatlandSample.Biome} forest={flatlandSample.ForestStrength:0.00} restricted={flatlandSample.IsBuildRestricted}";
-            featureLine = $"features: river={flatlandSample.IsRiver} bank={flatlandSample.IsRiverBank} bridge={flatlandSample.IsBridgeCandidate} road={flatlandSample.IsRoad} ore={flatlandSample.HasOreSpot}";
+            featureLine = $"features: river={flatlandSample.IsRiver} bank={flatlandSample.IsRiverBank} bridge={flatlandSample.IsBridgeCandidate} road={flatlandSample.IsRoad} quarry={flatlandSample.IsQuarry} ore={flatlandSample.HasOreSpot}";
             siteLine = $"site: village={flatlandSample.IsVillage} starting={flatlandSample.IsStartingVillage} landmark={flatlandSample.LandmarkKind}";
         }
 
@@ -156,6 +159,8 @@ public partial class WorldV2DebugHud : Control
                 $"rivers: count={settings.RiverCount} width={settings.RiverWidth:0.0} bank={settings.RiverBankWidth:0.0} meander={settings.RiverMeanderStrength:0}\n" +
                 $"forest: clusters={settings.ForestClusterCount} length={settings.ForestClusterMinLength:0}-{settings.ForestClusterMaxLength:0} width={settings.ForestClusterMinWidth:0}-{settings.ForestClusterMaxWidth:0}\n" +
                 $"v3 forest regions: small={settings.V3SmallMajorForestMinCount}-{settings.V3SmallMajorForestMaxCount}/{settings.V3SmallMinorForestMinCount}-{settings.V3SmallMinorForestMaxCount} medium={settings.V3MediumMajorForestMinCount}-{settings.V3MediumMajorForestMaxCount}/{settings.V3MediumMinorForestMinCount}-{settings.V3MediumMinorForestMaxCount} large={settings.V3LargeMajorForestMinCount}-{settings.V3LargeMajorForestMaxCount}/{settings.V3LargeMinorForestMinCount}-{settings.V3LargeMinorForestMaxCount}\n" +
+                $"v3 quarries: small={settings.V3SmallMajorQuarryMinCount}-{settings.V3SmallMajorQuarryMaxCount}/{settings.V3SmallMinorQuarryMinCount}-{settings.V3SmallMinorQuarryMaxCount} medium={settings.V3MediumMajorQuarryMinCount}-{settings.V3MediumMajorQuarryMaxCount}/{settings.V3MediumMinorQuarryMinCount}-{settings.V3MediumMinorQuarryMaxCount} large={settings.V3LargeMajorQuarryMinCount}-{settings.V3LargeMajorQuarryMaxCount}/{settings.V3LargeMinorQuarryMinCount}-{settings.V3LargeMinorQuarryMaxCount}\n" +
+                $"v3 quarry field: radius major={settings.V3MajorQuarryMinRadius:0}-{settings.V3MajorQuarryMaxRadius:0} minor={settings.V3MinorQuarryMinRadius:0}-{settings.V3MinorQuarryMaxRadius:0} oreChance={settings.V3QuarryOreSpotChance:P1}\n" +
                 $"roads: width={settings.RoadWidth:0.0} forestPenalty={settings.RoadForestPenalty:0} riverPenalty={settings.RoadRiverPenalty:0} villageAttract={settings.RoadVillageAttraction:0.00}\n" +
                 $"sites: villageRadius={settings.VillageRadius:0} startRadius={settings.StartVillageRadius:0} landmarks={settings.LandmarkCountPerRegion} quarries={settings.QuarryCountPerRegion}\n" +
                 $"road chances: ruin={settings.RuinRoadChance:P0} dungeon={settings.DungeonRoadChance:P0} bandit={settings.BanditRoadChance:P0} faction={settings.FactionRoadChance:P0} quarry={settings.QuarryRoadChance:P0}\n" +
@@ -163,6 +168,7 @@ public partial class WorldV2DebugHud : Control
                 $"{v3VillageLine}\n" +
                 $"{v3RoadLine}\n" +
                 $"{v3ForestLine}\n" +
+                $"{v3QuarryLine}\n" +
                 $"{performanceLine}\n" +
                 $"{generationProfileLine}\n" +
                 $"{renderProfileLine}\n" +
@@ -191,6 +197,7 @@ public partial class WorldV2DebugHud : Control
             $"{v3VillageLine}\n" +
             $"{v3RoadLine}\n" +
             $"{v3ForestLine}\n" +
+            $"{v3QuarryLine}\n" +
             $"{sectorLine}\n" +
             $"{dangerLine}\n" +
             $"{biomeStatsLine}\n" +
