@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://dnonvlyt33dhd"]
+
+[ext_resource type="Script" uid="uid://ceg4go61qh0x8" path="res://scripts/world_v2/WorldV2Root.cs" id="1_root"]
+[ext_resource type="Script" uid="uid://ukymk5vdjikh" path="res://scripts/world_v2/grid/WorldV2GridRenderer.cs" id="2_grid"]
+[ext_resource type="Script" uid="uid://be457xxe2o2gg" path="res://scripts/world_v2/building/WorldV2BuildManager.cs" id="3_build"]
+[ext_resource type="Script" uid="uid://kd2ey026i6fw" path="res://scripts/world_v2/debug/WorldV2DebugHud.cs" id="4_hud"]
+[ext_resource type="Script" uid="uid://dr8g3e3mb14s2" path="res://scripts/world_v2/WorldManagerV2.cs" id="5_manager"]
+[ext_resource type="Script" uid="uid://btkxyqs42yswu" path="res://scripts/world_v2/streaming/WorldStreamManagerV2.cs" id="6_stream"]
+[ext_resource type="Script" uid="uid://du4mlo5tand5s" path="res://scripts/world_v2/camera/WorldV2CameraController.cs" id="7_camera"]
+[ext_resource type="Script" uid="uid://dxwkuymrp8vg0" path="res://scripts/world_v2/generation/WorldGenerationSettingsV2.cs" id="8_settings"]
+
+[node name="WorldV2Root" type="Node2D" unique_id=1834217038]
+script = ExtResource("1_root")
+
+[node name="GridLayer" type="Node2D" parent="." unique_id=87408010]
+script = ExtResource("2_grid")
+
+[node name="BuildingLayer" type="Node2D" parent="." unique_id=589874698]
+script = ExtResource("3_build")
+
+[node name="WorldStreamManagerV2" type="Node" parent="." unique_id=365929260]
+script = ExtResource("6_stream")
+MaxRenderedChunkCountHardLimit = 4096
+
+[node name="WorldGenerationSettingsV2" type="Node" parent="." unique_id=415017184]
+script = ExtResource("8_settings")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1141080062]
+position = Vector2(1548, 1548)
+zoom = Vector2(0.75, 0.75)
+script = ExtResource("7_camera")
+ZoomStep = 0.01
+MinZoom = 0.002
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1618200854]
+
+[node name="WorldV2DebugHud" type="Control" parent="CanvasLayer" unique_id=2011233553]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("4_hud")
+
+[node name="WorldManagerV2" type="Node" parent="." unique_id=1068189427]
+script = ExtResource("5_manager")
+UseRandomSeed = true

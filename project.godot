@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="mercenary_RPG"
-run/main_scene="res://scenes/world/MainWorld.tscn"
+run/main_scene="res://scenes/world_v2/MainMenu.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 

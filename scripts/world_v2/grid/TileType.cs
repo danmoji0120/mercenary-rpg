@@ -1,0 +1,36 @@
+namespace WorldV2;
+
+public enum TileType
+{
+    Grass,
+    TownPavement,
+    Plaza,
+    Road,
+    ForestGround,
+    QuarryGround,
+    Rubble,
+    FactoryFloor,
+    Wasteland,
+    Dirt,
+    Water,
+    Coast,
+    Swamp,
+    Desert,
+    Snow,
+    Hills,
+    Mountain,
+    Toxic,
+    DenseForest,
+    LightForest,
+    WetGrass,
+    RiverBank,
+    BridgeCandidate,
+    Village,
+    VillageEdge,
+    Ruin,
+    Dungeon,
+    BanditCamp,
+    FactionOutpost,
+    StoneField,
+    OreSpot
+}

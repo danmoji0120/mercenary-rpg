@@ -577,6 +577,11 @@ public partial class BaseBuildManager : Node2D
 				: "Nothing to erase";
 		}
 
+		if (IsBuildRestrictedCell(cell))
+		{
+			return "Build restricted area";
+		}
+
 		if (buildType == TileBuildType.Floor)
 		{
 			if (IsResourceNodeCell(cell))
@@ -683,6 +688,11 @@ public partial class BaseBuildManager : Node2D
 				&& (eraseState.HasObject || eraseState.HasFloor);
 		}
 
+		if (IsBuildRestrictedCell(cell))
+		{
+			return false;
+		}
+
 		bool hasExistingState = _buildings.TryGetValue(cell, out BuildableTileState existingState);
 
 		if (buildType == TileBuildType.Floor)
@@ -783,6 +793,11 @@ public partial class BaseBuildManager : Node2D
 		// Door is currently always open, so it keeps BlocksMovement false and BFS can pass through it.
 		// TODO: When closed/locked doors exist, treat door && !IsOpen as blocked here.
 		return _buildings.TryGetValue(cell, out BuildableTileState state) && state.BlocksMovement;
+	}
+
+	public bool IsBuildRestrictedCell(Vector2I cell)
+	{
+		return _worldGrid?.IsBuildRestrictedCell(cell) == true;
 	}
 
 	public bool IsFacilityCell(Vector2I cell)
@@ -4247,6 +4262,11 @@ public partial class BaseBuildManager : Node2D
 			if (!IsCellInWorld(objectCell))
 			{
 				return "Out of bounds";
+			}
+
+			if (IsBuildRestrictedCell(objectCell))
+			{
+				return "Build restricted area";
 			}
 
 			if (IsResourceNodeCell(objectCell))

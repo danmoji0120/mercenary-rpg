@@ -13,6 +13,9 @@ public partial class TestResourceNodeSpawner : Node2D
     public bool UseFixedTestNodes { get; set; } = false;
 
     [Export]
+    public bool DisableWhenProceduralWorldGeneratorPresent { get; set; } = true;
+
+    [Export]
     public bool DebugResourceGeneration { get; set; } = true;
 
     [Export]
@@ -169,6 +172,16 @@ public partial class TestResourceNodeSpawner : Node2D
 
     public override void _Ready()
     {
+        if (ShouldSkipForProceduralWorldGenerator())
+        {
+            if (DebugResourceGeneration)
+            {
+                GD.Print("Resource node spawner skipped: ProceduralWorldGenerator handles active sector resources.");
+            }
+
+            return;
+        }
+
         _baseBuildManager = GetNodeOrNull<BaseBuildManager>("../BuildingLayer");
         _worldGrid = GetNodeOrNull<WorldGridRenderer>("../TerrainLayer");
         SyncWorldSettingsFromGrid();
@@ -183,6 +196,18 @@ public partial class TestResourceNodeSpawner : Node2D
         }
 
         SpawnClusteredResourceNodes();
+    }
+
+    private bool ShouldSkipForProceduralWorldGenerator()
+    {
+        if (!DisableWhenProceduralWorldGeneratorPresent)
+        {
+            return false;
+        }
+
+        ProceduralWorldGenerator? generator = GetNodeOrNull<ProceduralWorldGenerator>("../ProceduralWorldGenerator")
+            ?? GetTree().CurrentScene?.GetNodeOrNull<ProceduralWorldGenerator>("ProceduralWorldGenerator");
+        return generator?.HandlesActiveSectorResourceSpawning == true;
     }
 
     private void SpawnTestResourceNodes()

@@ -18,10 +18,14 @@
 [ext_resource type="Script" uid="uid://bclndd22vfksa" path="res://scripts/world/crafting/CraftingManager.cs" id="16_crafting"]
 [ext_resource type="Script" path="res://scripts/world/equipment/EquipmentInventoryManager.cs" id="17_equipment_inventory"]
 [ext_resource type="Script" path="res://scripts/world/equipment/MercenaryEquipmentLoadoutManager.cs" id="18_equipment_loadouts"]
+[ext_resource type="Script" path="res://scripts/world/procedural/ProceduralWorldGenerator.cs" id="19_world_generator"]
 
 [node name="MainWorld" type="Node2D" unique_id=1694616011]
 script = ExtResource("1_wktxm")
 EnableCraftingDebugHotkeys = true
+
+[node name="ProceduralWorldGenerator" type="Node" parent="."]
+script = ExtResource("19_world_generator")
 
 [node name="BaseAlertState" type="Node" parent="." unique_id=2044625730]
 script = ExtResource("12_a8lbr")
@@ -42,6 +46,7 @@ WorldHeight = 128
 
 [node name="ResourceNodeLayer" type="Node2D" parent="." unique_id=1018619387]
 script = ExtResource("13_p4x2h")
+DisableWhenProceduralWorldGeneratorPresent = true
 
 [node name="ResourcePileLayer" type="Node2D" parent="." unique_id=758212863]
 

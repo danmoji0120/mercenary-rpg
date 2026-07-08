@@ -39,7 +39,11 @@ public partial class MainWorldController : Node2D
     [Export]
     public bool EnableCraftingDebugHotkeys { get; set; } = false;
 
+    [Export]
+    public bool EnableWorldDebugHotkeys { get; set; } = true;
+
     private Camera2D? _camera;
+    private ProceduralWorldGenerator? _proceduralWorldGenerator;
     private WorldGridRenderer? _worldGrid;
     private BaseBuildManager? _baseBuildManager;
     private CraftingManager? _craftingManager;
@@ -95,6 +99,7 @@ public partial class MainWorldController : Node2D
     public override void _Ready()
     {
         _camera = GetNodeOrNull<Camera2D>("Camera2D");
+        _proceduralWorldGenerator = GetNodeOrNull<ProceduralWorldGenerator>("ProceduralWorldGenerator");
         _worldGrid = GetNodeOrNull<WorldGridRenderer>("TerrainLayer");
         _baseBuildManager = GetNodeOrNull<BaseBuildManager>("BuildingLayer");
         _craftingManager = GetNodeOrNull<CraftingManager>("CraftingManager");
@@ -138,6 +143,7 @@ public partial class MainWorldController : Node2D
         }
 
         _baseRoomManager.SetBuildManager(_baseBuildManager);
+        _proceduralWorldGenerator?.Initialize(_proceduralWorldGenerator.WorldSeed);
 
         _selectedMercenaryHud?.SetDebugStatusVisible(ShowHudDebugText);
 
@@ -571,6 +577,11 @@ public partial class MainWorldController : Node2D
             return true;
         }
 
+        if (EnableWorldDebugHotkeys && HandleWorldDebugInput(keyEvent))
+        {
+            return true;
+        }
+
         if (keyEvent.Keycode == Key.F3)
         {
             ShowPathDebug = !ShowPathDebug;
@@ -631,6 +642,49 @@ public partial class MainWorldController : Node2D
         }
 
         return false;
+    }
+
+    private bool HandleWorldDebugInput(InputEventKey keyEvent)
+    {
+        if (!keyEvent.ShiftPressed || _proceduralWorldGenerator == null)
+        {
+            return false;
+        }
+
+        if (keyEvent.Keycode == Key.F6)
+        {
+            _proceduralWorldGenerator.PrintActiveSectorSummary();
+            _proceduralWorldGenerator.PrintSurroundingSectorMetadata(_proceduralWorldGenerator.ActiveSectorCoord);
+            return true;
+        }
+
+        if (keyEvent.Keycode == Key.F9)
+        {
+            Vector2I nextSector = _proceduralWorldGenerator.ActiveSectorCoord + Vector2I.Right;
+            LoadDebugActiveSector(nextSector);
+            return true;
+        }
+
+        if (keyEvent.Keycode == Key.F10)
+        {
+            LoadDebugActiveSector(Vector2I.Zero);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void LoadDebugActiveSector(Vector2I sectorCoord)
+    {
+        if (_proceduralWorldGenerator == null)
+        {
+            return;
+        }
+
+        _proceduralWorldGenerator.LoadActiveSector(sectorCoord);
+        ClampCameraPosition();
+        UpdateBuildHud();
+        GD.Print("Debug sector load complete. Sector persistence and building migration are not implemented in world 0.1.");
     }
 
     private bool HandleCraftingDebugInput(InputEventKey keyEvent)
