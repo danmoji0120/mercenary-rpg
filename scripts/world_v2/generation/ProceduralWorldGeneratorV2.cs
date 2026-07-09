@@ -419,6 +419,15 @@ public sealed class ProceduralWorldGeneratorV2
         }
     }
 
+    public int V3RoadTargetDungeonEntranceCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadTargetDungeonEntranceCount : 0;
+        }
+    }
+
     public int V3RoadTargetForestEdgeCount
     {
         get
@@ -706,6 +715,53 @@ public sealed class ProceduralWorldGeneratorV2
 
     public bool V3RuinLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.RuinLayerEnabled;
 
+    public int V3DungeonEntranceCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.DungeonEntranceCount : 0;
+        }
+    }
+
+    public int V3RoadLinkedDungeonEntranceCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadLinkedDungeonEntranceCount : 0;
+        }
+    }
+
+    public int V3RejectedDungeonEntrancePlacementCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RejectedDungeonEntrancePlacementCount : 0;
+        }
+    }
+
+    public string V3DungeonEntranceKindDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.DungeonEntranceKindDistribution : "cave/gate/stair/sink/mine=0/0/0/0/0";
+        }
+    }
+
+    public string V3DungeonEntranceBiomeDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.DungeonEntranceBiomeDistribution : "P/F/R/D/W=0/0/0/0/0";
+        }
+    }
+
+    public bool V3DungeonLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.DungeonLayerEnabled;
+
     public int V3BiomeRegionCount
     {
         get
@@ -833,6 +889,14 @@ public sealed class ProceduralWorldGeneratorV2
             : System.Array.Empty<RuinSiteV3>();
     }
 
+    public IReadOnlyList<DungeonEntranceSiteV3> GetV3DungeonEntrances()
+    {
+        EnsureNoiseProfile(_generationRequest.Seed);
+        return _generationRequest.PlanVersion == WorldPlanVersionV2.V3
+            ? _flatlandPlanV3.DungeonEntrances
+            : System.Array.Empty<DungeonEntranceSiteV3>();
+    }
+
     public IReadOnlyList<BiomeRegionV3> GetV3BiomeRegions()
     {
         EnsureNoiseProfile(_generationRequest.Seed);
@@ -881,6 +945,8 @@ public sealed class ProceduralWorldGeneratorV2
             LandmarkKind = sample.LandmarkKind,
             IsQuarry = sample.IsQuarry,
             HasOreSpot = sample.HasOreSpot,
+            IsDungeonEntrance = sample.IsDungeonEntrance,
+            DungeonEntranceKind = sample.DungeonEntranceKind,
             ForestStrength = sample.ForestStrength,
             IsBuildRestricted = sample.IsBuildRestricted,
             IsWalkable = sample.IsWalkable,

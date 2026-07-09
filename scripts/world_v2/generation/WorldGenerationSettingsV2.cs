@@ -281,6 +281,25 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public float V3RuinNoiseScale { get; set; } = 0.075f;
     [Export] public float V3RuinWarpStrength { get; set; } = 7.5f;
 
+    [ExportGroup("V3 Dungeon Entrances")]
+    [Export] public int V3SmallDungeonEntranceMinCount { get; set; } = 2;
+    [Export] public int V3SmallDungeonEntranceMaxCount { get; set; } = 3;
+    [Export] public int V3MediumDungeonEntranceMinCount { get; set; } = 5;
+    [Export] public int V3MediumDungeonEntranceMaxCount { get; set; } = 8;
+    [Export] public int V3LargeDungeonEntranceMinCount { get; set; } = 10;
+    [Export] public int V3LargeDungeonEntranceMaxCount { get; set; } = 16;
+    [Export] public int V3HugeDungeonEntranceMinCount { get; set; } = 28;
+    [Export] public int V3HugeDungeonEntranceMaxCount { get; set; } = 32;
+    [Export] public float V3DungeonEntranceMinRadius { get; set; } = 9.0f;
+    [Export] public float V3DungeonEntranceMaxRadius { get; set; } = 18.0f;
+    [Export] public float V3DungeonEntranceMinDistance { get; set; } = 280.0f;
+    [Export] public int V3DungeonEntrancePlacementMaxAttemptsPerSite { get; set; } = 90;
+    [Export] public float V3PlainsDungeonEntranceWeightMultiplier { get; set; } = 0.45f;
+    [Export] public float V3ForestLandDungeonEntranceWeightMultiplier { get; set; } = 0.95f;
+    [Export] public float V3RockyHillsDungeonEntranceWeightMultiplier { get; set; } = 1.55f;
+    [Export] public float V3DrylandDungeonEntranceWeightMultiplier { get; set; } = 0.90f;
+    [Export] public float V3WastelandDungeonEntranceWeightMultiplier { get; set; } = 1.45f;
+
     [ExportGroup("World Map Overlay")]
     [Export] public int WorldMapSmallTextureSize { get; set; } = 512;
     [Export] public int WorldMapMediumTextureSize { get; set; } = 768;
@@ -590,6 +609,28 @@ public partial class WorldGenerationSettingsV2 : Node
         V3QuarryOreSpotChance = 0.018f;
         V3HugeRuinMinCount = 90;
         V3HugeRuinMaxCount = 110;
+        V3RuinMinRadius = 13.0f;
+        V3RuinMaxRadius = 34.0f;
+        V3RuinPlacementMaxAttemptsPerSite = 90;
+        V3RuinNoiseScale = 0.075f;
+        V3RuinWarpStrength = 7.5f;
+        V3SmallDungeonEntranceMinCount = 2;
+        V3SmallDungeonEntranceMaxCount = 3;
+        V3MediumDungeonEntranceMinCount = 5;
+        V3MediumDungeonEntranceMaxCount = 8;
+        V3LargeDungeonEntranceMinCount = 10;
+        V3LargeDungeonEntranceMaxCount = 16;
+        V3HugeDungeonEntranceMinCount = 28;
+        V3HugeDungeonEntranceMaxCount = 32;
+        V3DungeonEntranceMinRadius = 9.0f;
+        V3DungeonEntranceMaxRadius = 18.0f;
+        V3DungeonEntranceMinDistance = 280.0f;
+        V3DungeonEntrancePlacementMaxAttemptsPerSite = 90;
+        V3PlainsDungeonEntranceWeightMultiplier = 0.45f;
+        V3ForestLandDungeonEntranceWeightMultiplier = 0.95f;
+        V3RockyHillsDungeonEntranceWeightMultiplier = 1.55f;
+        V3DrylandDungeonEntranceWeightMultiplier = 0.90f;
+        V3WastelandDungeonEntranceWeightMultiplier = 1.45f;
         WorldMapHugeTextureSize = 1536;
     }
 }

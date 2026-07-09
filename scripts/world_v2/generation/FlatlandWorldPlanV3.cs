@@ -16,10 +16,13 @@ public sealed class FlatlandWorldPlanV3
     private readonly List<QuarryClusterV3> _quarryClusters = new();
     private readonly List<QuarryRegionV3> _quarryRegions = new();
     private readonly List<RuinSiteV3> _ruinSites = new();
+    private readonly List<DungeonEntranceSiteV3> _dungeonEntrances = new();
     private readonly List<BiomeRegionV3> _biomeRegions = new();
     private readonly int[] _forestBiomeDistribution = new int[5];
     private readonly int[] _quarryBiomeDistribution = new int[5];
     private readonly int[] _ruinBiomeDistribution = new int[5];
+    private readonly int[] _dungeonEntranceBiomeDistribution = new int[5];
+    private readonly int[] _dungeonEntranceKindDistribution = new int[5];
     private readonly int[] _settlementRoleDistribution = new int[8];
     private bool _isBuilt;
     private int _startingVillageId = -1;
@@ -64,6 +67,7 @@ public sealed class FlatlandWorldPlanV3
     public int RoadTargetAnchorCount => _roadTargetAnchors.Count;
     public int RoadTargetQuarryCount { get; private set; }
     public int RoadTargetRuinCount { get; private set; }
+    public int RoadTargetDungeonEntranceCount { get; private set; }
     public int RoadTargetForestEdgeCount { get; private set; }
     public int RoadTargetWorldEdgeExitCount { get; private set; }
     public int FutureRoadTargetCount { get; private set; }
@@ -112,6 +116,28 @@ public sealed class FlatlandWorldPlanV3
     public string RuinBiomeDistribution => FormatBiomeDistribution(_ruinBiomeDistribution);
     public bool RuinLayerEnabled => WorldGenerationLayerSettingsV2.EnableRuins;
     public IReadOnlyList<RuinSiteV3> RuinSites => _ruinSites;
+    public int DungeonEntranceCount => _dungeonEntrances.Count;
+    public int RoadLinkedDungeonEntranceCount
+    {
+        get
+        {
+            int count = 0;
+            foreach (DungeonEntranceSiteV3 dungeon in _dungeonEntrances)
+            {
+                if (dungeon.LinkedRoadId > 0)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+    }
+    public int RejectedDungeonEntrancePlacementCount { get; private set; }
+    public string DungeonEntranceKindDistribution => FormatDungeonEntranceKindDistribution(_dungeonEntranceKindDistribution);
+    public string DungeonEntranceBiomeDistribution => FormatBiomeDistribution(_dungeonEntranceBiomeDistribution);
+    public bool DungeonLayerEnabled => WorldGenerationLayerSettingsV2.EnableDungeons;
+    public IReadOnlyList<DungeonEntranceSiteV3> DungeonEntrances => _dungeonEntrances;
     public int BiomeRegionCount => _biomeRegions.Count;
     public int MajorBiomeRegionCount { get; private set; }
     public int MinorBiomeRegionCount { get; private set; }
@@ -149,6 +175,7 @@ public sealed class FlatlandWorldPlanV3
         GenerateQuarries();
         GenerateForests();
         GenerateRuins();
+        GenerateDungeonEntrances();
         AssignSettlementRoles();
         GenerateRoadTargetAnchors();
         GenerateBranchRoads();
@@ -168,6 +195,7 @@ public sealed class FlatlandWorldPlanV3
         _quarryClusters.Clear();
         _quarryRegions.Clear();
         _ruinSites.Clear();
+        _dungeonEntrances.Clear();
         _biomeRegions.Clear();
         PrimaryRoadCount = 0;
         SecondaryRoadCount = 0;
@@ -183,6 +211,7 @@ public sealed class FlatlandWorldPlanV3
         RejectedRoadTooLongCount = 0;
         RoadTargetQuarryCount = 0;
         RoadTargetRuinCount = 0;
+        RoadTargetDungeonEntranceCount = 0;
         RoadTargetForestEdgeCount = 0;
         RoadTargetWorldEdgeExitCount = 0;
         FutureRoadTargetCount = 0;
@@ -195,6 +224,7 @@ public sealed class FlatlandWorldPlanV3
         MinorQuarryCount = 0;
         RejectedQuarryPlacementCount = 0;
         RejectedRuinPlacementCount = 0;
+        RejectedDungeonEntrancePlacementCount = 0;
         MajorBiomeRegionCount = 0;
         MinorBiomeRegionCount = 0;
         BiomeForestLandCount = 0;
@@ -207,6 +237,7 @@ public sealed class FlatlandWorldPlanV3
         _playerSpawnCell = Vector2I.Zero;
         _nearestToWorldCenterDistance = 0.0f;
         ClearFeatureBiomeDistributions();
+        ClearDistribution(_dungeonEntranceKindDistribution);
         ClearDistribution(_settlementRoleDistribution);
         _isBuilt = false;
     }
@@ -299,6 +330,17 @@ public sealed class FlatlandWorldPlanV3
             }
         }
 
+        if (WorldGenerationLayerSettingsV2.EnableDungeons)
+        {
+            foreach (DungeonEntranceSiteV3 dungeon in _dungeonEntrances)
+            {
+                if (dungeon.Bounds.Intersects(chunkRect, includeBorders: true))
+                {
+                    context.AddDungeonEntrance(dungeon);
+                }
+            }
+        }
+
         if (WorldGenerationLayerSettingsV2.EnableForests)
         {
             foreach (ForestRegionV3 forest in _forestRegions)
@@ -331,6 +373,11 @@ public sealed class FlatlandWorldPlanV3
         if (WorldGenerationLayerSettingsV2.EnableRuins)
         {
             RasterRuins(context);
+        }
+
+        if (WorldGenerationLayerSettingsV2.EnableDungeons)
+        {
+            RasterDungeonEntrances(context);
         }
 
         if (WorldGenerationLayerSettingsV2.EnableQuarries)
@@ -366,6 +413,8 @@ public sealed class FlatlandWorldPlanV3
             IsLandmark = context.IsLandmark[index],
             IsQuarry = context.IsQuarry[index],
             HasOreSpot = context.HasOreSpot[index],
+            IsDungeonEntrance = context.IsDungeonEntrance[index],
+            DungeonEntranceKind = context.DungeonEntranceKind[index],
             LandmarkKind = context.LandmarkKind[index],
             ForestStrength = context.ForestStrength[index],
             IsForest = context.ForestStrength[index] > 0.42f
@@ -1357,6 +1406,7 @@ public sealed class FlatlandWorldPlanV3
         _roadTargetAnchors.Clear();
         RoadTargetQuarryCount = 0;
         RoadTargetRuinCount = 0;
+        RoadTargetDungeonEntranceCount = 0;
         RoadTargetForestEdgeCount = 0;
         RoadTargetWorldEdgeExitCount = 0;
         FutureRoadTargetCount = 0;
@@ -1371,6 +1421,7 @@ public sealed class FlatlandWorldPlanV3
         int nextId = 1;
         AddQuarryRoadTargets(ref nextId, ref random);
         AddRuinRoadTargets(ref nextId, ref random);
+        AddDungeonEntranceRoadTargets(ref nextId, ref random);
         AddForestEdgeRoadTargets(ref nextId, ref random);
         AddWorldEdgeExitTargets(ref nextId, ref random);
     }
@@ -1463,6 +1514,65 @@ public sealed class FlatlandWorldPlanV3
         }
 
         AssignRoadLinkedRuins(ref random);
+    }
+
+    private void GenerateDungeonEntrances()
+    {
+        _dungeonEntrances.Clear();
+        RejectedDungeonEntrancePlacementCount = 0;
+        ClearDistribution(_dungeonEntranceBiomeDistribution);
+        ClearDistribution(_dungeonEntranceKindDistribution);
+
+        if (!WorldGenerationLayerSettingsV2.EnableDungeons)
+        {
+            return;
+        }
+
+        int targetCount = GetTargetDungeonEntranceCount();
+        if (targetCount <= 0)
+        {
+            return;
+        }
+
+        DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 10101));
+        float edgeMargin = Mathf.Max(96.0f, _settings.V3DungeonEntranceMaxRadius + 72.0f);
+        int minX = Mathf.CeilToInt(edgeMargin);
+        int minY = Mathf.CeilToInt(edgeMargin);
+        int maxX = Mathf.FloorToInt(WorldSize.WidthCells - edgeMargin - 1.0f);
+        int maxY = Mathf.FloorToInt(WorldSize.HeightCells - edgeMargin - 1.0f);
+        if (minX > maxX || minY > maxY)
+        {
+            return;
+        }
+
+        int maxAttempts = Mathf.Max(targetCount * 12, targetCount * Mathf.Max(1, _settings.V3DungeonEntrancePlacementMaxAttemptsPerSite));
+        int nextId = 1;
+        for (int attempt = 0; _dungeonEntrances.Count < targetCount && attempt < maxAttempts; attempt++)
+        {
+            float radius = random.Range(Mathf.Max(6.0f, _settings.V3DungeonEntranceMinRadius), Mathf.Max(_settings.V3DungeonEntranceMinRadius, _settings.V3DungeonEntranceMaxRadius));
+            Vector2 center = new(random.RangeInclusive(minX, maxX), random.RangeInclusive(minY, maxY));
+            if (!CanPlaceDungeonEntrance(center, radius))
+            {
+                RejectedDungeonEntrancePlacementCount++;
+                continue;
+            }
+
+            BiomeKindV3 biome = ResolveBiomeKindForPlacement(center);
+            float weight = GetDungeonEntranceBiomeWeight(biome) * GetDungeonEntranceFeatureWeight(center, out string nearbyFeatureHint);
+            if (!AcceptBiomeWeightedPlacement(biome, weight, ref random))
+            {
+                RejectedDungeonEntrancePlacementCount++;
+                continue;
+            }
+
+            DungeonEntranceKindV3 kind = PickDungeonEntranceKind(center, biome, ref random);
+            DungeonEntranceSiteV3 site = CreateDungeonEntranceSite(nextId++, kind, center, radius, nearbyFeatureHint, ref random);
+            _dungeonEntrances.Add(site);
+            IncrementDistribution(_dungeonEntranceBiomeDistribution, biome);
+            IncrementDistribution(_dungeonEntranceKindDistribution, (int)kind);
+        }
+
+        AssignRoadLinkedDungeonEntrances(ref random);
     }
 
     private void GenerateLandmarksPlaceholder()
@@ -2018,6 +2128,59 @@ public sealed class FlatlandWorldPlanV3
         }
     }
 
+    private void RasterDungeonEntrances(FlatlandChunkGenerationContextV2 context)
+    {
+        WorldV2PerformanceProfiler profiler = WorldV2PerformanceProfiler.Instance;
+        long start = profiler.BeginSample();
+
+        foreach (DungeonEntranceSiteV3 dungeon in context.RelevantDungeonEntrances)
+        {
+            RasterDungeonEntrance(context, dungeon);
+        }
+
+        profiler.EndSample(WorldV2PerformanceProfiler.FlatlandSiteSample, start, context.ChunkCoord);
+    }
+
+    private void RasterDungeonEntrance(FlatlandChunkGenerationContextV2 context, DungeonEntranceSiteV3 dungeon)
+    {
+        int minGlobalX = Mathf.FloorToInt(dungeon.Bounds.Position.X);
+        int minGlobalY = Mathf.FloorToInt(dungeon.Bounds.Position.Y);
+        int maxGlobalX = Mathf.CeilToInt(dungeon.Bounds.End.X);
+        int maxGlobalY = Mathf.CeilToInt(dungeon.Bounds.End.Y);
+        if (!TryGetLocalBounds(context, minGlobalX, minGlobalY, maxGlobalX, maxGlobalY, out int minX, out int minY, out int maxX, out int maxY))
+        {
+            return;
+        }
+
+        for (int y = minY; y <= maxY; y++)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                int index = FlatlandChunkGenerationContextV2.ToIndex(x, y);
+                if (context.IsVillage[index] || context.IsStartingVillage[index] || context.IsRoad[index])
+                {
+                    continue;
+                }
+
+                Vector2I cell = context.ToGlobalCell(x, y);
+                float strength = GetDungeonEntrancePotentialAt(dungeon, cell);
+                if (strength <= 0.0f)
+                {
+                    continue;
+                }
+
+                float distance = new Vector2(cell.X + 0.5f, cell.Y + 0.5f).DistanceTo(dungeon.Center);
+                context.IsDungeonEntrance[index] = true;
+                context.DungeonEntranceKind[index] = dungeon.Kind;
+                context.IsLandmark[index] = true;
+                context.LandmarkKind[index] = LandmarkKindV2.Dungeon;
+                context.SiteDistance[index] = Mathf.Min(context.SiteDistance[index], distance);
+                context.SiteRadius[index] = dungeon.ApproxRadius;
+                context.HasLandmarkTile = true;
+            }
+        }
+    }
+
     private void RasterForests(FlatlandChunkGenerationContextV2 context)
     {
         WorldV2PerformanceProfiler profiler = WorldV2PerformanceProfiler.Instance;
@@ -2401,6 +2564,23 @@ public sealed class FlatlandWorldPlanV3
             : 0.0f;
     }
 
+    private float GetDungeonEntrancePotentialAt(DungeonEntranceSiteV3 dungeon, Vector2I cell)
+    {
+        Vector2 point = new(cell.X + 0.5f, cell.Y + 0.5f);
+        float radius = Mathf.Max(3.0f, dungeon.ApproxRadius);
+        float distance = point.DistanceTo(dungeon.Center);
+        if (distance > radius * 1.12f)
+        {
+            return 0.0f;
+        }
+
+        float normalizedDistance = distance / radius;
+        float edgeNoise = (StableUnitFloat(cell.X + dungeon.Id * 31, cell.Y - dungeon.Id * 19, dungeon.Seed + 47) - 0.5f) * 0.18f;
+        float detail = StableUnitFloat(cell.X / 2 + dungeon.Id * 13, cell.Y / 2 - dungeon.Id * 11, dungeon.Seed + 83);
+        float potential = (1.0f - normalizedDistance + edgeNoise) * 0.84f + detail * 0.16f;
+        return potential > 0.26f ? Mathf.Clamp(potential, 0.0f, 1.0f) : 0.0f;
+    }
+
     private static void RasterForestFallbackEllipse(FlatlandChunkGenerationContextV2 context, ForestClusterSiteV2 forest)
     {
         float range = Mathf.Max(forest.Length, forest.Width) * 0.62f + 18.0f;
@@ -2448,6 +2628,18 @@ public sealed class FlatlandWorldPlanV3
         if (sample.IsRoad)
         {
             sample.TileType = roadStrength >= 0.46f ? TileType.Road : TileType.Dirt;
+            return;
+        }
+
+        if (sample.IsDungeonEntrance)
+        {
+            sample.Biome = BiomeTypeV2.RuinedFactory;
+            sample.LandmarkKind = LandmarkKindV2.Dungeon;
+            float coreRatio = siteRadius > 0.0f ? siteDistance / siteRadius : 1.0f;
+            sample.TileType = coreRatio <= 0.38f
+                ? TileType.Dungeon
+                : sample.DungeonEntranceKind == DungeonEntranceKindV3.MineShaft ? TileType.StoneField : TileType.Rubble;
+            sample.IsBuildRestricted = true;
             return;
         }
 
@@ -2638,6 +2830,26 @@ public sealed class FlatlandWorldPlanV3
         };
     }
 
+    private int GetTargetDungeonEntranceCount()
+    {
+        DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 10113));
+        return MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Medium => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3MediumDungeonEntranceMinCount),
+                Mathf.Max(0, _settings.V3MediumDungeonEntranceMaxCount)),
+            WorldMapSizePresetV2.Large => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3LargeDungeonEntranceMinCount),
+                Mathf.Max(0, _settings.V3LargeDungeonEntranceMaxCount)),
+            WorldMapSizePresetV2.Huge => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3HugeDungeonEntranceMinCount),
+                Mathf.Max(0, _settings.V3HugeDungeonEntranceMaxCount)),
+            WorldMapSizePresetV2.Small or _ => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3SmallDungeonEntranceMinCount),
+                Mathf.Max(0, _settings.V3SmallDungeonEntranceMaxCount))
+        };
+    }
+
     private int GetDesiredRoadLinkedRuinCount(ref DeterministicRandom random)
     {
         int ruinCount = _ruinSites.Count;
@@ -2687,6 +2899,65 @@ public sealed class FlatlandWorldPlanV3
         {
             float aScore = GetNearestNonBranchRoadDistance(a.Center) + StableUnitFloat(a.Id, WorldSeed, 9141) * 80.0f;
             float bScore = GetNearestNonBranchRoadDistance(b.Center) + StableUnitFloat(b.Id, WorldSeed, 9141) * 80.0f;
+            return aScore.CompareTo(bScore);
+        });
+
+        int count = Mathf.Min(desired, candidates.Count);
+        for (int i = 0; i < count; i++)
+        {
+            candidates[i].IsRoadLinked = true;
+        }
+    }
+
+    private int GetDesiredRoadLinkedDungeonEntranceCount(ref DeterministicRandom random)
+    {
+        int dungeonCount = _dungeonEntrances.Count;
+        if (dungeonCount == 0)
+        {
+            return 0;
+        }
+
+        int desired = MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Medium => Mathf.RoundToInt(dungeonCount * random.Range(0.30f, 0.45f)),
+            WorldMapSizePresetV2.Large => Mathf.RoundToInt(dungeonCount * random.Range(0.25f, 0.40f)),
+            WorldMapSizePresetV2.Huge => Mathf.RoundToInt(dungeonCount * random.Range(0.20f, 0.35f)),
+            WorldMapSizePresetV2.Small or _ => 1
+        };
+
+        return Mathf.Clamp(desired, 0, dungeonCount);
+    }
+
+    private void AssignRoadLinkedDungeonEntrances(ref DeterministicRandom random)
+    {
+        foreach (DungeonEntranceSiteV3 dungeon in _dungeonEntrances)
+        {
+            dungeon.IsRoadLinked = false;
+            dungeon.LinkedRoadId = -1;
+        }
+
+        int desired = GetDesiredRoadLinkedDungeonEntranceCount(ref random);
+        if (desired <= 0 || _roads.Count == 0)
+        {
+            return;
+        }
+
+        List<DungeonEntranceSiteV3> candidates = new();
+        foreach (DungeonEntranceSiteV3 dungeon in _dungeonEntrances)
+        {
+            float distance = GetNearestNonBranchRoadDistance(dungeon.Center);
+            if (distance < _settings.V3BranchRoadMinLength * 0.42f || distance > _settings.V3BranchRoadMaxLength * 1.10f)
+            {
+                continue;
+            }
+
+            candidates.Add(dungeon);
+        }
+
+        candidates.Sort((a, b) =>
+        {
+            float aScore = GetNearestNonBranchRoadDistance(a.Center) + StableUnitFloat(a.Id, WorldSeed, 10141) * 90.0f;
+            float bScore = GetNearestNonBranchRoadDistance(b.Center) + StableUnitFloat(b.Id, WorldSeed, 10141) * 90.0f;
             return aScore.CompareTo(bScore);
         });
 
@@ -2861,6 +3132,214 @@ public sealed class FlatlandWorldPlanV3
             Seed = HashIntId(id, WorldSeed, 9201),
             Density = random.Range(0.78f, 1.05f)
         };
+    }
+
+    private bool CanPlaceDungeonEntrance(Vector2 center, float radius)
+    {
+        foreach (VillageSiteV2 village in _villages)
+        {
+            float tierBuffer = village.Scale is VillageScaleV2.Town or VillageScaleV2.CityCandidate ? 70.0f : 42.0f;
+            float required = village.Radius + radius + (village.IsStartingVillage ? 180.0f : tierBuffer);
+            if (center.DistanceTo(village.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (RoadPathV2 road in _roads)
+        {
+            float required = road.Width + radius * 0.45f + 5.0f;
+            if (road.DistanceToPath(center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (DungeonEntranceSiteV3 dungeon in _dungeonEntrances)
+        {
+            float required = radius + dungeon.ApproxRadius + Mathf.Max(80.0f, _settings.V3DungeonEntranceMinDistance);
+            if (center.DistanceTo(dungeon.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (RuinSiteV3 ruin in _ruinSites)
+        {
+            float required = radius + ruin.ApproxRadius * 0.38f;
+            if (center.DistanceTo(ruin.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (QuarryRegionV3 quarry in _quarryRegions)
+        {
+            float required = radius + quarry.ApproxRadius * 0.24f;
+            if (center.DistanceTo(quarry.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private DungeonEntranceSiteV3 CreateDungeonEntranceSite(
+        int id,
+        DungeonEntranceKindV3 kind,
+        Vector2 center,
+        float radius,
+        string nearbyFeatureHint,
+        ref DeterministicRandom random)
+    {
+        float boundsRadius = radius + 8.0f;
+        return new DungeonEntranceSiteV3
+        {
+            Id = id,
+            Kind = kind,
+            Center = center,
+            ApproxRadius = radius,
+            Bounds = new Rect2(center - new Vector2(boundsRadius, boundsRadius), new Vector2(boundsRadius * 2.0f, boundsRadius * 2.0f)),
+            Seed = HashIntId(id, WorldSeed, 10201),
+            DangerHint = random.RangeInclusive(1, 3),
+            NearbyFeatureHint = nearbyFeatureHint
+        };
+    }
+
+    private float GetDungeonEntranceBiomeWeight(BiomeKindV3 biome)
+    {
+        if (!WorldGenerationLayerSettingsV2.EnableBiomes)
+        {
+            return 1.0f;
+        }
+
+        return biome switch
+        {
+            BiomeKindV3.ForestLand => _settings.V3ForestLandDungeonEntranceWeightMultiplier,
+            BiomeKindV3.RockyHills => _settings.V3RockyHillsDungeonEntranceWeightMultiplier,
+            BiomeKindV3.Dryland => _settings.V3DrylandDungeonEntranceWeightMultiplier,
+            BiomeKindV3.Wasteland => _settings.V3WastelandDungeonEntranceWeightMultiplier,
+            _ => _settings.V3PlainsDungeonEntranceWeightMultiplier
+        };
+    }
+
+    private float GetDungeonEntranceFeatureWeight(Vector2 center, out string nearbyFeatureHint)
+    {
+        nearbyFeatureHint = string.Empty;
+        float multiplier = 1.0f;
+        float bestDistance = float.MaxValue;
+
+        foreach (RuinSiteV3 ruin in _ruinSites)
+        {
+            float distance = center.DistanceTo(ruin.Center) - ruin.ApproxRadius;
+            if (distance < 360.0f)
+            {
+                multiplier += 0.34f;
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    nearbyFeatureHint = "Ruin";
+                }
+                break;
+            }
+        }
+
+        foreach (QuarryRegionV3 quarry in _quarryRegions)
+        {
+            float distance = center.DistanceTo(quarry.Center) - quarry.ApproxRadius;
+            if (distance < 340.0f)
+            {
+                multiplier += 0.30f;
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    nearbyFeatureHint = "Quarry";
+                }
+                break;
+            }
+        }
+
+        foreach (ForestRegionV3 forest in _forestRegions)
+        {
+            float distance = Mathf.Abs(center.DistanceTo(forest.Center) - forest.ApproxRadius);
+            if (distance < 180.0f)
+            {
+                multiplier += 0.20f;
+                if (distance < bestDistance)
+                {
+                    nearbyFeatureHint = "ForestEdge";
+                }
+                break;
+            }
+        }
+
+        return Mathf.Clamp(multiplier, 0.75f, 1.85f);
+    }
+
+    private DungeonEntranceKindV3 PickDungeonEntranceKind(Vector2 center, BiomeKindV3 biome, ref DeterministicRandom random)
+    {
+        float cave = 1.0f + random.NextUnit() * 0.18f;
+        float gate = 0.70f + random.NextUnit() * 0.16f;
+        float stair = 0.70f + random.NextUnit() * 0.16f;
+        float sinkhole = 0.80f + random.NextUnit() * 0.16f;
+        float mine = 0.70f + random.NextUnit() * 0.16f;
+
+        switch (biome)
+        {
+            case BiomeKindV3.RockyHills:
+                cave += 0.82f;
+                mine += 1.05f;
+                break;
+            case BiomeKindV3.Wasteland:
+                gate += 0.90f;
+                stair += 0.92f;
+                sinkhole += 0.36f;
+                break;
+            case BiomeKindV3.ForestLand:
+                cave += 0.45f;
+                sinkhole += 0.82f;
+                break;
+            case BiomeKindV3.Dryland:
+                gate += 0.48f;
+                stair += 0.70f;
+                break;
+        }
+
+        if (HasNearbyRuin(new Vector2I(Mathf.RoundToInt(center.X), Mathf.RoundToInt(center.Y))))
+        {
+            gate += 0.58f;
+            stair += 0.68f;
+        }
+
+        if (HasNearbyQuarry(new Vector2I(Mathf.RoundToInt(center.X), Mathf.RoundToInt(center.Y))))
+        {
+            mine += 0.72f;
+            cave += 0.42f;
+        }
+
+        if (HasNearbyForest(new Vector2I(Mathf.RoundToInt(center.X), Mathf.RoundToInt(center.Y))))
+        {
+            sinkhole += 0.50f;
+            cave += 0.35f;
+        }
+
+        DungeonEntranceKindV3 bestKind = DungeonEntranceKindV3.CaveMouth;
+        float bestScore = cave;
+        ConsiderDungeonKind(DungeonEntranceKindV3.AncientGate, gate, ref bestKind, ref bestScore);
+        ConsiderDungeonKind(DungeonEntranceKindV3.RuinedStair, stair, ref bestKind, ref bestScore);
+        ConsiderDungeonKind(DungeonEntranceKindV3.Sinkhole, sinkhole, ref bestKind, ref bestScore);
+        ConsiderDungeonKind(DungeonEntranceKindV3.MineShaft, mine, ref bestKind, ref bestScore);
+        return bestKind;
+    }
+
+    private static void ConsiderDungeonKind(DungeonEntranceKindV3 kind, float score, ref DungeonEntranceKindV3 bestKind, ref float bestScore)
+    {
+        if (score > bestScore)
+        {
+            bestKind = kind;
+            bestScore = score;
+        }
     }
 
     private QuarryClusterV3 CreateQuarryCluster(int id, Vector2 center, float radius, bool major, ref DeterministicRandom random)
@@ -3384,6 +3863,43 @@ public sealed class FlatlandWorldPlanV3
         }
     }
 
+    private void AddDungeonEntranceRoadTargets(ref int nextId, ref DeterministicRandom random)
+    {
+        if (!WorldGenerationLayerSettingsV2.EnableDungeons)
+        {
+            return;
+        }
+
+        foreach (DungeonEntranceSiteV3 dungeon in _dungeonEntrances)
+        {
+            if (!dungeon.IsRoadLinked)
+            {
+                continue;
+            }
+
+            Vector2 direction = Vector2.Right.Rotated(random.NextUnit() * Mathf.Tau);
+            if (TryFindNearestNonBranchRoadPoint(dungeon.Center, out Vector2 roadPoint))
+            {
+                Vector2 toRoad = roadPoint - dungeon.Center;
+                if (toRoad.LengthSquared() > 0.001f)
+                {
+                    direction = toRoad.Normalized();
+                }
+            }
+
+            Vector2 position = ClampPointToWorld(dungeon.Center + direction * dungeon.ApproxRadius * random.Range(0.78f, 1.08f), 48.0f);
+            RoadTargetAnchorV3 anchor = CreateRoadTarget(nextId, RoadTargetKindV3.DungeonEntrance, position, Mathf.Max(8.0f, dungeon.ApproxRadius * 0.50f), dungeon.Id, true);
+            if (!TryAddRoadTarget(anchor))
+            {
+                RejectedRoadTargetCount++;
+                continue;
+            }
+
+            nextId++;
+            RoadTargetDungeonEntranceCount++;
+        }
+    }
+
     private void AddForestEdgeRoadTargets(ref int nextId, ref DeterministicRandom random)
     {
         int targetLimit = GetTargetBranchRoadCount(ref random);
@@ -3574,6 +4090,12 @@ public sealed class FlatlandWorldPlanV3
             targetCount = Mathf.Max(targetCount, Mathf.Min(ruinTargetCount, 2));
         }
 
+        int dungeonTargetCount = CountRoadTargets(RoadTargetKindV3.DungeonEntrance);
+        if (dungeonTargetCount > 0)
+        {
+            targetCount = Mathf.Max(targetCount, Mathf.Min(dungeonTargetCount, MapSizePreset == WorldMapSizePresetV2.Small ? 1 : 3));
+        }
+
         targetCount = Mathf.Min(targetCount, _roadTargetAnchors.Count);
         if (targetCount <= 0)
         {
@@ -3641,12 +4163,12 @@ public sealed class FlatlandWorldPlanV3
 
     private RoadTargetAnchorV3 PickRoadTargetAnchor(HashSet<int> connectedTargetIds, ref DeterministicRandom random)
     {
-        if (random.NextUnit() < 0.62f)
+        if (random.NextUnit() < 0.70f)
         {
             for (int attempt = 0; attempt < 12; attempt++)
             {
                 RoadTargetAnchorV3 target = _roadTargetAnchors[random.RangeInclusive(0, _roadTargetAnchors.Count - 1)];
-                if (target.Kind == RoadTargetKindV3.Ruin && !connectedTargetIds.Contains(target.Id))
+                if ((target.Kind == RoadTargetKindV3.Ruin || target.Kind == RoadTargetKindV3.DungeonEntrance) && !connectedTargetIds.Contains(target.Id))
                 {
                     return target;
                 }
@@ -3681,17 +4203,26 @@ public sealed class FlatlandWorldPlanV3
 
     private void MarkRoadTargetLinked(RoadTargetAnchorV3 target, int roadId)
     {
-        if (target.Kind != RoadTargetKindV3.Ruin)
+        if (target.Kind == RoadTargetKindV3.Ruin)
         {
-            return;
-        }
-
-        foreach (RuinSiteV3 ruin in _ruinSites)
-        {
-            if (ruin.Id == target.LinkedFeatureId)
+            foreach (RuinSiteV3 ruin in _ruinSites)
             {
-                ruin.LinkedRoadId = roadId;
-                return;
+                if (ruin.Id == target.LinkedFeatureId)
+                {
+                    ruin.LinkedRoadId = roadId;
+                    return;
+                }
+            }
+        }
+        else if (target.Kind == RoadTargetKindV3.DungeonEntrance)
+        {
+            foreach (DungeonEntranceSiteV3 dungeon in _dungeonEntrances)
+            {
+                if (dungeon.Id == target.LinkedFeatureId)
+                {
+                    dungeon.LinkedRoadId = roadId;
+                    return;
+                }
             }
         }
     }
@@ -4609,7 +5140,7 @@ public sealed class FlatlandWorldPlanV3
 
     public string GetDebugSummary()
     {
-        return $"V3 settlements: count={VillageCount} hamlet={HamletCount} village={VillageTierCount} large={LargeVillageCount} town={TownCount} cityCandidate={CityCandidateCount} startId={StartingVillageId} startTier={StartingSettlementTier} startRole={StartingSettlementRole} startCenter={StartingVillageCenter} spawn={PlayerSpawnCell} nearestCenter={NearestToWorldCenterDistance:0.0} roleDist={SettlementRoleDistribution} biomes={BiomeRegionCount} majorBiomes={MajorBiomeRegionCount} minorBiomes={MinorBiomeRegionCount} avgMajorBiomeRadius={AverageMajorBiomeRadius:0} avgMinorBiomeRadius={AverageMinorBiomeRadius:0} biomeKinds forest/rocky/dry/waste={BiomeForestLandCount}/{BiomeRockyHillsCount}/{BiomeDrylandCount}/{BiomeWastelandCount} biomeLayer={BiomeLayerEnabled} roads={RoadCount} primary={PrimaryRoadCount} secondary={SecondaryRoadCount} extra={ExtraRoadCount} branch={BranchRoadCount} nodes={RoadNodeCount} junctions={RoadJunctionCount} maxDegree={MaxRoadJunctionDegree} trunks={SharedTrunkCount} merged={MergedRoadCandidateCount} rejectedJunctions={RejectedRoadJunctionCount} rejectedHighDegree={RejectedHighDegreeJunctionCount} rejectedCrossings={RejectedRoadCrossingCount} rejectedTooLong={RejectedRoadTooLongCount} targets={RoadTargetAnchorCount} quarryTargets={RoadTargetQuarryCount} ruinTargets={RoadTargetRuinCount} forestTargets={RoadTargetForestEdgeCount} edgeTargets={RoadTargetWorldEdgeExitCount} futureTargets={FutureRoadTargetCount} rejectedTargets={RejectedRoadTargetCount} rejectedBranches={RejectedBranchRoadCount} roadLayer={RoadLayerEnabled} forestRegions={ForestRegionCount} majorForests={MajorForestRegionCount} minorForests={MinorForestPatchCount} forestLayer={ForestLayerEnabled} rejectedForests={RejectedForestPlacementCount} forestBiomeDist={ForestBiomeDistribution} quarryRegions={QuarryRegionCount} majorQuarries={MajorQuarryCount} minorQuarries={MinorQuarryCount} quarryLayer={QuarryLayerEnabled} rejectedQuarries={RejectedQuarryPlacementCount} quarryBiomeDist={QuarryBiomeDistribution} ruins={RuinSiteCount} roadLinkedRuins={RoadLinkedRuinCount} ruinLayer={RuinLayerEnabled} rejectedRuins={RejectedRuinPlacementCount} ruinBiomeDist={RuinBiomeDistribution}";
+        return $"V3 settlements: count={VillageCount} hamlet={HamletCount} village={VillageTierCount} large={LargeVillageCount} town={TownCount} cityCandidate={CityCandidateCount} startId={StartingVillageId} startTier={StartingSettlementTier} startRole={StartingSettlementRole} startCenter={StartingVillageCenter} spawn={PlayerSpawnCell} nearestCenter={NearestToWorldCenterDistance:0.0} roleDist={SettlementRoleDistribution} biomes={BiomeRegionCount} majorBiomes={MajorBiomeRegionCount} minorBiomes={MinorBiomeRegionCount} avgMajorBiomeRadius={AverageMajorBiomeRadius:0} avgMinorBiomeRadius={AverageMinorBiomeRadius:0} biomeKinds forest/rocky/dry/waste={BiomeForestLandCount}/{BiomeRockyHillsCount}/{BiomeDrylandCount}/{BiomeWastelandCount} biomeLayer={BiomeLayerEnabled} roads={RoadCount} primary={PrimaryRoadCount} secondary={SecondaryRoadCount} extra={ExtraRoadCount} branch={BranchRoadCount} nodes={RoadNodeCount} junctions={RoadJunctionCount} maxDegree={MaxRoadJunctionDegree} trunks={SharedTrunkCount} merged={MergedRoadCandidateCount} rejectedJunctions={RejectedRoadJunctionCount} rejectedHighDegree={RejectedHighDegreeJunctionCount} rejectedCrossings={RejectedRoadCrossingCount} rejectedTooLong={RejectedRoadTooLongCount} targets={RoadTargetAnchorCount} quarryTargets={RoadTargetQuarryCount} ruinTargets={RoadTargetRuinCount} dungeonTargets={RoadTargetDungeonEntranceCount} forestTargets={RoadTargetForestEdgeCount} edgeTargets={RoadTargetWorldEdgeExitCount} futureTargets={FutureRoadTargetCount} rejectedTargets={RejectedRoadTargetCount} rejectedBranches={RejectedBranchRoadCount} roadLayer={RoadLayerEnabled} forestRegions={ForestRegionCount} majorForests={MajorForestRegionCount} minorForests={MinorForestPatchCount} forestLayer={ForestLayerEnabled} rejectedForests={RejectedForestPlacementCount} forestBiomeDist={ForestBiomeDistribution} quarryRegions={QuarryRegionCount} majorQuarries={MajorQuarryCount} minorQuarries={MinorQuarryCount} quarryLayer={QuarryLayerEnabled} rejectedQuarries={RejectedQuarryPlacementCount} quarryBiomeDist={QuarryBiomeDistribution} ruins={RuinSiteCount} roadLinkedRuins={RoadLinkedRuinCount} ruinLayer={RuinLayerEnabled} rejectedRuins={RejectedRuinPlacementCount} ruinBiomeDist={RuinBiomeDistribution} dungeons={DungeonEntranceCount} roadLinkedDungeons={RoadLinkedDungeonEntranceCount} dungeonLayer={DungeonLayerEnabled} rejectedDungeons={RejectedDungeonEntrancePlacementCount} dungeonKinds={DungeonEntranceKindDistribution} dungeonBiomeDist={DungeonEntranceBiomeDistribution}";
     }
 
     private void ClearFeatureBiomeDistributions()
@@ -4617,6 +5148,7 @@ public sealed class FlatlandWorldPlanV3
         ClearDistribution(_forestBiomeDistribution);
         ClearDistribution(_quarryBiomeDistribution);
         ClearDistribution(_ruinBiomeDistribution);
+        ClearDistribution(_dungeonEntranceBiomeDistribution);
     }
 
     private static void ClearDistribution(int[] distribution)
@@ -4642,6 +5174,11 @@ public sealed class FlatlandWorldPlanV3
     private static string FormatBiomeDistribution(int[] distribution)
     {
         return $"P/F/R/D/W={distribution[(int)BiomeKindV3.Plains]}/{distribution[(int)BiomeKindV3.ForestLand]}/{distribution[(int)BiomeKindV3.RockyHills]}/{distribution[(int)BiomeKindV3.Dryland]}/{distribution[(int)BiomeKindV3.Wasteland]}";
+    }
+
+    private static string FormatDungeonEntranceKindDistribution(int[] distribution)
+    {
+        return $"cave/gate/stair/sink/mine={distribution[(int)DungeonEntranceKindV3.CaveMouth]}/{distribution[(int)DungeonEntranceKindV3.AncientGate]}/{distribution[(int)DungeonEntranceKindV3.RuinedStair]}/{distribution[(int)DungeonEntranceKindV3.Sinkhole]}/{distribution[(int)DungeonEntranceKindV3.MineShaft]}";
     }
 
     private static string FormatRoleDistribution(int[] distribution)

@@ -66,7 +66,7 @@ public partial class WorldV2DebugHud : Control
             ? $"v3 biomes: enabled={manager.V3BiomeLayerEnabled} mode={manager.V3BiomeResolveMode} regions={manager.V3BiomeRegionCount} major={manager.V3MajorBiomeRegionCount} minor={manager.V3MinorBiomeRegionCount} avgR={manager.V3AverageMajorBiomeRadius:0}/{manager.V3AverageMinorBiomeRadius:0} plains=fallback forest/rocky/dry/waste={manager.V3BiomeForestLandCount}/{manager.V3BiomeRockyHillsCount}/{manager.V3BiomeDrylandCount}/{manager.V3BiomeWastelandCount}"
             : "v3 biomes: inactive";
         string v3RoadLine = manager.PlanVersion == WorldPlanVersionV2.V3
-            ? $"v3 roads: enabled={manager.V3RoadLayerEnabled} total={manager.V3RoadCount} primary={manager.V3PrimaryRoadCount} secondary={manager.V3SecondaryRoadCount} branch={manager.V3BranchRoadCount} nodes={manager.V3RoadNodeCount} junctions={manager.V3RoadJunctionCount} maxDeg={manager.V3MaxRoadJunctionDegree} trunks={manager.V3SharedTrunkCount} merged={manager.V3MergedRoadCandidateCount} rejectJ/deg/x/long={manager.V3RejectedRoadJunctionCount}/{manager.V3RejectedHighDegreeJunctionCount}/{manager.V3RejectedRoadCrossingCount}/{manager.V3RejectedRoadTooLongCount} targets={manager.V3RoadTargetAnchorCount} q/r/f/e/future={manager.V3RoadTargetQuarryCount}/{manager.V3RoadTargetRuinCount}/{manager.V3RoadTargetForestEdgeCount}/{manager.V3RoadTargetWorldEdgeExitCount}/{manager.V3FutureRoadTargetCount} rejectT/B={manager.V3RejectedRoadTargetCount}/{manager.V3RejectedBranchRoadCount}"
+            ? $"v3 roads: enabled={manager.V3RoadLayerEnabled} total={manager.V3RoadCount} primary={manager.V3PrimaryRoadCount} secondary={manager.V3SecondaryRoadCount} branch={manager.V3BranchRoadCount} nodes={manager.V3RoadNodeCount} junctions={manager.V3RoadJunctionCount} maxDeg={manager.V3MaxRoadJunctionDegree} trunks={manager.V3SharedTrunkCount} merged={manager.V3MergedRoadCandidateCount} rejectJ/deg/x/long={manager.V3RejectedRoadJunctionCount}/{manager.V3RejectedHighDegreeJunctionCount}/{manager.V3RejectedRoadCrossingCount}/{manager.V3RejectedRoadTooLongCount} targets={manager.V3RoadTargetAnchorCount} q/r/d/f/e/future={manager.V3RoadTargetQuarryCount}/{manager.V3RoadTargetRuinCount}/{manager.V3RoadTargetDungeonEntranceCount}/{manager.V3RoadTargetForestEdgeCount}/{manager.V3RoadTargetWorldEdgeExitCount}/{manager.V3FutureRoadTargetCount} rejectT/B={manager.V3RejectedRoadTargetCount}/{manager.V3RejectedBranchRoadCount}"
             : "v3 roads: inactive";
         string v3ForestLine = manager.PlanVersion == WorldPlanVersionV2.V3
             ? $"v3 forests: enabled={manager.V3ForestLayerEnabled} regions={manager.V3ForestRegionCount} major={manager.V3MajorForestRegionCount} minor={manager.V3MinorForestPatchCount} rejected={manager.V3RejectedForestPlacementCount} dist={manager.V3ForestBiomeDistribution}"
@@ -77,6 +77,9 @@ public partial class WorldV2DebugHud : Control
         string v3RuinLine = manager.PlanVersion == WorldPlanVersionV2.V3
             ? $"v3 ruins: enabled={manager.V3RuinLayerEnabled} sites={manager.V3RuinSiteCount} roadLinked={manager.V3RoadLinkedRuinCount} rejected={manager.V3RejectedRuinPlacementCount} dist={manager.V3RuinBiomeDistribution}"
             : "v3 ruins: inactive";
+        string v3DungeonLine = manager.PlanVersion == WorldPlanVersionV2.V3
+            ? $"v3 dungeons: enabled={manager.V3DungeonLayerEnabled} entrances={manager.V3DungeonEntranceCount} roadLinked={manager.V3RoadLinkedDungeonEntranceCount} rejected={manager.V3RejectedDungeonEntrancePlacementCount} kinds={manager.V3DungeonEntranceKindDistribution} dist={manager.V3DungeonEntranceBiomeDistribution}"
+            : "v3 dungeons: inactive";
         string dangerLine = metadata == null
             ? "danger/resources: -"
             : $"danger: {metadata.DangerLevel:0.00}  resources: {metadata.ResourceRichness:0.00}";
@@ -154,7 +157,7 @@ public partial class WorldV2DebugHud : Control
         {
             flatlandSample = manager.SampleFlatlandAt(streamManager.CenterGlobalCellCoord);
             sampleLine = $"sample: tile={flatlandSample.TileType} biome={flatlandSample.Biome} biomeV3={flatlandSample.BiomeKind} forest={flatlandSample.ForestStrength:0.00} restricted={flatlandSample.IsBuildRestricted}";
-            featureLine = $"features: river={flatlandSample.IsRiver} bank={flatlandSample.IsRiverBank} bridge={flatlandSample.IsBridgeCandidate} road={flatlandSample.IsRoad} quarry={flatlandSample.IsQuarry} ore={flatlandSample.HasOreSpot}";
+            featureLine = $"features: river={flatlandSample.IsRiver} bank={flatlandSample.IsRiverBank} bridge={flatlandSample.IsBridgeCandidate} road={flatlandSample.IsRoad} quarry={flatlandSample.IsQuarry} ore={flatlandSample.HasOreSpot} dungeon={flatlandSample.IsDungeonEntrance} dungeonKind={flatlandSample.DungeonEntranceKind}";
             siteLine = $"site: village={flatlandSample.IsVillage} starting={flatlandSample.IsStartingVillage} landmark={flatlandSample.LandmarkKind}";
         }
 
@@ -170,6 +173,7 @@ public partial class WorldV2DebugHud : Control
                 $"v3 quarries: small={settings.V3SmallMajorQuarryMinCount}-{settings.V3SmallMajorQuarryMaxCount}/{settings.V3SmallMinorQuarryMinCount}-{settings.V3SmallMinorQuarryMaxCount} medium={settings.V3MediumMajorQuarryMinCount}-{settings.V3MediumMajorQuarryMaxCount}/{settings.V3MediumMinorQuarryMinCount}-{settings.V3MediumMinorQuarryMaxCount} large={settings.V3LargeMajorQuarryMinCount}-{settings.V3LargeMajorQuarryMaxCount}/{settings.V3LargeMinorQuarryMinCount}-{settings.V3LargeMinorQuarryMaxCount} huge={settings.V3HugeMajorQuarryMinCount}-{settings.V3HugeMajorQuarryMaxCount}/{settings.V3HugeMinorQuarryMinCount}-{settings.V3HugeMinorQuarryMaxCount}\n" +
                 $"v3 quarry field: radius major={settings.V3MajorQuarryMinRadius:0}-{settings.V3MajorQuarryMaxRadius:0} minor={settings.V3MinorQuarryMinRadius:0}-{settings.V3MinorQuarryMaxRadius:0} oreChance={settings.V3QuarryOreSpotChance:P1}\n" +
                 $"v3 ruins: small={settings.V3SmallRuinMinCount}-{settings.V3SmallRuinMaxCount} medium={settings.V3MediumRuinMinCount}-{settings.V3MediumRuinMaxCount} large={settings.V3LargeRuinMinCount}-{settings.V3LargeRuinMaxCount} huge={settings.V3HugeRuinMinCount}-{settings.V3HugeRuinMaxCount} radius={settings.V3RuinMinRadius:0}-{settings.V3RuinMaxRadius:0}\n" +
+                $"v3 dungeons: small={settings.V3SmallDungeonEntranceMinCount}-{settings.V3SmallDungeonEntranceMaxCount} medium={settings.V3MediumDungeonEntranceMinCount}-{settings.V3MediumDungeonEntranceMaxCount} large={settings.V3LargeDungeonEntranceMinCount}-{settings.V3LargeDungeonEntranceMaxCount} huge={settings.V3HugeDungeonEntranceMinCount}-{settings.V3HugeDungeonEntranceMaxCount} radius={settings.V3DungeonEntranceMinRadius:0}-{settings.V3DungeonEntranceMaxRadius:0}\n" +
                 $"v3 road graph: nearest={settings.V3RoadNearestNeighborCount} extraRatio={settings.V3RoadExtraEdgeRatio:0.00} sharedExit={settings.V3SharedExitTrunkEnabled} maxDegree={settings.V3MaxRoadJunctionDegree} maxCross={settings.V3MaxRoadCrossingsPerEdge}\n" +
                 $"v3 branch roads: small={settings.V3SmallBranchRoadMinCount}-{settings.V3SmallBranchRoadMaxCount} medium={settings.V3MediumBranchRoadMinCount}-{settings.V3MediumBranchRoadMaxCount} large={settings.V3LargeBranchRoadMinCount}-{settings.V3LargeBranchRoadMaxCount} huge={settings.V3HugeBranchRoadMinCount}-{settings.V3HugeBranchRoadMaxCount} length={settings.V3BranchRoadMinLength:0}-{settings.V3BranchRoadMaxLength:0} targets={manager.V3RoadTargetAnchorCount}\n" +
                 $"world map texture sizes: small={settings.WorldMapSmallTextureSize} medium={settings.WorldMapMediumTextureSize} large={settings.WorldMapLargeTextureSize} huge={settings.WorldMapHugeTextureSize}\n" +
@@ -184,6 +188,7 @@ public partial class WorldV2DebugHud : Control
                 $"{v3ForestLine}\n" +
                 $"{v3QuarryLine}\n" +
                 $"{v3RuinLine}\n" +
+                $"{v3DungeonLine}\n" +
                 $"{performanceLine}\n" +
                 $"{generationProfileLine}\n" +
                 $"{renderProfileLine}\n" +

@@ -15,6 +15,8 @@ public sealed class FlatlandCellSampleV2
     public LandmarkKindV2 LandmarkKind { get; set; } = LandmarkKindV2.None;
     public bool IsQuarry { get; set; }
     public bool HasOreSpot { get; set; }
+    public bool IsDungeonEntrance { get; set; }
+    public DungeonEntranceKindV3 DungeonEntranceKind { get; set; }
     public float ForestStrength { get; set; }
     public bool IsForest { get; set; }
     public bool IsDenseForest { get; set; }

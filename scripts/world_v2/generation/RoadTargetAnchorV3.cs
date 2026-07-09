@@ -6,6 +6,7 @@ public enum RoadTargetKindV3
 {
     Quarry,
     Ruin,
+    DungeonEntrance,
     ForestEdge,
     WorldEdgeExit,
     FutureRuinSite,

@@ -18,6 +18,7 @@ public static class WorldMapTextureBuilderV2
     private static readonly Color StartingVillageColor = new(0.95f, 0.82f, 0.42f, 1.0f);
     private static readonly Color QuarryColor = new(0.42f, 0.43f, 0.39f, 1.0f);
     private static readonly Color RuinColor = new(0.45f, 0.38f, 0.31f, 1.0f);
+    private static readonly Color DungeonEntranceColor = new(0.20f, 0.16f, 0.24f, 1.0f);
 
     public static Texture2D Build(WorldManagerV2 manager, WorldGenerationSettingsV2 settings, out Vector2I textureSize, out double buildMs)
     {
@@ -79,6 +80,14 @@ public static class WorldMapTextureBuilderV2
             foreach (RuinSiteV3 ruin in manager.GetV3MapRuinSites())
             {
                 DrawRuinSite(image, manager.WorldMapSize, ruin, settings);
+            }
+        }
+
+        if (WorldGenerationLayerSettingsV2.EnableDungeons)
+        {
+            foreach (DungeonEntranceSiteV3 dungeon in manager.GetV3MapDungeonEntrances())
+            {
+                DrawDungeonEntrance(image, manager.WorldMapSize, dungeon);
             }
         }
 
@@ -183,6 +192,17 @@ public static class WorldMapTextureBuilderV2
                 }
             }
         }
+    }
+
+    private static void DrawDungeonEntrance(Image image, WorldMapSizeDefinitionV2 worldSize, DungeonEntranceSiteV3 dungeon)
+    {
+        Vector2I center = WorldToPixel(image, worldSize, dungeon.Center);
+        float scale = image.GetWidth() / (float)worldSize.WidthCells;
+        int radius = Mathf.Clamp(Mathf.RoundToInt(dungeon.ApproxRadius * scale), dungeon.IsRoadLinked ? 3 : 2, dungeon.IsRoadLinked ? 6 : 5);
+        DrawFilledCircle(image, center, radius, DungeonEntranceColor);
+        DrawCircleOutline(image, center, radius + 1, dungeon.IsRoadLinked
+            ? new Color(0.68f, 0.58f, 0.38f, 0.85f)
+            : new Color(0.08f, 0.07f, 0.10f, 0.70f));
     }
 
     private static void DrawRoad(Image image, WorldMapSizeDefinitionV2 worldSize, RoadPathV2 road)
