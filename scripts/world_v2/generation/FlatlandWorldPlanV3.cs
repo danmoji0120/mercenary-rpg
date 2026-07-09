@@ -519,6 +519,11 @@ public sealed class FlatlandWorldPlanV3
     private List<RoadCandidateEdgeV3> BuildNearestNeighborRoadCandidates()
     {
         int neighborCount = Mathf.Clamp(_settings.V3RoadNearestNeighborCount, 1, 8);
+        if (_villages.Count > 96)
+        {
+            return BuildNearestNeighborRoadCandidatesSpatial(neighborCount);
+        }
+
         HashSet<long> seenPairs = new();
         List<RoadCandidateEdgeV3> candidates = new();
         foreach (VillageSiteV2 from in _villages)
@@ -550,8 +555,73 @@ public sealed class FlatlandWorldPlanV3
         return candidates;
     }
 
+    private List<RoadCandidateEdgeV3> BuildNearestNeighborRoadCandidatesSpatial(int neighborCount)
+    {
+        float bucketSize = Mathf.Max(256.0f, GetMaxLocalRoadLength());
+        Dictionary<Vector2I, List<VillageSiteV2>> buckets = BuildVillageBuckets(bucketSize);
+        HashSet<long> seenPairs = new();
+        List<RoadCandidateEdgeV3> candidates = new();
+
+        foreach (VillageSiteV2 from in _villages)
+        {
+            Vector2I bucket = GetVillageBucket(from, bucketSize);
+            List<RoadCandidateEdgeV3> nearest = new();
+            int searchRadius = 1;
+            while (nearest.Count < neighborCount && searchRadius <= 3)
+            {
+                nearest.Clear();
+                for (int y = -searchRadius; y <= searchRadius; y++)
+                {
+                    for (int x = -searchRadius; x <= searchRadius; x++)
+                    {
+                        Vector2I key = new(bucket.X + x, bucket.Y + y);
+                        if (!buckets.TryGetValue(key, out List<VillageSiteV2>? bucketVillages))
+                        {
+                            continue;
+                        }
+
+                        foreach (VillageSiteV2 to in bucketVillages)
+                        {
+                            if (from.Id == to.Id)
+                            {
+                                continue;
+                            }
+
+                            nearest.Add(CreateRoadCandidate(from, to, false));
+                        }
+                    }
+                }
+
+                searchRadius++;
+            }
+
+            nearest.Sort((a, b) => a.Distance.CompareTo(b.Distance));
+            int count = Mathf.Min(neighborCount, nearest.Count);
+            for (int i = 0; i < count; i++)
+            {
+                RoadCandidateEdgeV3 candidate = nearest[i];
+                long key = MakePairKey(candidate.From.Id, candidate.To.Id);
+                if (seenPairs.Add(key))
+                {
+                    candidates.Add(candidate);
+                }
+            }
+        }
+
+        return candidates;
+    }
+
     private List<RoadCandidateEdgeV3> BuildAllVillageRoadCandidates()
     {
+        if (_villages.Count > 96)
+        {
+            List<RoadCandidateEdgeV3> limitedCandidates = BuildDistanceLimitedVillageRoadCandidates();
+            if (CandidateSetConnectsAllVillages(limitedCandidates))
+            {
+                return limitedCandidates;
+            }
+        }
+
         List<RoadCandidateEdgeV3> candidates = new();
         for (int i = 0; i < _villages.Count; i++)
         {
@@ -562,6 +632,109 @@ public sealed class FlatlandWorldPlanV3
         }
 
         return candidates;
+    }
+
+    private bool CandidateSetConnectsAllVillages(IReadOnlyList<RoadCandidateEdgeV3> candidates)
+    {
+        if (_villages.Count <= 1)
+        {
+            return true;
+        }
+
+        Dictionary<int, int> villageIndexById = new();
+        for (int i = 0; i < _villages.Count; i++)
+        {
+            villageIndexById[_villages[i].Id] = i;
+        }
+
+        DisjointSetV3 disjointSet = new(_villages.Count);
+        foreach (RoadCandidateEdgeV3 candidate in candidates)
+        {
+            if (!villageIndexById.TryGetValue(candidate.From.Id, out int a)
+                || !villageIndexById.TryGetValue(candidate.To.Id, out int b))
+            {
+                continue;
+            }
+
+            disjointSet.Union(a, b);
+        }
+
+        int root = disjointSet.Find(0);
+        for (int i = 1; i < _villages.Count; i++)
+        {
+            if (disjointSet.Find(i) != root)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private List<RoadCandidateEdgeV3> BuildDistanceLimitedVillageRoadCandidates()
+    {
+        float maxDistance = GetMaxLocalRoadLength() * 1.35f;
+        float bucketSize = Mathf.Max(256.0f, maxDistance);
+        Dictionary<Vector2I, List<VillageSiteV2>> buckets = BuildVillageBuckets(bucketSize);
+        HashSet<long> seenPairs = new();
+        List<RoadCandidateEdgeV3> candidates = new();
+
+        foreach (VillageSiteV2 from in _villages)
+        {
+            Vector2I bucket = GetVillageBucket(from, bucketSize);
+            for (int y = -1; y <= 1; y++)
+            {
+                for (int x = -1; x <= 1; x++)
+                {
+                    Vector2I key = new(bucket.X + x, bucket.Y + y);
+                    if (!buckets.TryGetValue(key, out List<VillageSiteV2>? bucketVillages))
+                    {
+                        continue;
+                    }
+
+                    foreach (VillageSiteV2 to in bucketVillages)
+                    {
+                        if (from.Id >= to.Id || from.Center.DistanceTo(to.Center) > maxDistance)
+                        {
+                            continue;
+                        }
+
+                        long pairKey = MakePairKey(from.Id, to.Id);
+                        if (seenPairs.Add(pairKey))
+                        {
+                            candidates.Add(CreateRoadCandidate(from, to, false));
+                        }
+                    }
+                }
+            }
+        }
+
+        return candidates;
+    }
+
+    private Dictionary<Vector2I, List<VillageSiteV2>> BuildVillageBuckets(float bucketSize)
+    {
+        Dictionary<Vector2I, List<VillageSiteV2>> buckets = new();
+        foreach (VillageSiteV2 village in _villages)
+        {
+            Vector2I bucket = GetVillageBucket(village, bucketSize);
+            if (!buckets.TryGetValue(bucket, out List<VillageSiteV2>? bucketVillages))
+            {
+                bucketVillages = new List<VillageSiteV2>();
+                buckets[bucket] = bucketVillages;
+            }
+
+            bucketVillages.Add(village);
+        }
+
+        return buckets;
+    }
+
+    private static Vector2I GetVillageBucket(VillageSiteV2 village, float bucketSize)
+    {
+        return new Vector2I(
+            Mathf.FloorToInt(village.Center.X / bucketSize),
+            Mathf.FloorToInt(village.Center.Y / bucketSize));
     }
 
     private RoadCandidateEdgeV3 CreateRoadCandidate(VillageSiteV2 from, VillageSiteV2 to, bool isExtra)
@@ -612,7 +785,7 @@ public sealed class FlatlandWorldPlanV3
 
     private void AddSparseExtraVillageCandidateLinks(List<RoadCandidateEdgeV3> selected, ref DeterministicRandom random)
     {
-        int extraTarget = Mathf.RoundToInt(_villages.Count * Mathf.Max(0.0f, _settings.V3RoadExtraEdgeRatio));
+        int extraTarget = Mathf.RoundToInt(_villages.Count * GetExtraRoadRatio());
         if (extraTarget <= 0)
         {
             return;
@@ -1760,6 +1933,7 @@ public sealed class FlatlandWorldPlanV3
             WorldMapSizePresetV2.Small => Mathf.Max(1, _settings.V3SmallVillageCount),
             WorldMapSizePresetV2.Medium => Mathf.Max(1, _settings.V3MediumVillageCount),
             WorldMapSizePresetV2.Large => Mathf.Max(1, _settings.V3LargeVillageCount),
+            WorldMapSizePresetV2.Huge => Mathf.Max(1, _settings.V3HugeVillageCount),
             _ => Mathf.Max(1, _settings.V3SmallVillageCount)
         };
     }
@@ -1776,6 +1950,10 @@ public sealed class FlatlandWorldPlanV3
             case WorldMapSizePresetV2.Large:
                 majorCount = random.RangeInclusive(Mathf.Max(0, _settings.V3LargeMajorQuarryMinCount), Mathf.Max(0, _settings.V3LargeMajorQuarryMaxCount));
                 minorCount = random.RangeInclusive(Mathf.Max(0, _settings.V3LargeMinorQuarryMinCount), Mathf.Max(0, _settings.V3LargeMinorQuarryMaxCount));
+                break;
+            case WorldMapSizePresetV2.Huge:
+                majorCount = random.RangeInclusive(Mathf.Max(0, _settings.V3HugeMajorQuarryMinCount), Mathf.Max(0, _settings.V3HugeMajorQuarryMaxCount));
+                minorCount = random.RangeInclusive(Mathf.Max(0, _settings.V3HugeMinorQuarryMinCount), Mathf.Max(0, _settings.V3HugeMinorQuarryMaxCount));
                 break;
             case WorldMapSizePresetV2.Small:
             default:
@@ -1796,6 +1974,9 @@ public sealed class FlatlandWorldPlanV3
             WorldMapSizePresetV2.Large => random.RangeInclusive(
                 Mathf.Max(0, _settings.V3LargeRuinMinCount),
                 Mathf.Max(0, _settings.V3LargeRuinMaxCount)),
+            WorldMapSizePresetV2.Huge => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3HugeRuinMinCount),
+                Mathf.Max(0, _settings.V3HugeRuinMaxCount)),
             WorldMapSizePresetV2.Small or _ => random.RangeInclusive(
                 Mathf.Max(0, _settings.V3SmallRuinMinCount),
                 Mathf.Max(0, _settings.V3SmallRuinMaxCount))
@@ -1814,6 +1995,7 @@ public sealed class FlatlandWorldPlanV3
         {
             WorldMapSizePresetV2.Medium => Mathf.RoundToInt(ruinCount * random.Range(0.30f, 0.45f)),
             WorldMapSizePresetV2.Large => Mathf.RoundToInt(ruinCount * random.Range(0.25f, 0.40f)),
+            WorldMapSizePresetV2.Huge => Mathf.RoundToInt(ruinCount * random.Range(0.25f, 0.35f)),
             WorldMapSizePresetV2.Small or _ => random.RangeInclusive(1, 2)
         };
 
@@ -2083,6 +2265,14 @@ public sealed class FlatlandWorldPlanV3
                     Mathf.Max(0, _settings.V3LargeMinorForestMinCount),
                     Mathf.Max(0, _settings.V3LargeMinorForestMaxCount));
                 break;
+            case WorldMapSizePresetV2.Huge:
+                majorCount = random.RangeInclusive(
+                    Mathf.Max(0, _settings.V3HugeMajorForestMinCount),
+                    Mathf.Max(0, _settings.V3HugeMajorForestMaxCount));
+                minorCount = random.RangeInclusive(
+                    Mathf.Max(0, _settings.V3HugeMinorForestMinCount),
+                    Mathf.Max(0, _settings.V3HugeMinorForestMaxCount));
+                break;
             case WorldMapSizePresetV2.Small:
             default:
                 majorCount = random.RangeInclusive(
@@ -2144,6 +2334,7 @@ public sealed class FlatlandWorldPlanV3
             WorldMapSizePresetV2.Small => Mathf.Max(0, _settings.V3SmallForestClusterCount),
             WorldMapSizePresetV2.Medium => Mathf.Max(0, _settings.V3MediumForestClusterCount),
             WorldMapSizePresetV2.Large => Mathf.Max(0, _settings.V3LargeForestClusterCount),
+            WorldMapSizePresetV2.Huge => Mathf.Max(0, _settings.V3HugeForestClusterCount),
             _ => Mathf.Max(0, _settings.V3SmallForestClusterCount)
         };
     }
@@ -2153,6 +2344,7 @@ public sealed class FlatlandWorldPlanV3
         float baseChance = Mathf.Clamp(_settings.V3LargeForestChance, 0.0f, 0.75f);
         return MapSizePreset switch
         {
+            WorldMapSizePresetV2.Huge => Mathf.Clamp(baseChance + 0.10f, 0.0f, 0.80f),
             WorldMapSizePresetV2.Large => Mathf.Clamp(baseChance + 0.08f, 0.0f, 0.80f),
             WorldMapSizePresetV2.Medium => baseChance,
             _ => Mathf.Clamp(baseChance - 0.05f, 0.0f, 0.80f)
@@ -2448,6 +2640,7 @@ public sealed class FlatlandWorldPlanV3
             WorldMapSizePresetV2.Small => random.RangeInclusive(0, 1),
             WorldMapSizePresetV2.Medium => random.RangeInclusive(1, 2),
             WorldMapSizePresetV2.Large => random.RangeInclusive(2, 4),
+            WorldMapSizePresetV2.Huge => random.RangeInclusive(4, 7),
             _ => 1
         };
 
@@ -2623,6 +2816,7 @@ public sealed class FlatlandWorldPlanV3
             WorldMapSizePresetV2.Small => 1,
             WorldMapSizePresetV2.Medium => 2,
             WorldMapSizePresetV2.Large => 2,
+            WorldMapSizePresetV2.Huge => 2,
             _ => 1
         };
         int nextRoadId = GetNextRoadId();
@@ -2979,6 +3173,10 @@ public sealed class FlatlandWorldPlanV3
                 minCount = _settings.V3LargeBranchRoadMinCount;
                 maxCount = _settings.V3LargeBranchRoadMaxCount;
                 return;
+            case WorldMapSizePresetV2.Huge:
+                minCount = _settings.V3HugeBranchRoadMinCount;
+                maxCount = _settings.V3HugeBranchRoadMaxCount;
+                return;
             case WorldMapSizePresetV2.Small:
             default:
                 minCount = _settings.V3SmallBranchRoadMinCount;
@@ -3064,6 +3262,7 @@ public sealed class FlatlandWorldPlanV3
             WorldMapSizePresetV2.Small => 850.0f,
             WorldMapSizePresetV2.Medium => 1150.0f,
             WorldMapSizePresetV2.Large => 1450.0f,
+            WorldMapSizePresetV2.Huge => 1750.0f,
             _ => 850.0f
         };
     }
@@ -3075,6 +3274,7 @@ public sealed class FlatlandWorldPlanV3
             WorldMapSizePresetV2.Small => Mathf.Max(24.0f, _settings.V3SharedExitTrunkMaxLengthSmall),
             WorldMapSizePresetV2.Medium => Mathf.Max(32.0f, _settings.V3SharedExitTrunkMaxLengthMedium),
             WorldMapSizePresetV2.Large => Mathf.Max(40.0f, _settings.V3SharedExitTrunkMaxLengthLarge),
+            WorldMapSizePresetV2.Huge => Mathf.Max(48.0f, _settings.V3SharedExitTrunkMaxLengthHuge),
             _ => Mathf.Max(24.0f, _settings.V3SharedExitTrunkMaxLengthSmall)
         };
     }
@@ -3295,6 +3495,7 @@ public sealed class FlatlandWorldPlanV3
                 WorldMapSizePresetV2.Small => 720.0f,
                 WorldMapSizePresetV2.Medium => 980.0f,
                 WorldMapSizePresetV2.Large => 1280.0f,
+                WorldMapSizePresetV2.Huge => 1550.0f,
                 _ => 720.0f
             };
 
@@ -3342,6 +3543,7 @@ public sealed class FlatlandWorldPlanV3
             WorldMapSizePresetV2.Small => Mathf.Max(0.0f, _settings.V3RoadExtraLinkRatioSmall),
             WorldMapSizePresetV2.Medium => Mathf.Max(0.0f, _settings.V3RoadExtraLinkRatioMedium),
             WorldMapSizePresetV2.Large => Mathf.Max(0.0f, _settings.V3RoadExtraLinkRatioLarge),
+            WorldMapSizePresetV2.Huge => Mathf.Max(0.0f, _settings.V3RoadExtraLinkRatioHuge),
             _ => Mathf.Max(0.0f, _settings.V3RoadExtraLinkRatioSmall)
         };
     }

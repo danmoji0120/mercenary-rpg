@@ -4,5 +4,6 @@ public enum WorldMapSizePresetV2
 {
     Small,
     Medium,
-    Large
+    Large,
+    Huge
 }

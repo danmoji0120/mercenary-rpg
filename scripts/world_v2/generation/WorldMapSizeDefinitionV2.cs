@@ -55,6 +55,7 @@ public readonly struct WorldMapSizeDefinitionV2
             WorldMapSizePresetV2.Small => new WorldMapSizeDefinitionV2(preset, 2048, 2048),
             WorldMapSizePresetV2.Medium => new WorldMapSizeDefinitionV2(preset, 4096, 4096),
             WorldMapSizePresetV2.Large => new WorldMapSizeDefinitionV2(preset, 8192, 8192),
+            WorldMapSizePresetV2.Huge => new WorldMapSizeDefinitionV2(preset, 16384, 16384),
             _ => new WorldMapSizeDefinitionV2(WorldMapSizePresetV2.Small, 2048, 2048)
         };
     }

@@ -99,6 +99,7 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public int V3SmallVillageCount { get; set; } = 9;
     [Export] public int V3MediumVillageCount { get; set; } = 24;
     [Export] public int V3LargeVillageCount { get; set; } = 56;
+    [Export] public int V3HugeVillageCount { get; set; } = 140;
     [Export] public float V3VillageEdgeMargin { get; set; } = 160.0f;
     [Export] public float V3VillageMinDistance { get; set; } = 210.0f;
     [Export] public int V3VillagePlacementMaxAttemptsPerVillage { get; set; } = 80;
@@ -111,6 +112,7 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public float V3RoadExtraLinkRatioSmall { get; set; } = 0.18f;
     [Export] public float V3RoadExtraLinkRatioMedium { get; set; } = 0.22f;
     [Export] public float V3RoadExtraLinkRatioLarge { get; set; } = 0.26f;
+    [Export] public float V3RoadExtraLinkRatioHuge { get; set; } = 0.08f;
     [Export] public float V3RoadWearFrequency { get; set; } = 0.23f;
     [Export] public float V3RoadDirectionSectorDegrees { get; set; } = 45.0f;
     [Export] public float V3RoadJunctionDistanceRatio { get; set; } = 0.58f;
@@ -122,6 +124,7 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public float V3SharedExitTrunkMaxLengthSmall { get; set; } = 90.0f;
     [Export] public float V3SharedExitTrunkMaxLengthMedium { get; set; } = 130.0f;
     [Export] public float V3SharedExitTrunkMaxLengthLarge { get; set; } = 180.0f;
+    [Export] public float V3SharedExitTrunkMaxLengthHuge { get; set; } = 220.0f;
     [Export] public int V3MaxRoadJunctionDegree { get; set; } = 3;
     [Export] public int V3MaxRoadCrossingsPerEdge { get; set; } = 1;
     [Export] public int V3SmallBranchRoadMinCount { get; set; } = 0;
@@ -130,6 +133,8 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public int V3MediumBranchRoadMaxCount { get; set; } = 8;
     [Export] public int V3LargeBranchRoadMinCount { get; set; } = 12;
     [Export] public int V3LargeBranchRoadMaxCount { get; set; } = 24;
+    [Export] public int V3HugeBranchRoadMinCount { get; set; } = 24;
+    [Export] public int V3HugeBranchRoadMaxCount { get; set; } = 48;
     [Export] public float V3BranchRoadMinLength { get; set; } = 120.0f;
     [Export] public float V3BranchRoadMaxLength { get; set; } = 420.0f;
     [Export] public float V3BranchRoadWidthMultiplier { get; set; } = 0.62f;
@@ -137,6 +142,7 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public int V3SmallForestClusterCount { get; set; } = 28;
     [Export] public int V3MediumForestClusterCount { get; set; } = 72;
     [Export] public int V3LargeForestClusterCount { get; set; } = 156;
+    [Export] public int V3HugeForestClusterCount { get; set; } = 280;
     [Export] public float V3ForestClusterMinLength { get; set; } = 240.0f;
     [Export] public float V3ForestClusterMaxLength { get; set; } = 760.0f;
     [Export] public float V3ForestClusterMinWidth { get; set; } = 100.0f;
@@ -160,6 +166,10 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public int V3LargeMajorForestMaxCount { get; set; } = 32;
     [Export] public int V3LargeMinorForestMinCount { get; set; } = 70;
     [Export] public int V3LargeMinorForestMaxCount { get; set; } = 120;
+    [Export] public int V3HugeMajorForestMinCount { get; set; } = 44;
+    [Export] public int V3HugeMajorForestMaxCount { get; set; } = 56;
+    [Export] public int V3HugeMinorForestMinCount { get; set; } = 200;
+    [Export] public int V3HugeMinorForestMaxCount { get; set; } = 240;
     [Export] public float V3MajorForestMinRadius { get; set; } = 180.0f;
     [Export] public float V3MajorForestMaxRadius { get; set; } = 520.0f;
     [Export] public float V3MinorForestMinRadius { get; set; } = 48.0f;
@@ -181,6 +191,10 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public int V3LargeMajorQuarryMaxCount { get; set; } = 12;
     [Export] public int V3LargeMinorQuarryMinCount { get; set; } = 28;
     [Export] public int V3LargeMinorQuarryMaxCount { get; set; } = 45;
+    [Export] public int V3HugeMajorQuarryMinCount { get; set; } = 18;
+    [Export] public int V3HugeMajorQuarryMaxCount { get; set; } = 24;
+    [Export] public int V3HugeMinorQuarryMinCount { get; set; } = 70;
+    [Export] public int V3HugeMinorQuarryMaxCount { get; set; } = 90;
     [Export] public float V3MajorQuarryMinRadius { get; set; } = 70.0f;
     [Export] public float V3MajorQuarryMaxRadius { get; set; } = 145.0f;
     [Export] public float V3MinorQuarryMinRadius { get; set; } = 30.0f;
@@ -202,6 +216,8 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public int V3MediumRuinMaxCount { get; set; } = 18;
     [Export] public int V3LargeRuinMinCount { get; set; } = 28;
     [Export] public int V3LargeRuinMaxCount { get; set; } = 48;
+    [Export] public int V3HugeRuinMinCount { get; set; } = 90;
+    [Export] public int V3HugeRuinMaxCount { get; set; } = 110;
     [Export] public float V3RuinMinRadius { get; set; } = 13.0f;
     [Export] public float V3RuinMaxRadius { get; set; } = 34.0f;
     [Export] public int V3RuinPlacementMaxAttemptsPerSite { get; set; } = 90;
@@ -212,6 +228,7 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public int WorldMapSmallTextureSize { get; set; } = 512;
     [Export] public int WorldMapMediumTextureSize { get; set; } = 768;
     [Export] public int WorldMapLargeTextureSize { get; set; } = 1024;
+    [Export] public int WorldMapHugeTextureSize { get; set; } = 1536;
 
     public Vector2I StartCenter => new(StartCenterX, StartCenterY);
 
@@ -350,6 +367,7 @@ public partial class WorldGenerationSettingsV2 : Node
         V3SmallVillageCount = 9;
         V3MediumVillageCount = 24;
         V3LargeVillageCount = 56;
+        V3HugeVillageCount = 140;
         V3VillageEdgeMargin = 160.0f;
         V3VillageMinDistance = 210.0f;
         V3VillagePlacementMaxAttemptsPerVillage = 80;
@@ -362,6 +380,7 @@ public partial class WorldGenerationSettingsV2 : Node
         V3RoadExtraLinkRatioSmall = 0.18f;
         V3RoadExtraLinkRatioMedium = 0.22f;
         V3RoadExtraLinkRatioLarge = 0.26f;
+        V3RoadExtraLinkRatioHuge = 0.08f;
         V3RoadWearFrequency = 0.23f;
         V3RoadDirectionSectorDegrees = 45.0f;
         V3RoadJunctionDistanceRatio = 0.58f;
@@ -373,6 +392,7 @@ public partial class WorldGenerationSettingsV2 : Node
         V3SharedExitTrunkMaxLengthSmall = 90.0f;
         V3SharedExitTrunkMaxLengthMedium = 130.0f;
         V3SharedExitTrunkMaxLengthLarge = 180.0f;
+        V3SharedExitTrunkMaxLengthHuge = 220.0f;
         V3MaxRoadJunctionDegree = 3;
         V3MaxRoadCrossingsPerEdge = 1;
         V3SmallBranchRoadMinCount = 0;
@@ -381,6 +401,8 @@ public partial class WorldGenerationSettingsV2 : Node
         V3MediumBranchRoadMaxCount = 8;
         V3LargeBranchRoadMinCount = 12;
         V3LargeBranchRoadMaxCount = 24;
+        V3HugeBranchRoadMinCount = 24;
+        V3HugeBranchRoadMaxCount = 48;
         V3BranchRoadMinLength = 120.0f;
         V3BranchRoadMaxLength = 420.0f;
         V3BranchRoadWidthMultiplier = 0.62f;
@@ -388,6 +410,7 @@ public partial class WorldGenerationSettingsV2 : Node
         V3SmallForestClusterCount = 28;
         V3MediumForestClusterCount = 72;
         V3LargeForestClusterCount = 156;
+        V3HugeForestClusterCount = 280;
         V3ForestClusterMinLength = 240.0f;
         V3ForestClusterMaxLength = 760.0f;
         V3ForestClusterMinWidth = 100.0f;
@@ -411,6 +434,10 @@ public partial class WorldGenerationSettingsV2 : Node
         V3LargeMajorForestMaxCount = 32;
         V3LargeMinorForestMinCount = 70;
         V3LargeMinorForestMaxCount = 120;
+        V3HugeMajorForestMinCount = 44;
+        V3HugeMajorForestMaxCount = 56;
+        V3HugeMinorForestMinCount = 200;
+        V3HugeMinorForestMaxCount = 240;
         V3MajorForestMinRadius = 180.0f;
         V3MajorForestMaxRadius = 520.0f;
         V3MinorForestMinRadius = 48.0f;
@@ -432,6 +459,10 @@ public partial class WorldGenerationSettingsV2 : Node
         V3LargeMajorQuarryMaxCount = 12;
         V3LargeMinorQuarryMinCount = 28;
         V3LargeMinorQuarryMaxCount = 45;
+        V3HugeMajorQuarryMinCount = 18;
+        V3HugeMajorQuarryMaxCount = 24;
+        V3HugeMinorQuarryMinCount = 70;
+        V3HugeMinorQuarryMaxCount = 90;
         V3MajorQuarryMinRadius = 70.0f;
         V3MajorQuarryMaxRadius = 145.0f;
         V3MinorQuarryMinRadius = 30.0f;
@@ -447,5 +478,8 @@ public partial class WorldGenerationSettingsV2 : Node
         V3MajorQuarryWarpStrength = 24.0f;
         V3MinorQuarryWarpStrength = 10.0f;
         V3QuarryOreSpotChance = 0.018f;
+        V3HugeRuinMinCount = 90;
+        V3HugeRuinMaxCount = 110;
+        WorldMapHugeTextureSize = 1536;
     }
 }

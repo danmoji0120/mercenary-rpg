@@ -39,6 +39,7 @@ public static class WorldMapTextureBuilderV2
         {
             WorldMapSizePresetV2.Medium => settings.WorldMapMediumTextureSize,
             WorldMapSizePresetV2.Large => settings.WorldMapLargeTextureSize,
+            WorldMapSizePresetV2.Huge => settings.WorldMapHugeTextureSize,
             _ => settings.WorldMapSmallTextureSize
         };
 

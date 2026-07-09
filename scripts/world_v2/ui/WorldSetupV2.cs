@@ -34,15 +34,15 @@ public partial class WorldSetupV2 : Control
             AnchorRight = 0.5f,
             AnchorBottom = 0.5f,
             OffsetLeft = -240.0f,
-            OffsetTop = -220.0f,
+            OffsetTop = -240.0f,
             OffsetRight = 240.0f,
-            OffsetBottom = 220.0f
+            OffsetBottom = 240.0f
         };
         AddChild(panel);
 
         panel.AddChild(new Label { Text = "New Game Setup", HorizontalAlignment = HorizontalAlignment.Center });
 
-        _sizeOptions = AddOptions(panel, "Map Size", new[] { "Small 2048 x 2048", "Medium 4096 x 4096", "Large 8192 x 8192" });
+        _sizeOptions = AddOptions(panel, "Map Size", new[] { "Small 2048 x 2048", "Medium 4096 x 4096", "Large 8192 x 8192", "Huge 16384 x 16384 (experimental)" });
         _planOptions = AddOptions(panel, "Plan Version", new[] { "V3", "V2" });
 
         panel.AddChild(new Label { Text = "Seed" });
@@ -114,6 +114,7 @@ public partial class WorldSetupV2 : Control
         {
             1 => WorldMapSizePresetV2.Medium,
             2 => WorldMapSizePresetV2.Large,
+            3 => WorldMapSizePresetV2.Huge,
             _ => WorldMapSizePresetV2.Small
         };
         WorldMapSizeDefinitionV2 size = WorldMapSizeDefinitionV2.FromPreset(sizePreset);
