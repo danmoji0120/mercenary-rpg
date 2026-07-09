@@ -293,12 +293,174 @@ public sealed class ProceduralWorldGeneratorV2
         }
     }
 
+    public int V3SecondaryRoadCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.SecondaryRoadCount : 0;
+        }
+    }
+
     public int V3ExtraRoadCount
     {
         get
         {
             EnsureNoiseProfile(_generationRequest.Seed);
             return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.ExtraRoadCount : 0;
+        }
+    }
+
+    public int V3BranchRoadCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.BranchRoadCount : 0;
+        }
+    }
+
+    public int V3RoadTargetAnchorCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadTargetAnchorCount : 0;
+        }
+    }
+
+    public int V3RoadTargetQuarryCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadTargetQuarryCount : 0;
+        }
+    }
+
+    public int V3RoadTargetForestEdgeCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadTargetForestEdgeCount : 0;
+        }
+    }
+
+    public int V3RoadTargetWorldEdgeExitCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadTargetWorldEdgeExitCount : 0;
+        }
+    }
+
+    public int V3FutureRoadTargetCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.FutureRoadTargetCount : 0;
+        }
+    }
+
+    public int V3RejectedRoadTargetCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RejectedRoadTargetCount : 0;
+        }
+    }
+
+    public int V3RejectedBranchRoadCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RejectedBranchRoadCount : 0;
+        }
+    }
+
+    public int V3RoadNodeCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadNodeCount : 0;
+        }
+    }
+
+    public int V3RoadJunctionCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadJunctionCount : 0;
+        }
+    }
+
+    public int V3SharedTrunkCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.SharedTrunkCount : 0;
+        }
+    }
+
+    public int V3MergedRoadCandidateCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.MergedRoadCandidateCount : 0;
+        }
+    }
+
+    public int V3RejectedRoadJunctionCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RejectedRoadJunctionCount : 0;
+        }
+    }
+
+    public int V3MaxRoadJunctionDegree
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.MaxRoadJunctionDegree : 0;
+        }
+    }
+
+    public int V3RejectedHighDegreeJunctionCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RejectedHighDegreeJunctionCount : 0;
+        }
+    }
+
+    public int V3RejectedRoadCrossingCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RejectedRoadCrossingCount : 0;
+        }
+    }
+
+    public int V3RejectedRoadTooLongCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RejectedRoadTooLongCount : 0;
         }
     }
 

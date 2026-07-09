@@ -56,7 +56,25 @@ public partial class WorldManagerV2 : Node
     public string V3VillageDebugSummary => _generator.V3VillageDebugSummary;
     public int V3RoadCount => _generator.V3RoadCount;
     public int V3PrimaryRoadCount => _generator.V3PrimaryRoadCount;
+    public int V3SecondaryRoadCount => _generator.V3SecondaryRoadCount;
     public int V3ExtraRoadCount => _generator.V3ExtraRoadCount;
+    public int V3BranchRoadCount => _generator.V3BranchRoadCount;
+    public int V3RoadTargetAnchorCount => _generator.V3RoadTargetAnchorCount;
+    public int V3RoadTargetQuarryCount => _generator.V3RoadTargetQuarryCount;
+    public int V3RoadTargetForestEdgeCount => _generator.V3RoadTargetForestEdgeCount;
+    public int V3RoadTargetWorldEdgeExitCount => _generator.V3RoadTargetWorldEdgeExitCount;
+    public int V3FutureRoadTargetCount => _generator.V3FutureRoadTargetCount;
+    public int V3RejectedRoadTargetCount => _generator.V3RejectedRoadTargetCount;
+    public int V3RejectedBranchRoadCount => _generator.V3RejectedBranchRoadCount;
+    public int V3RoadNodeCount => _generator.V3RoadNodeCount;
+    public int V3RoadJunctionCount => _generator.V3RoadJunctionCount;
+    public int V3SharedTrunkCount => _generator.V3SharedTrunkCount;
+    public int V3MergedRoadCandidateCount => _generator.V3MergedRoadCandidateCount;
+    public int V3RejectedRoadJunctionCount => _generator.V3RejectedRoadJunctionCount;
+    public int V3MaxRoadJunctionDegree => _generator.V3MaxRoadJunctionDegree;
+    public int V3RejectedHighDegreeJunctionCount => _generator.V3RejectedHighDegreeJunctionCount;
+    public int V3RejectedRoadCrossingCount => _generator.V3RejectedRoadCrossingCount;
+    public int V3RejectedRoadTooLongCount => _generator.V3RejectedRoadTooLongCount;
     public bool V3RoadLayerEnabled => _generator.V3RoadLayerEnabled;
     public int V3ForestClusterCount => _generator.V3ForestClusterCount;
     public int V3ForestRegionCount => _generator.V3ForestRegionCount;
@@ -264,7 +282,7 @@ public partial class WorldManagerV2 : Node
         ResolveReferences();
         GD.Print($"WorldV2 world: map={MapSizePreset} size={WorldMapSize.WidthCells}x{WorldMapSize.HeightCells} chunks={WorldMapSize.ChunkWidth}x{WorldMapSize.ChunkHeight} plan={PlanVersion} generated={GeneratedPlanType} seed={WorldSeed} bounds={WorldBounds.Position}..{WorldBounds.End - Vector2I.One}");
         GD.Print(V3VillageDebugSummary);
-        GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} extra={V3ExtraRoadCount}");
+        GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
         GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount}");
         GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount}");
         _streamManager?.PrintLoadedChunks();
@@ -286,7 +304,7 @@ public partial class WorldManagerV2 : Node
     {
         GD.Print($"WorldV2 world: map={MapSizePreset} size={WorldMapSize.WidthCells}x{WorldMapSize.HeightCells} plan={PlanVersion} generated={GeneratedPlanType} seed={WorldSeed}");
         GD.Print(V3VillageDebugSummary);
-        GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} extra={V3ExtraRoadCount}");
+        GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
         GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount}");
         GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount}");
         WorldV2PerformanceProfiler.Instance.PrintSummary();

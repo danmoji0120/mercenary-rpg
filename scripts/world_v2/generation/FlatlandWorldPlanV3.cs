@@ -9,6 +9,8 @@ public sealed class FlatlandWorldPlanV3
     private WorldGenerationSettingsV2 _settings = WorldGenerationSettingsV2.Default;
     private readonly List<VillageSiteV2> _villages = new();
     private readonly List<RoadPathV2> _roads = new();
+    private readonly List<RoadTargetAnchorV3> _roadTargetAnchors = new();
+    private readonly RoadGraphV3 _roadGraph = new();
     private readonly List<ForestClusterSiteV2> _forestClusters = new();
     private readonly List<ForestRegionV3> _forestRegions = new();
     private readonly List<QuarryClusterV3> _quarryClusters = new();
@@ -33,9 +35,28 @@ public sealed class FlatlandWorldPlanV3
     public IReadOnlyList<VillageSiteV2> Villages => _villages;
     public int RoadCount => _roads.Count;
     public int PrimaryRoadCount { get; private set; }
+    public int SecondaryRoadCount { get; private set; }
     public int ExtraRoadCount { get; private set; }
+    public int BranchRoadCount { get; private set; }
+    public int RoadNodeCount => _roadGraph.NodeCount;
+    public int RoadJunctionCount { get; private set; }
+    public int SharedTrunkCount { get; private set; }
+    public int MergedRoadCandidateCount { get; private set; }
+    public int RejectedRoadJunctionCount { get; private set; }
+    public int MaxRoadJunctionDegree { get; private set; }
+    public int RejectedHighDegreeJunctionCount { get; private set; }
+    public int RejectedRoadCrossingCount { get; private set; }
+    public int RejectedRoadTooLongCount { get; private set; }
+    public int RoadTargetAnchorCount => _roadTargetAnchors.Count;
+    public int RoadTargetQuarryCount { get; private set; }
+    public int RoadTargetForestEdgeCount { get; private set; }
+    public int RoadTargetWorldEdgeExitCount { get; private set; }
+    public int FutureRoadTargetCount { get; private set; }
+    public int RejectedRoadTargetCount { get; private set; }
+    public int RejectedBranchRoadCount { get; private set; }
     public bool RoadLayerEnabled => WorldGenerationLayerSettingsV2.EnableRoads;
     public IReadOnlyList<RoadPathV2> Roads => _roads;
+    public IReadOnlyList<RoadTargetAnchorV3> RoadTargetAnchors => _roadTargetAnchors;
     public int ForestClusterCount => _forestRegions.Count;
     public int ForestRegionCount => _forestRegions.Count;
     public int MajorForestRegionCount { get; private set; }
@@ -75,6 +96,8 @@ public sealed class FlatlandWorldPlanV3
         GenerateRoads();
         GenerateQuarries();
         GenerateForests();
+        GenerateRoadTargetAnchors();
+        GenerateBranchRoads();
         GenerateLandmarksPlaceholder();
         BuildSpatialIndexPlaceholder();
         _isBuilt = true;
@@ -84,12 +107,30 @@ public sealed class FlatlandWorldPlanV3
     {
         _villages.Clear();
         _roads.Clear();
+        _roadTargetAnchors.Clear();
+        _roadGraph.Clear();
         _forestClusters.Clear();
         _forestRegions.Clear();
         _quarryClusters.Clear();
         _quarryRegions.Clear();
         PrimaryRoadCount = 0;
+        SecondaryRoadCount = 0;
         ExtraRoadCount = 0;
+        BranchRoadCount = 0;
+        RoadJunctionCount = 0;
+        SharedTrunkCount = 0;
+        MergedRoadCandidateCount = 0;
+        RejectedRoadJunctionCount = 0;
+        MaxRoadJunctionDegree = 0;
+        RejectedHighDegreeJunctionCount = 0;
+        RejectedRoadCrossingCount = 0;
+        RejectedRoadTooLongCount = 0;
+        RoadTargetQuarryCount = 0;
+        RoadTargetForestEdgeCount = 0;
+        RoadTargetWorldEdgeExitCount = 0;
+        FutureRoadTargetCount = 0;
+        RejectedRoadTargetCount = 0;
+        RejectedBranchRoadCount = 0;
         MajorForestRegionCount = 0;
         MinorForestPatchCount = 0;
         MajorQuarryCount = 0;
@@ -306,8 +347,20 @@ public sealed class FlatlandWorldPlanV3
     private void GenerateRoads()
     {
         _roads.Clear();
+        _roadGraph.Clear();
         PrimaryRoadCount = 0;
+        SecondaryRoadCount = 0;
         ExtraRoadCount = 0;
+        BranchRoadCount = 0;
+        RoadJunctionCount = 0;
+        SharedTrunkCount = 0;
+        MergedRoadCandidateCount = 0;
+        RejectedRoadJunctionCount = 0;
+        MaxRoadJunctionDegree = 0;
+        RejectedHighDegreeJunctionCount = 0;
+        RejectedRoadCrossingCount = 0;
+        RejectedRoadTooLongCount = 0;
+        RejectedBranchRoadCount = 0;
 
         if (!WorldGenerationLayerSettingsV2.EnableRoads || _villages.Count <= 1)
         {
@@ -315,55 +368,513 @@ public sealed class FlatlandWorldPlanV3
         }
 
         DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 4101));
-        HashSet<long> connectedPairs = new();
-        List<VillageSiteV2> connected = new();
-        List<VillageSiteV2> unconnected = new(_villages);
-        VillageSiteV2 root = TryGetStartingVillage(out VillageSiteV2? startVillage) && startVillage != null
-            ? startVillage
-            : _villages[0];
-        connected.Add(root);
-        unconnected.Remove(root);
+        BuildVillageRoadGraph(ref random);
+        ConvertRoadGraphToPaths(ref random);
+    }
 
-        int nextRoadId = 1;
-        while (unconnected.Count > 0)
+    private void BuildVillageRoadGraph(ref DeterministicRandom random)
+    {
+        Dictionary<int, int> nodeIdByVillageId = new();
+        int nextNodeId = 1;
+        foreach (VillageSiteV2 village in _villages)
         {
-            VillageSiteV2 bestFrom = connected[0];
-            VillageSiteV2 bestTo = unconnected[0];
-            float bestScore = float.MaxValue;
-
-            foreach (VillageSiteV2 from in connected)
+            int nodeId = nextNodeId++;
+            nodeIdByVillageId[village.Id] = nodeId;
+            _roadGraph.AddNode(new RoadNodeV3
             {
-                foreach (VillageSiteV2 to in unconnected)
-                {
-                    float score = GetConnectionScore(from, to);
-                    if (score >= bestScore)
-                    {
-                        continue;
-                    }
-
-                    bestScore = score;
-                    bestFrom = from;
-                    bestTo = to;
-                }
-            }
-
-            AddRoad(bestFrom, bestTo, true, nextRoadId++, connectedPairs, ref random);
-            connected.Add(bestTo);
-            unconnected.Remove(bestTo);
+                Id = nodeId,
+                Kind = RoadNodeKindV3.Village,
+                Position = new Vector2(village.Center.X + 0.5f, village.Center.Y + 0.5f),
+                VillageId = village.Id,
+                Seed = HashIntId(village.Id, WorldSeed, 8411)
+            });
         }
 
-        int extraTarget = Mathf.RoundToInt(_villages.Count * GetExtraRoadRatio());
-        int extraAttempts = Mathf.Max(extraTarget * 6, _villages.Count);
-        for (int attempt = 0; attempt < extraAttempts && ExtraRoadCount < extraTarget; attempt++)
+        List<RoadCandidateEdgeV3> selectedEdges = BuildLocalMstRoadCandidates(ref random);
+        AddSharedExitRoadGraph(selectedEdges, nodeIdByVillageId, ref nextNodeId, ref random);
+        MaxRoadJunctionDegree = CalculateMaxJunctionDegree();
+    }
+
+    private List<RoadCandidateEdgeV3> BuildLocalMstRoadCandidates(ref DeterministicRandom random)
+    {
+        List<RoadCandidateEdgeV3> candidates = BuildNearestNeighborRoadCandidates();
+        candidates.Sort((a, b) => a.Score.CompareTo(b.Score));
+        DisjointSetV3 disjointSet = new(_villages.Count);
+        Dictionary<int, int> villageIndexById = new();
+        for (int i = 0; i < _villages.Count; i++)
         {
-            if (!TryPickExtraRoadPair(connectedPairs, ref random, out VillageSiteV2? from, out VillageSiteV2? to)
-                || from == null
-                || to == null)
+            villageIndexById[_villages[i].Id] = i;
+        }
+
+        List<RoadCandidateEdgeV3> selected = new();
+        foreach (RoadCandidateEdgeV3 candidate in candidates)
+        {
+            int a = villageIndexById[candidate.From.Id];
+            int b = villageIndexById[candidate.To.Id];
+            if (disjointSet.Find(a) == disjointSet.Find(b))
             {
                 continue;
             }
 
-            AddRoad(from, to, false, nextRoadId++, connectedPairs, ref random);
+            if (!CanAcceptRoadCandidate(candidate, selected, force: false))
+            {
+                continue;
+            }
+
+            selected.Add(candidate);
+            disjointSet.Union(a, b);
+        }
+
+        if (selected.Count < _villages.Count - 1)
+        {
+            List<RoadCandidateEdgeV3> allCandidates = BuildAllVillageRoadCandidates();
+            allCandidates.Sort((a, b) => a.Score.CompareTo(b.Score));
+            foreach (RoadCandidateEdgeV3 candidate in allCandidates)
+            {
+                int a = villageIndexById[candidate.From.Id];
+                int b = villageIndexById[candidate.To.Id];
+                if (disjointSet.Find(a) == disjointSet.Find(b))
+                {
+                    continue;
+                }
+
+                if (!CanAcceptRoadCandidate(candidate, selected, force: false))
+                {
+                    continue;
+                }
+
+                selected.Add(candidate);
+                disjointSet.Union(a, b);
+                if (selected.Count >= _villages.Count - 1)
+                {
+                    break;
+                }
+            }
+
+            foreach (RoadCandidateEdgeV3 candidate in allCandidates)
+            {
+                if (selected.Count >= _villages.Count - 1)
+                {
+                    break;
+                }
+
+                int a = villageIndexById[candidate.From.Id];
+                int b = villageIndexById[candidate.To.Id];
+                if (disjointSet.Find(a) == disjointSet.Find(b))
+                {
+                    continue;
+                }
+
+                selected.Add(candidate);
+                disjointSet.Union(a, b);
+            }
+        }
+
+        AddSparseExtraVillageCandidateLinks(selected, ref random);
+        return selected;
+    }
+
+    private List<RoadCandidateEdgeV3> BuildNearestNeighborRoadCandidates()
+    {
+        int neighborCount = Mathf.Clamp(_settings.V3RoadNearestNeighborCount, 1, 8);
+        HashSet<long> seenPairs = new();
+        List<RoadCandidateEdgeV3> candidates = new();
+        foreach (VillageSiteV2 from in _villages)
+        {
+            List<RoadCandidateEdgeV3> nearest = new();
+            foreach (VillageSiteV2 to in _villages)
+            {
+                if (from.Id == to.Id)
+                {
+                    continue;
+                }
+
+                nearest.Add(CreateRoadCandidate(from, to, false));
+            }
+
+            nearest.Sort((a, b) => a.Distance.CompareTo(b.Distance));
+            int count = Mathf.Min(neighborCount, nearest.Count);
+            for (int i = 0; i < count; i++)
+            {
+                RoadCandidateEdgeV3 candidate = nearest[i];
+                long key = MakePairKey(candidate.From.Id, candidate.To.Id);
+                if (seenPairs.Add(key))
+                {
+                    candidates.Add(candidate);
+                }
+            }
+        }
+
+        return candidates;
+    }
+
+    private List<RoadCandidateEdgeV3> BuildAllVillageRoadCandidates()
+    {
+        List<RoadCandidateEdgeV3> candidates = new();
+        for (int i = 0; i < _villages.Count; i++)
+        {
+            for (int j = i + 1; j < _villages.Count; j++)
+            {
+                candidates.Add(CreateRoadCandidate(_villages[i], _villages[j], false));
+            }
+        }
+
+        return candidates;
+    }
+
+    private RoadCandidateEdgeV3 CreateRoadCandidate(VillageSiteV2 from, VillageSiteV2 to, bool isExtra)
+    {
+        float distance = from.Center.DistanceTo(to.Center);
+        float hubWeight = (GetVillageConnectionPriority(from) + GetVillageConnectionPriority(to)) * 0.5f;
+        return new RoadCandidateEdgeV3
+        {
+            From = from,
+            To = to,
+            Distance = distance,
+            Score = distance / Mathf.Max(0.5f, hubWeight),
+            IsExtra = isExtra
+        };
+    }
+
+    private bool CanAcceptRoadCandidate(RoadCandidateEdgeV3 candidate, IReadOnlyList<RoadCandidateEdgeV3> accepted, bool force)
+    {
+        if (!force && candidate.Distance > GetMaxLocalRoadLength())
+        {
+            RejectedRoadTooLongCount++;
+            return false;
+        }
+
+        int crossings = 0;
+        Vector2 a = GetVillagePoint(candidate.From);
+        Vector2 b = GetVillagePoint(candidate.To);
+        foreach (RoadCandidateEdgeV3 existing in accepted)
+        {
+            if (candidate.SharesEndpoint(existing))
+            {
+                continue;
+            }
+
+            if (SegmentsIntersect(a, b, GetVillagePoint(existing.From), GetVillagePoint(existing.To)))
+            {
+                crossings++;
+                if (!force && crossings > Mathf.Max(0, _settings.V3MaxRoadCrossingsPerEdge))
+                {
+                    RejectedRoadCrossingCount++;
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private void AddSparseExtraVillageCandidateLinks(List<RoadCandidateEdgeV3> selected, ref DeterministicRandom random)
+    {
+        int extraTarget = Mathf.RoundToInt(_villages.Count * Mathf.Max(0.0f, _settings.V3RoadExtraEdgeRatio));
+        if (extraTarget <= 0)
+        {
+            return;
+        }
+
+        HashSet<long> selectedPairs = new();
+        foreach (RoadCandidateEdgeV3 edge in selected)
+        {
+            selectedPairs.Add(MakePairKey(edge.From.Id, edge.To.Id));
+        }
+
+        List<RoadCandidateEdgeV3> candidates = BuildNearestNeighborRoadCandidates();
+        candidates.Sort((a, b) =>
+        {
+            float aScore = a.Score + StableUnitFloat(a.From.Id, a.To.Id, WorldSeed + 8501) * 40.0f;
+            float bScore = b.Score + StableUnitFloat(b.From.Id, b.To.Id, WorldSeed + 8501) * 40.0f;
+            return aScore.CompareTo(bScore);
+        });
+
+        int added = 0;
+        foreach (RoadCandidateEdgeV3 candidate in candidates)
+        {
+            long key = MakePairKey(candidate.From.Id, candidate.To.Id);
+            if (selectedPairs.Contains(key))
+            {
+                continue;
+            }
+
+            RoadCandidateEdgeV3 extra = candidate with { IsExtra = true };
+            if (!CanAcceptRoadCandidate(extra, selected, force: false))
+            {
+                continue;
+            }
+
+            selected.Add(extra);
+            selectedPairs.Add(key);
+            added++;
+            if (added >= extraTarget)
+            {
+                return;
+            }
+        }
+    }
+
+    private void AddSharedExitRoadGraph(
+        List<RoadCandidateEdgeV3> selectedEdges,
+        Dictionary<int, int> nodeIdByVillageId,
+        ref int nextNodeId,
+        ref DeterministicRandom random)
+    {
+        HashSet<int> consumedEdges = new();
+        int nextEdgeId = 1;
+
+        if (WorldGenerationLayerSettingsV2.EnableRoads && _settings.V3SharedExitTrunkEnabled)
+        {
+            List<VillageSiteV2> orderedVillages = new(_villages);
+            orderedVillages.Sort((a, b) => GetVillageConnectionPriority(b).CompareTo(GetVillageConnectionPriority(a)));
+            foreach (VillageSiteV2 village in orderedVillages)
+            {
+                AddSharedExitsForVillage(village, selectedEdges, consumedEdges, nodeIdByVillageId, ref nextNodeId, ref nextEdgeId, ref random);
+            }
+        }
+
+        for (int i = 0; i < selectedEdges.Count; i++)
+        {
+            if (consumedEdges.Contains(i))
+            {
+                continue;
+            }
+
+            RoadCandidateEdgeV3 candidate = selectedEdges[i];
+            RoadEdgeKindV3 kind = PickRoadEdgeKind(candidate);
+            AddGraphEdge(nextEdgeId++, nodeIdByVillageId[candidate.From.Id], nodeIdByVillageId[candidate.To.Id], kind, candidate.IsExtra);
+        }
+    }
+
+    private void AddSharedExitsForVillage(
+        VillageSiteV2 village,
+        IReadOnlyList<RoadCandidateEdgeV3> selectedEdges,
+        HashSet<int> consumedEdges,
+        Dictionary<int, int> nodeIdByVillageId,
+        ref int nextNodeId,
+        ref int nextEdgeId,
+        ref DeterministicRandom random)
+    {
+        List<(int EdgeIndex, RoadCandidateEdgeV3 Edge, VillageSiteV2 Other, float Angle)> incident = new();
+        for (int i = 0; i < selectedEdges.Count; i++)
+        {
+            if (consumedEdges.Contains(i))
+            {
+                continue;
+            }
+
+            RoadCandidateEdgeV3 edge = selectedEdges[i];
+            VillageSiteV2? other = null;
+            if (edge.From.Id == village.Id)
+            {
+                other = edge.To;
+            }
+            else if (edge.To.Id == village.Id)
+            {
+                other = edge.From;
+            }
+
+            if (other == null)
+            {
+                continue;
+            }
+
+            Vector2 delta = GetVillagePoint(other) - GetVillagePoint(village);
+            float angle = Mathf.PosMod(Mathf.Atan2(delta.Y, delta.X), Mathf.Tau);
+            incident.Add((i, edge, other, angle));
+        }
+
+        if (incident.Count < 2)
+        {
+            return;
+        }
+
+        incident.Sort((a, b) => a.Angle.CompareTo(b.Angle));
+        float sectorRadians = Mathf.DegToRad(Mathf.Clamp(_settings.V3RoadDirectionSectorDegrees, 25.0f, 75.0f));
+        for (int i = 0; i < incident.Count - 1; i++)
+        {
+            if (consumedEdges.Contains(incident[i].EdgeIndex))
+            {
+                continue;
+            }
+
+            for (int j = i + 1; j < incident.Count; j++)
+            {
+                if (consumedEdges.Contains(incident[j].EdgeIndex))
+                {
+                    continue;
+                }
+
+                float angleDiff = Mathf.Abs(Mathf.AngleDifference(incident[i].Angle, incident[j].Angle));
+                if (angleDiff > sectorRadians)
+                {
+                    break;
+                }
+
+                if (!TryAddSharedExit(village, incident[i], incident[j], nodeIdByVillageId, ref nextNodeId, ref nextEdgeId, ref random))
+                {
+                    continue;
+                }
+
+                consumedEdges.Add(incident[i].EdgeIndex);
+                consumedEdges.Add(incident[j].EdgeIndex);
+                SharedTrunkCount++;
+                MergedRoadCandidateCount++;
+                break;
+            }
+        }
+    }
+
+    private bool TryAddSharedExit(
+        VillageSiteV2 village,
+        (int EdgeIndex, RoadCandidateEdgeV3 Edge, VillageSiteV2 Other, float Angle) first,
+        (int EdgeIndex, RoadCandidateEdgeV3 Edge, VillageSiteV2 Other, float Angle) second,
+        Dictionary<int, int> nodeIdByVillageId,
+        ref int nextNodeId,
+        ref int nextEdgeId,
+        ref DeterministicRandom random)
+    {
+        int maxDegree = Mathf.Clamp(_settings.V3MaxRoadJunctionDegree, 2, 4);
+        if (maxDegree < 3)
+        {
+            RejectedHighDegreeJunctionCount++;
+            return false;
+        }
+
+        Vector2 origin = GetVillagePoint(village);
+        Vector2 dirA = (GetVillagePoint(first.Other) - origin).Normalized();
+        Vector2 dirB = (GetVillagePoint(second.Other) - origin).Normalized();
+        Vector2 direction = (dirA + dirB).Normalized();
+        if (direction.LengthSquared() <= 0.0001f)
+        {
+            return false;
+        }
+
+        float trunkLength = Mathf.Min(GetSharedExitTrunkMaxLength(), Mathf.Min(first.Edge.Distance, second.Edge.Distance) * 0.30f);
+        trunkLength = Mathf.Max(village.Radius + _settings.V3RoadJunctionVillageClearance * 0.42f, trunkLength);
+        Vector2 jitter = new Vector2(-direction.Y, direction.X) * random.Range(-12.0f, 12.0f);
+        Vector2 junctionPosition = ClampPointToWorld(origin + direction * trunkLength + jitter, 72.0f);
+        if (IsPointTooCloseToVillageCore(junctionPosition))
+        {
+            RejectedRoadJunctionCount++;
+            return false;
+        }
+
+        int junctionNodeId = nextNodeId++;
+        _roadGraph.AddNode(new RoadNodeV3
+        {
+            Id = junctionNodeId,
+            Kind = RoadNodeKindV3.Junction,
+            Position = junctionPosition,
+            Seed = HashIntId(junctionNodeId, WorldSeed, 8511)
+        });
+        RoadJunctionCount++;
+
+        AddGraphEdge(nextEdgeId++, nodeIdByVillageId[village.Id], junctionNodeId, RoadEdgeKindV3.Primary);
+        AddGraphEdge(nextEdgeId++, junctionNodeId, nodeIdByVillageId[first.Other.Id], RoadEdgeKindV3.Secondary, first.Edge.IsExtra);
+        AddGraphEdge(nextEdgeId++, junctionNodeId, nodeIdByVillageId[second.Other.Id], RoadEdgeKindV3.Secondary, second.Edge.IsExtra);
+        return true;
+    }
+
+    private RoadEdgeKindV3 PickRoadEdgeKind(RoadCandidateEdgeV3 candidate)
+    {
+        if (!candidate.IsExtra
+            && (candidate.From.Scale is VillageScaleV2.Town or VillageScaleV2.LargeVillage
+                || candidate.To.Scale is VillageScaleV2.Town or VillageScaleV2.LargeVillage))
+        {
+            return RoadEdgeKindV3.Primary;
+        }
+
+        return RoadEdgeKindV3.Secondary;
+    }
+
+    private void AddGraphEdge(int edgeId, int fromNodeId, int toNodeId, RoadEdgeKindV3 kind, bool isExtraLink = false)
+    {
+        RoadKindV3 roadKind = kind switch
+        {
+            RoadEdgeKindV3.Primary => RoadKindV3.Primary,
+            RoadEdgeKindV3.Branch => RoadKindV3.Branch,
+            _ => RoadKindV3.Secondary
+        };
+        float width = Mathf.Max(0.75f, _settings.V3RoadWidth) * (roadKind switch
+        {
+            RoadKindV3.Primary => 1.0f,
+            RoadKindV3.Branch => Mathf.Clamp(_settings.V3BranchRoadWidthMultiplier, 0.35f, 1.0f),
+            _ => 0.78f
+        });
+        float visualStrength = roadKind switch
+        {
+            RoadKindV3.Primary => 1.0f,
+            RoadKindV3.Branch => 0.58f,
+            _ => 0.78f
+        };
+
+        _roadGraph.AddEdge(new RoadEdgeV3
+        {
+            Id = edgeId,
+            FromNodeId = fromNodeId,
+            ToNodeId = toNodeId,
+            Kind = kind,
+            Width = width,
+            VisualStrength = visualStrength,
+            Seed = HashIntId(edgeId, WorldSeed, 8421),
+            IsExtraLink = isExtraLink
+        });
+    }
+
+    private void ConvertRoadGraphToPaths(ref DeterministicRandom random)
+    {
+        foreach (RoadEdgeV3 edge in _roadGraph.Edges)
+        {
+            if (!_roadGraph.TryGetNode(edge.FromNodeId, out RoadNodeV3? fromNode)
+                || !_roadGraph.TryGetNode(edge.ToNodeId, out RoadNodeV3? toNode)
+                || fromNode == null
+                || toNode == null)
+            {
+                continue;
+            }
+
+            RoadKindV3 roadKind = edge.Kind switch
+            {
+                RoadEdgeKindV3.Primary => RoadKindV3.Primary,
+                RoadEdgeKindV3.Branch => RoadKindV3.Branch,
+                _ => RoadKindV3.Secondary
+            };
+            List<Vector2> points = BuildMeanderingPoints(fromNode.Position, toNode.Position, edge.Id, roadKind, ref random);
+            RoadPathV2 road = new()
+            {
+                Id = edge.Id,
+                FromSiteId = fromNode.VillageId,
+                ToSiteId = toNode.VillageId,
+                FromNodeId = fromNode.Id,
+                ToNodeId = toNode.Id,
+                PathPointsWorld = points,
+                Bounds = GrowRect(CalculatePathBounds(points), edge.Width + 3.0f),
+                Width = edge.Width,
+                Kind = roadKind,
+                IsMainVillageRoad = roadKind == RoadKindV3.Primary,
+                VisualStrength = edge.VisualStrength,
+                VisualWearSeed = edge.Seed
+            };
+
+            _roads.Add(road);
+            switch (roadKind)
+            {
+                case RoadKindV3.Primary:
+                    PrimaryRoadCount++;
+                    break;
+                case RoadKindV3.Branch:
+                    BranchRoadCount++;
+                    break;
+                default:
+                    SecondaryRoadCount++;
+                    if (edge.IsExtraLink)
+                    {
+                        ExtraRoadCount++;
+                    }
+                    break;
+            }
         }
     }
 
@@ -413,6 +924,27 @@ public sealed class FlatlandWorldPlanV3
 
     private void GenerateQuarriesPlaceholder()
     {
+    }
+
+    private void GenerateRoadTargetAnchors()
+    {
+        _roadTargetAnchors.Clear();
+        RoadTargetQuarryCount = 0;
+        RoadTargetForestEdgeCount = 0;
+        RoadTargetWorldEdgeExitCount = 0;
+        FutureRoadTargetCount = 0;
+        RejectedRoadTargetCount = 0;
+
+        if (!WorldGenerationLayerSettingsV2.EnableRoads)
+        {
+            return;
+        }
+
+        DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 8101));
+        int nextId = 1;
+        AddQuarryRoadTargets(ref nextId, ref random);
+        AddForestEdgeRoadTargets(ref nextId, ref random);
+        AddWorldEdgeExitTargets(ref nextId, ref random);
     }
 
     private void GenerateQuarries()
@@ -1504,6 +2036,153 @@ public sealed class FlatlandWorldPlanV3
         return distance <= edgeRadius ? TileType.Village : TileType.VillageEdge;
     }
 
+    private void AddQuarryRoadTargets(ref int nextId, ref DeterministicRandom random)
+    {
+        foreach (QuarryRegionV3 quarry in _quarryRegions)
+        {
+            float chance = quarry.IsMajorQuarry ? 0.72f : 0.42f;
+            if (random.NextUnit() > chance)
+            {
+                continue;
+            }
+
+            float angle = random.NextUnit() * Mathf.Tau;
+            Vector2 direction = new(Mathf.Cos(angle), Mathf.Sin(angle));
+            Vector2 position = ClampPointToWorld(quarry.Center + direction * quarry.ApproxRadius * random.Range(0.82f, 1.08f), 48.0f);
+            RoadTargetAnchorV3 anchor = CreateRoadTarget(nextId, RoadTargetKindV3.Quarry, position, 12.0f, quarry.Id, true);
+            if (!TryAddRoadTarget(anchor))
+            {
+                RejectedRoadTargetCount++;
+                continue;
+            }
+
+            nextId++;
+            RoadTargetQuarryCount++;
+        }
+    }
+
+    private void AddForestEdgeRoadTargets(ref int nextId, ref DeterministicRandom random)
+    {
+        int targetLimit = GetTargetBranchRoadCount(ref random);
+        int added = 0;
+        foreach (ForestRegionV3 forest in _forestRegions)
+        {
+            if (added >= targetLimit)
+            {
+                return;
+            }
+
+            float chance = forest.IsMajorForest ? 0.36f : 0.14f;
+            if (random.NextUnit() > chance)
+            {
+                continue;
+            }
+
+            float angle = random.NextUnit() * Mathf.Tau;
+            Vector2 direction = new(Mathf.Cos(angle), Mathf.Sin(angle));
+            float radius = forest.ApproxRadius * random.Range(0.76f, 1.04f);
+            Vector2 position = ClampPointToWorld(forest.Center + direction * radius, 48.0f);
+            RoadTargetAnchorV3 anchor = CreateRoadTarget(nextId, RoadTargetKindV3.ForestEdge, position, 10.0f, forest.RegionId, false);
+            if (!TryAddRoadTarget(anchor))
+            {
+                RejectedRoadTargetCount++;
+                continue;
+            }
+
+            nextId++;
+            added++;
+            RoadTargetForestEdgeCount++;
+        }
+    }
+
+    private void AddWorldEdgeExitTargets(ref int nextId, ref DeterministicRandom random)
+    {
+        int targetCount = MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Small => random.RangeInclusive(0, 1),
+            WorldMapSizePresetV2.Medium => random.RangeInclusive(1, 2),
+            WorldMapSizePresetV2.Large => random.RangeInclusive(2, 4),
+            _ => 1
+        };
+
+        for (int i = 0; i < targetCount; i++)
+        {
+            int side = random.RangeInclusive(0, 3);
+            float margin = 56.0f;
+            Vector2 position = side switch
+            {
+                0 => new Vector2(random.Range(margin, WorldSize.WidthCells - margin), margin),
+                1 => new Vector2(WorldSize.WidthCells - margin, random.Range(margin, WorldSize.HeightCells - margin)),
+                2 => new Vector2(random.Range(margin, WorldSize.WidthCells - margin), WorldSize.HeightCells - margin),
+                _ => new Vector2(margin, random.Range(margin, WorldSize.HeightCells - margin))
+            };
+
+            RoadTargetAnchorV3 anchor = CreateRoadTarget(nextId, RoadTargetKindV3.WorldEdgeExit, position, 14.0f, 0, false);
+            if (!TryAddRoadTarget(anchor))
+            {
+                RejectedRoadTargetCount++;
+                continue;
+            }
+
+            nextId++;
+            RoadTargetWorldEdgeExitCount++;
+        }
+    }
+
+    private RoadTargetAnchorV3 CreateRoadTarget(int id, RoadTargetKindV3 kind, Vector2 position, float radius, int linkedFeatureId, bool implementedPoi)
+    {
+        float boundsRadius = radius + 3.0f;
+        return new RoadTargetAnchorV3
+        {
+            Id = id,
+            Kind = kind,
+            Position = position,
+            Radius = radius,
+            Bounds = new Rect2(position - new Vector2(boundsRadius, boundsRadius), new Vector2(boundsRadius * 2.0f, boundsRadius * 2.0f)),
+            Seed = HashIntId(id, WorldSeed, 8123),
+            IsImplementedPoi = implementedPoi,
+            LinkedFeatureId = linkedFeatureId
+        };
+    }
+
+    private bool TryAddRoadTarget(RoadTargetAnchorV3 anchor)
+    {
+        if (!WorldSize.ContainsCell(new Vector2I(Mathf.RoundToInt(anchor.Position.X), Mathf.RoundToInt(anchor.Position.Y))))
+        {
+            return false;
+        }
+
+        if (IsPointTooCloseToVillageCore(anchor.Position))
+        {
+            return false;
+        }
+
+        foreach (RoadTargetAnchorV3 existing in _roadTargetAnchors)
+        {
+            float required = anchor.Radius + existing.Radius + 92.0f;
+            if (anchor.Position.DistanceTo(existing.Position) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (RoadPathV2 road in _roads)
+        {
+            if (road.Kind == RoadKindV3.Branch)
+            {
+                continue;
+            }
+
+            if (road.DistanceToPath(anchor.Position) < 54.0f)
+            {
+                return false;
+            }
+        }
+
+        _roadTargetAnchors.Add(anchor);
+        return true;
+    }
+
     private void AddRoad(
         VillageSiteV2 from,
         VillageSiteV2 to,
@@ -1542,16 +2221,240 @@ public sealed class FlatlandWorldPlanV3
             PathPointsWorld = points,
             Bounds = GrowRect(CalculatePathBounds(points), width + 3.0f),
             Width = width,
+            Kind = primary ? RoadKindV3.Primary : RoadKindV3.Secondary,
             IsMainVillageRoad = primary,
             VisualStrength = primary ? 1.0f : 0.78f,
             VisualWearSeed = HashIntId(from.Id, to.Id, roadId + 6201)
         };
     }
 
+    private void GenerateBranchRoads()
+    {
+        BranchRoadCount = 0;
+        RejectedBranchRoadCount = 0;
+        if (!WorldGenerationLayerSettingsV2.EnableRoads || _roadTargetAnchors.Count == 0)
+        {
+            return;
+        }
+
+        DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 8201));
+        int targetCount = GetTargetBranchRoadCount(ref random);
+        if (targetCount <= 0)
+        {
+            return;
+        }
+
+        targetCount = Mathf.Min(targetCount, _roadTargetAnchors.Count);
+
+        List<RoadPathV2> primaryRoads = new();
+        foreach (RoadPathV2 road in _roads)
+        {
+            if (road.Kind == RoadKindV3.Primary && road.PathPointsWorld.Count >= 7)
+            {
+                primaryRoads.Add(road);
+            }
+        }
+
+        if (primaryRoads.Count == 0)
+        {
+            return;
+        }
+
+        Dictionary<int, int> branchCountByRoad = new();
+        HashSet<int> connectedTargetIds = new();
+        int maxBranchesPerRoad = MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Small => 1,
+            WorldMapSizePresetV2.Medium => 2,
+            WorldMapSizePresetV2.Large => 2,
+            _ => 1
+        };
+        int nextRoadId = GetNextRoadId();
+        int attempts = Mathf.Max(targetCount * 10, 32);
+
+        for (int attempt = 0; attempt < attempts && BranchRoadCount < targetCount; attempt++)
+        {
+            RoadTargetAnchorV3 target = PickRoadTargetAnchor(connectedTargetIds, ref random);
+            if (connectedTargetIds.Contains(target.Id))
+            {
+                RejectedBranchRoadCount++;
+                continue;
+            }
+
+            if (!TryFindBranchSource(primaryRoads, target, branchCountByRoad, maxBranchesPerRoad, out RoadPathV2? sourceRoad, out Vector2 branchStart)
+                || sourceRoad == null)
+            {
+                RejectedBranchRoadCount++;
+                continue;
+            }
+
+            branchCountByRoad.TryGetValue(sourceRoad.Id, out int existingBranchCount);
+            if (!TryBuildBranchRoad(sourceRoad, target, branchStart, nextRoadId, ref random, out RoadPathV2? branchRoad) || branchRoad == null)
+            {
+                RejectedBranchRoadCount++;
+                continue;
+            }
+
+            _roads.Add(branchRoad);
+            branchCountByRoad[sourceRoad.Id] = existingBranchCount + 1;
+            connectedTargetIds.Add(target.Id);
+            BranchRoadCount++;
+            nextRoadId++;
+        }
+    }
+
+    private RoadTargetAnchorV3 PickRoadTargetAnchor(HashSet<int> connectedTargetIds, ref DeterministicRandom random)
+    {
+        for (int attempt = 0; attempt < 12; attempt++)
+        {
+            RoadTargetAnchorV3 target = _roadTargetAnchors[random.RangeInclusive(0, _roadTargetAnchors.Count - 1)];
+            if (!connectedTargetIds.Contains(target.Id))
+            {
+                return target;
+            }
+        }
+
+        return _roadTargetAnchors[random.RangeInclusive(0, _roadTargetAnchors.Count - 1)];
+    }
+
+    private bool TryFindBranchSource(
+        IReadOnlyList<RoadPathV2> primaryRoads,
+        RoadTargetAnchorV3 target,
+        Dictionary<int, int> branchCountByRoad,
+        int maxBranchesPerRoad,
+        out RoadPathV2? sourceRoad,
+        out Vector2 branchStart)
+    {
+        sourceRoad = null;
+        branchStart = Vector2.Zero;
+        float minLength = Mathf.Max(48.0f, _settings.V3BranchRoadMinLength);
+        float maxLength = Mathf.Max(minLength, _settings.V3BranchRoadMaxLength);
+        float bestScore = float.MaxValue;
+
+        foreach (RoadPathV2 road in primaryRoads)
+        {
+            branchCountByRoad.TryGetValue(road.Id, out int existingBranchCount);
+            if (existingBranchCount >= maxBranchesPerRoad)
+            {
+                continue;
+            }
+
+            IReadOnlyList<Vector2> points = road.PathPointsWorld;
+            int minIndex = Mathf.Max(1, Mathf.FloorToInt((points.Count - 1) * 0.25f));
+            int maxIndex = Mathf.Min(points.Count - 2, Mathf.CeilToInt((points.Count - 1) * 0.75f));
+            for (int i = minIndex; i <= maxIndex; i += 2)
+            {
+                Vector2 point = points[i];
+                float distance = point.DistanceTo(target.Position);
+                if (distance < minLength || distance > maxLength)
+                {
+                    continue;
+                }
+
+                float score = distance + StableUnitFloat(road.Id, target.Id, i + 8301) * 28.0f;
+                if (score >= bestScore)
+                {
+                    continue;
+                }
+
+                bestScore = score;
+                sourceRoad = road;
+                branchStart = point;
+            }
+        }
+
+        return sourceRoad != null;
+    }
+
+    private bool TryBuildBranchRoad(RoadPathV2 sourceRoad, RoadTargetAnchorV3 target, Vector2 start, int roadId, ref DeterministicRandom random, out RoadPathV2? branchRoad)
+    {
+        branchRoad = null;
+        Vector2 end = target.Position;
+        float minLength = Mathf.Max(48.0f, _settings.V3BranchRoadMinLength);
+        float maxLength = Mathf.Max(minLength, _settings.V3BranchRoadMaxLength);
+        float actualLength = start.DistanceTo(end);
+        if (actualLength < minLength || actualLength > maxLength)
+        {
+            return false;
+        }
+
+        if (sourceRoad.DistanceToPath(end) < Mathf.Min(actualLength * 0.30f, 96.0f))
+        {
+            return false;
+        }
+
+        List<Vector2> points = BuildBranchRoadPoints(start, end, roadId, ref random);
+        if (points.Count < 2 || BranchPathHitsProtectedVillage(points) || BranchPathCutsQuarryCore(points, target))
+        {
+            return false;
+        }
+
+        float width = Mathf.Max(0.55f, _settings.V3RoadWidth * Mathf.Clamp(_settings.V3BranchRoadWidthMultiplier, 0.35f, 1.0f));
+        branchRoad = new RoadPathV2
+        {
+            Id = roadId,
+            FromSiteId = 0,
+            ToSiteId = 0,
+            PathPointsWorld = points,
+            Bounds = GrowRect(CalculatePathBounds(points), width + 3.0f),
+            Width = width,
+            Kind = RoadKindV3.Branch,
+            IsMainVillageRoad = false,
+            VisualStrength = 0.58f,
+            VisualWearSeed = HashIntId(sourceRoad.Id, roadId, 8801),
+            BranchOrigin = start,
+            TargetAnchorId = target.Id,
+            TargetAnchorKind = target.Kind
+        };
+        return true;
+    }
+
+    private List<Vector2> BuildBranchRoadPoints(Vector2 start, Vector2 end, int roadId, ref DeterministicRandom random)
+    {
+        Vector2 delta = end - start;
+        float distance = Mathf.Max(1.0f, delta.Length());
+        Vector2 forward = delta / distance;
+        Vector2 perpendicular = new(-forward.Y, forward.X);
+        int middlePointCount = distance switch
+        {
+            < 190.0f => 2,
+            < 330.0f => 3,
+            _ => 4
+        };
+        float multiplier = Mathf.Clamp(_settings.V3BranchRoadMeanderMultiplier, 0.8f, 2.4f);
+        float meander = Mathf.Min(_settings.V3RoadMeanderStrength * multiplier, distance * 0.24f);
+        float phase = StableUnitFloat(WorldSeed, roadId, 8611) * Mathf.Tau;
+
+        List<Vector2> controls = new(middlePointCount + 2)
+        {
+            start
+        };
+
+        for (int i = 1; i <= middlePointCount; i++)
+        {
+            float t = i / (middlePointCount + 1.0f);
+            Vector2 basePoint = start.Lerp(end, t);
+            float wave = Mathf.Sin(t * Mathf.Tau * 0.92f + phase) * 0.48f
+                + Mathf.Sin(t * Mathf.Tau * 1.73f + phase * 1.31f) * 0.30f
+                + Mathf.Sin(t * Mathf.Tau * 2.51f + phase * 0.47f) * 0.12f;
+            float jitter = (random.NextUnit() - 0.5f) * 0.24f;
+            float falloff = Mathf.Sin(t * Mathf.Pi);
+            controls.Add(basePoint + perpendicular * (wave + jitter) * meander * falloff);
+        }
+
+        controls.Add(end);
+        return SampleCatmullRom(SmoothRoadPoints(controls), 4);
+    }
+
     private List<Vector2> BuildMeanderingPoints(Vector2I from, Vector2I to, int roadId, bool primary, ref DeterministicRandom random)
     {
         Vector2 start = new(from.X + 0.5f, from.Y + 0.5f);
         Vector2 end = new(to.X + 0.5f, to.Y + 0.5f);
+        return BuildMeanderingPoints(start, end, roadId, primary ? RoadKindV3.Primary : RoadKindV3.Secondary, ref random);
+    }
+
+    private List<Vector2> BuildMeanderingPoints(Vector2 start, Vector2 end, int roadId, RoadKindV3 roadKind, ref DeterministicRandom random)
+    {
         Vector2 delta = end - start;
         float distance = Mathf.Max(1.0f, delta.Length());
         Vector2 forward = delta / distance;
@@ -1563,7 +2466,13 @@ public sealed class FlatlandWorldPlanV3
             < 1350.0f => 5,
             _ => 7
         };
-        float meander = Mathf.Min(_settings.V3RoadMeanderStrength, distance * 0.16f) * (primary ? 1.0f : 1.22f);
+        float kindMeander = roadKind switch
+        {
+            RoadKindV3.Primary => 1.0f,
+            RoadKindV3.Branch => 1.35f,
+            _ => 1.18f
+        };
+        float meander = Mathf.Min(_settings.V3RoadMeanderStrength, distance * 0.16f) * kindMeander;
         float phase = StableUnitFloat(WorldSeed, roadId, 4201) * Mathf.Tau;
 
         List<Vector2> controls = new(middlePointCount + 2)
@@ -1648,6 +2557,273 @@ public sealed class FlatlandWorldPlanV3
 
         smoothed.Add(points[^1]);
         return smoothed;
+    }
+
+    private int GetTargetBranchRoadCount(ref DeterministicRandom random)
+    {
+        GetBranchRoadCountRange(out int minCount, out int maxCount);
+        minCount = Mathf.Max(0, minCount);
+        maxCount = Mathf.Max(minCount, maxCount);
+        return random.RangeInclusive(minCount, maxCount);
+    }
+
+    private void GetBranchRoadCountRange(out int minCount, out int maxCount)
+    {
+        switch (MapSizePreset)
+        {
+            case WorldMapSizePresetV2.Medium:
+                minCount = _settings.V3MediumBranchRoadMinCount;
+                maxCount = _settings.V3MediumBranchRoadMaxCount;
+                return;
+            case WorldMapSizePresetV2.Large:
+                minCount = _settings.V3LargeBranchRoadMinCount;
+                maxCount = _settings.V3LargeBranchRoadMaxCount;
+                return;
+            case WorldMapSizePresetV2.Small:
+            default:
+                minCount = _settings.V3SmallBranchRoadMinCount;
+                maxCount = _settings.V3SmallBranchRoadMaxCount;
+                return;
+        }
+    }
+
+    private static Vector2 GetRoadTangent(IReadOnlyList<Vector2> points, int index)
+    {
+        int previous = Mathf.Max(0, index - 1);
+        int next = Mathf.Min(points.Count - 1, index + 1);
+        Vector2 tangent = points[next] - points[previous];
+        return tangent.LengthSquared() <= 0.0001f ? Vector2.Zero : tangent.Normalized();
+    }
+
+    private Vector2 ClampPointToWorld(Vector2 point, float margin)
+    {
+        float maxX = Mathf.Max(margin, WorldSize.WidthCells - margin - 1.0f);
+        float maxY = Mathf.Max(margin, WorldSize.HeightCells - margin - 1.0f);
+        return new Vector2(
+            Mathf.Clamp(point.X, margin, maxX),
+            Mathf.Clamp(point.Y, margin, maxY));
+    }
+
+    private bool BranchPathHitsProtectedVillage(IReadOnlyList<Vector2> points)
+    {
+        foreach (Vector2 point in points)
+        {
+            foreach (VillageSiteV2 village in _villages)
+            {
+                float protectedRadius = village.IsStartingVillage
+                    ? village.Radius + 12.0f
+                    : village.Radius * 0.78f;
+                if (point.DistanceTo(village.Center) <= protectedRadius)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private bool BranchPathCutsQuarryCore(IReadOnlyList<Vector2> points, RoadTargetAnchorV3 target)
+    {
+        if (target.Kind != RoadTargetKindV3.Quarry)
+        {
+            return false;
+        }
+
+        QuarryRegionV3? quarry = null;
+        foreach (QuarryRegionV3 candidate in _quarryRegions)
+        {
+            if (candidate.Id == target.LinkedFeatureId)
+            {
+                quarry = candidate;
+                break;
+            }
+        }
+
+        if (quarry == null)
+        {
+            return false;
+        }
+
+        float coreRadius = quarry.ApproxRadius * 0.52f;
+        for (int i = 0; i < points.Count - 2; i++)
+        {
+            if (points[i].DistanceTo(quarry.Center) < coreRadius)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private float GetMaxLocalRoadLength()
+    {
+        return MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Small => 850.0f,
+            WorldMapSizePresetV2.Medium => 1150.0f,
+            WorldMapSizePresetV2.Large => 1450.0f,
+            _ => 850.0f
+        };
+    }
+
+    private float GetSharedExitTrunkMaxLength()
+    {
+        return MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Small => Mathf.Max(24.0f, _settings.V3SharedExitTrunkMaxLengthSmall),
+            WorldMapSizePresetV2.Medium => Mathf.Max(32.0f, _settings.V3SharedExitTrunkMaxLengthMedium),
+            WorldMapSizePresetV2.Large => Mathf.Max(40.0f, _settings.V3SharedExitTrunkMaxLengthLarge),
+            _ => Mathf.Max(24.0f, _settings.V3SharedExitTrunkMaxLengthSmall)
+        };
+    }
+
+    private int CalculateMaxJunctionDegree()
+    {
+        Dictionary<int, int> degreeByNode = new();
+        foreach (RoadEdgeV3 edge in _roadGraph.Edges)
+        {
+            degreeByNode.TryGetValue(edge.FromNodeId, out int fromDegree);
+            degreeByNode[edge.FromNodeId] = fromDegree + 1;
+            degreeByNode.TryGetValue(edge.ToNodeId, out int toDegree);
+            degreeByNode[edge.ToNodeId] = toDegree + 1;
+        }
+
+        int maxDegree = 0;
+        foreach (RoadNodeV3 node in _roadGraph.Nodes)
+        {
+            if (node.Kind != RoadNodeKindV3.Junction)
+            {
+                continue;
+            }
+
+            degreeByNode.TryGetValue(node.Id, out int degree);
+            maxDegree = Mathf.Max(maxDegree, degree);
+            if (degree > Mathf.Clamp(_settings.V3MaxRoadJunctionDegree, 2, 4))
+            {
+                RejectedHighDegreeJunctionCount++;
+            }
+        }
+
+        return maxDegree;
+    }
+
+    private bool IsPointTooCloseToVillageCore(Vector2 point)
+    {
+        foreach (VillageSiteV2 village in _villages)
+        {
+            float protectedRadius = village.IsStartingVillage
+                ? village.Radius + 72.0f
+                : village.Radius + 34.0f;
+            if (point.DistanceTo(village.Center) < protectedRadius)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private int GetNextRoadId()
+    {
+        int nextRoadId = 1;
+        foreach (RoadPathV2 road in _roads)
+        {
+            nextRoadId = Mathf.Max(nextRoadId, road.Id + 1);
+        }
+
+        return nextRoadId;
+    }
+
+    private static Vector2 GetVillagePoint(VillageSiteV2 village)
+    {
+        return new Vector2(village.Center.X + 0.5f, village.Center.Y + 0.5f);
+    }
+
+    private static bool SegmentsIntersect(Vector2 a, Vector2 b, Vector2 c, Vector2 d)
+    {
+        float abC = Cross(b - a, c - a);
+        float abD = Cross(b - a, d - a);
+        float cdA = Cross(d - c, a - c);
+        float cdB = Cross(d - c, b - c);
+        if (Mathf.Abs(abC) < 0.001f || Mathf.Abs(abD) < 0.001f || Mathf.Abs(cdA) < 0.001f || Mathf.Abs(cdB) < 0.001f)
+        {
+            return false;
+        }
+
+        return (abC > 0.0f) != (abD > 0.0f) && (cdA > 0.0f) != (cdB > 0.0f);
+    }
+
+    private static float Cross(Vector2 a, Vector2 b)
+    {
+        return a.X * b.Y - a.Y * b.X;
+    }
+
+    private readonly record struct RoadCandidateEdgeV3(
+        VillageSiteV2 From,
+        VillageSiteV2 To,
+        float Distance,
+        float Score,
+        bool IsExtra)
+    {
+        public bool SharesEndpoint(RoadCandidateEdgeV3 other)
+        {
+            return From.Id == other.From.Id
+                || From.Id == other.To.Id
+                || To.Id == other.From.Id
+                || To.Id == other.To.Id;
+        }
+    }
+
+    private sealed class DisjointSetV3
+    {
+        private readonly int[] _parent;
+        private readonly int[] _rank;
+
+        public DisjointSetV3(int count)
+        {
+            _parent = new int[count];
+            _rank = new int[count];
+            for (int i = 0; i < count; i++)
+            {
+                _parent[i] = i;
+            }
+        }
+
+        public int Find(int value)
+        {
+            if (_parent[value] != value)
+            {
+                _parent[value] = Find(_parent[value]);
+            }
+
+            return _parent[value];
+        }
+
+        public void Union(int a, int b)
+        {
+            int rootA = Find(a);
+            int rootB = Find(b);
+            if (rootA == rootB)
+            {
+                return;
+            }
+
+            if (_rank[rootA] < _rank[rootB])
+            {
+                _parent[rootA] = rootB;
+            }
+            else if (_rank[rootA] > _rank[rootB])
+            {
+                _parent[rootB] = rootA;
+            }
+            else
+            {
+                _parent[rootB] = rootA;
+                _rank[rootA]++;
+            }
+        }
     }
 
     private bool TryPickExtraRoadPair(HashSet<long> connectedPairs, ref DeterministicRandom random, out VillageSiteV2? from, out VillageSiteV2? to)
@@ -1991,7 +3167,7 @@ public sealed class FlatlandWorldPlanV3
 
     public string GetDebugSummary()
     {
-        return $"V3 villages: count={VillageCount} startId={StartingVillageId} startCenter={StartingVillageCenter} spawn={PlayerSpawnCell} nearestCenter={NearestToWorldCenterDistance:0.0} roads={RoadCount} primary={PrimaryRoadCount} extra={ExtraRoadCount} roadLayer={RoadLayerEnabled} forestRegions={ForestRegionCount} majorForests={MajorForestRegionCount} minorForests={MinorForestPatchCount} forestLayer={ForestLayerEnabled} quarryRegions={QuarryRegionCount} majorQuarries={MajorQuarryCount} minorQuarries={MinorQuarryCount} quarryLayer={QuarryLayerEnabled} rejectedQuarries={RejectedQuarryPlacementCount}";
+        return $"V3 villages: count={VillageCount} startId={StartingVillageId} startCenter={StartingVillageCenter} spawn={PlayerSpawnCell} nearestCenter={NearestToWorldCenterDistance:0.0} roads={RoadCount} primary={PrimaryRoadCount} secondary={SecondaryRoadCount} extra={ExtraRoadCount} branch={BranchRoadCount} nodes={RoadNodeCount} junctions={RoadJunctionCount} maxDegree={MaxRoadJunctionDegree} trunks={SharedTrunkCount} merged={MergedRoadCandidateCount} rejectedJunctions={RejectedRoadJunctionCount} rejectedHighDegree={RejectedHighDegreeJunctionCount} rejectedCrossings={RejectedRoadCrossingCount} rejectedTooLong={RejectedRoadTooLongCount} targets={RoadTargetAnchorCount} quarryTargets={RoadTargetQuarryCount} forestTargets={RoadTargetForestEdgeCount} edgeTargets={RoadTargetWorldEdgeExitCount} futureTargets={FutureRoadTargetCount} rejectedTargets={RejectedRoadTargetCount} rejectedBranches={RejectedBranchRoadCount} roadLayer={RoadLayerEnabled} forestRegions={ForestRegionCount} majorForests={MajorForestRegionCount} minorForests={MinorForestPatchCount} forestLayer={ForestLayerEnabled} quarryRegions={QuarryRegionCount} majorQuarries={MajorQuarryCount} minorQuarries={MinorQuarryCount} quarryLayer={QuarryLayerEnabled} rejectedQuarries={RejectedQuarryPlacementCount}";
     }
 
     private static FlatlandCellSampleV2 CreateOutOfBoundsSample(Vector2I globalCell)
