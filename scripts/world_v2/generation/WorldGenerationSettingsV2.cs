@@ -300,6 +300,44 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public float V3DrylandDungeonEntranceWeightMultiplier { get; set; } = 0.90f;
     [Export] public float V3WastelandDungeonEntranceWeightMultiplier { get; set; } = 1.45f;
 
+    [ExportGroup("V3 Bandit Camps")]
+    [Export] public int V3SmallBanditCampMinCount { get; set; } = 2;
+    [Export] public int V3SmallBanditCampMaxCount { get; set; } = 3;
+    [Export] public int V3MediumBanditCampMinCount { get; set; } = 5;
+    [Export] public int V3MediumBanditCampMaxCount { get; set; } = 8;
+    [Export] public int V3LargeBanditCampMinCount { get; set; } = 10;
+    [Export] public int V3LargeBanditCampMaxCount { get; set; } = 18;
+    [Export] public int V3HugeBanditCampMinCount { get; set; } = 26;
+    [Export] public int V3HugeBanditCampMaxCount { get; set; } = 30;
+    [Export] public float V3BanditCampMinRadius { get; set; } = 10.0f;
+    [Export] public float V3BanditCampMaxRadius { get; set; } = 22.0f;
+    [Export] public float V3BanditCampMinDistance { get; set; } = 300.0f;
+    [Export] public int V3BanditCampPlacementMaxAttemptsPerSite { get; set; } = 90;
+    [Export] public float V3PlainsBanditCampWeightMultiplier { get; set; } = 0.45f;
+    [Export] public float V3ForestLandBanditCampWeightMultiplier { get; set; } = 1.45f;
+    [Export] public float V3RockyHillsBanditCampWeightMultiplier { get; set; } = 0.90f;
+    [Export] public float V3DrylandBanditCampWeightMultiplier { get; set; } = 1.05f;
+    [Export] public float V3WastelandBanditCampWeightMultiplier { get; set; } = 1.55f;
+
+    [ExportGroup("V3 Faction Outposts")]
+    [Export] public int V3SmallFactionOutpostMinCount { get; set; } = 1;
+    [Export] public int V3SmallFactionOutpostMaxCount { get; set; } = 2;
+    [Export] public int V3MediumFactionOutpostMinCount { get; set; } = 3;
+    [Export] public int V3MediumFactionOutpostMaxCount { get; set; } = 5;
+    [Export] public int V3LargeFactionOutpostMinCount { get; set; } = 6;
+    [Export] public int V3LargeFactionOutpostMaxCount { get; set; } = 10;
+    [Export] public int V3HugeFactionOutpostMinCount { get; set; } = 16;
+    [Export] public int V3HugeFactionOutpostMaxCount { get; set; } = 18;
+    [Export] public float V3FactionOutpostMinRadius { get; set; } = 12.0f;
+    [Export] public float V3FactionOutpostMaxRadius { get; set; } = 26.0f;
+    [Export] public float V3FactionOutpostMinDistance { get; set; } = 360.0f;
+    [Export] public int V3FactionOutpostPlacementMaxAttemptsPerSite { get; set; } = 90;
+    [Export] public float V3PlainsFactionOutpostWeightMultiplier { get; set; } = 1.10f;
+    [Export] public float V3ForestLandFactionOutpostWeightMultiplier { get; set; } = 0.75f;
+    [Export] public float V3RockyHillsFactionOutpostWeightMultiplier { get; set; } = 1.00f;
+    [Export] public float V3DrylandFactionOutpostWeightMultiplier { get; set; } = 1.15f;
+    [Export] public float V3WastelandFactionOutpostWeightMultiplier { get; set; } = 0.95f;
+
     [ExportGroup("World Map Overlay")]
     [Export] public int WorldMapSmallTextureSize { get; set; } = 512;
     [Export] public int WorldMapMediumTextureSize { get; set; } = 768;
@@ -631,6 +669,40 @@ public partial class WorldGenerationSettingsV2 : Node
         V3RockyHillsDungeonEntranceWeightMultiplier = 1.55f;
         V3DrylandDungeonEntranceWeightMultiplier = 0.90f;
         V3WastelandDungeonEntranceWeightMultiplier = 1.45f;
+        V3SmallBanditCampMinCount = 2;
+        V3SmallBanditCampMaxCount = 3;
+        V3MediumBanditCampMinCount = 5;
+        V3MediumBanditCampMaxCount = 8;
+        V3LargeBanditCampMinCount = 10;
+        V3LargeBanditCampMaxCount = 18;
+        V3HugeBanditCampMinCount = 26;
+        V3HugeBanditCampMaxCount = 30;
+        V3BanditCampMinRadius = 10.0f;
+        V3BanditCampMaxRadius = 22.0f;
+        V3BanditCampMinDistance = 300.0f;
+        V3BanditCampPlacementMaxAttemptsPerSite = 90;
+        V3PlainsBanditCampWeightMultiplier = 0.45f;
+        V3ForestLandBanditCampWeightMultiplier = 1.45f;
+        V3RockyHillsBanditCampWeightMultiplier = 0.90f;
+        V3DrylandBanditCampWeightMultiplier = 1.05f;
+        V3WastelandBanditCampWeightMultiplier = 1.55f;
+        V3SmallFactionOutpostMinCount = 1;
+        V3SmallFactionOutpostMaxCount = 2;
+        V3MediumFactionOutpostMinCount = 3;
+        V3MediumFactionOutpostMaxCount = 5;
+        V3LargeFactionOutpostMinCount = 6;
+        V3LargeFactionOutpostMaxCount = 10;
+        V3HugeFactionOutpostMinCount = 16;
+        V3HugeFactionOutpostMaxCount = 18;
+        V3FactionOutpostMinRadius = 12.0f;
+        V3FactionOutpostMaxRadius = 26.0f;
+        V3FactionOutpostMinDistance = 360.0f;
+        V3FactionOutpostPlacementMaxAttemptsPerSite = 90;
+        V3PlainsFactionOutpostWeightMultiplier = 1.10f;
+        V3ForestLandFactionOutpostWeightMultiplier = 0.75f;
+        V3RockyHillsFactionOutpostWeightMultiplier = 1.00f;
+        V3DrylandFactionOutpostWeightMultiplier = 1.15f;
+        V3WastelandFactionOutpostWeightMultiplier = 0.95f;
         WorldMapHugeTextureSize = 1536;
     }
 }

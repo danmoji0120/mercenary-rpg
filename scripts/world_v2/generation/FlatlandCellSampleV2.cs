@@ -17,6 +17,11 @@ public sealed class FlatlandCellSampleV2
     public bool HasOreSpot { get; set; }
     public bool IsDungeonEntrance { get; set; }
     public DungeonEntranceKindV3 DungeonEntranceKind { get; set; }
+    public bool IsBanditCamp { get; set; }
+    public BanditCampKindV3 BanditCampKind { get; set; }
+    public bool IsFactionOutpost { get; set; }
+    public FactionOutpostKindV3 FactionOutpostKind { get; set; }
+    public FactionOutpostOwnerV3 FactionOutpostOwner { get; set; }
     public float ForestStrength { get; set; }
     public bool IsForest { get; set; }
     public bool IsDenseForest { get; set; }

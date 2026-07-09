@@ -7,6 +7,8 @@ public enum RoadTargetKindV3
     Quarry,
     Ruin,
     DungeonEntrance,
+    BanditCamp,
+    FactionOutpost,
     ForestEdge,
     WorldEdgeExit,
     FutureRuinSite,

@@ -27,6 +27,11 @@ public sealed class CellData
     public bool HasOreSpot { get; set; }
     public bool IsDungeonEntrance { get; set; }
     public DungeonEntranceKindV3 DungeonEntranceKind { get; set; }
+    public bool IsBanditCamp { get; set; }
+    public BanditCampKindV3 BanditCampKind { get; set; }
+    public bool IsFactionOutpost { get; set; }
+    public FactionOutpostKindV3 FactionOutpostKind { get; set; }
+    public FactionOutpostOwnerV3 FactionOutpostOwner { get; set; }
     public float ForestStrength { get; set; }
     public bool IsBuildRestricted { get; set; }
     public bool IsWalkable { get; set; } = true;

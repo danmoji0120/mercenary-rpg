@@ -17,12 +17,19 @@ public sealed class FlatlandWorldPlanV3
     private readonly List<QuarryRegionV3> _quarryRegions = new();
     private readonly List<RuinSiteV3> _ruinSites = new();
     private readonly List<DungeonEntranceSiteV3> _dungeonEntrances = new();
+    private readonly List<BanditCampSiteV3> _banditCamps = new();
+    private readonly List<FactionOutpostSiteV3> _factionOutposts = new();
     private readonly List<BiomeRegionV3> _biomeRegions = new();
     private readonly int[] _forestBiomeDistribution = new int[5];
     private readonly int[] _quarryBiomeDistribution = new int[5];
     private readonly int[] _ruinBiomeDistribution = new int[5];
     private readonly int[] _dungeonEntranceBiomeDistribution = new int[5];
     private readonly int[] _dungeonEntranceKindDistribution = new int[5];
+    private readonly int[] _banditCampBiomeDistribution = new int[5];
+    private readonly int[] _banditCampKindDistribution = new int[5];
+    private readonly int[] _factionOutpostBiomeDistribution = new int[5];
+    private readonly int[] _factionOutpostKindDistribution = new int[5];
+    private readonly int[] _factionOutpostOwnerDistribution = new int[5];
     private readonly int[] _settlementRoleDistribution = new int[8];
     private bool _isBuilt;
     private int _startingVillageId = -1;
@@ -68,6 +75,8 @@ public sealed class FlatlandWorldPlanV3
     public int RoadTargetQuarryCount { get; private set; }
     public int RoadTargetRuinCount { get; private set; }
     public int RoadTargetDungeonEntranceCount { get; private set; }
+    public int RoadTargetBanditCampCount { get; private set; }
+    public int RoadTargetFactionOutpostCount { get; private set; }
     public int RoadTargetForestEdgeCount { get; private set; }
     public int RoadTargetWorldEdgeExitCount { get; private set; }
     public int FutureRoadTargetCount { get; private set; }
@@ -138,6 +147,51 @@ public sealed class FlatlandWorldPlanV3
     public string DungeonEntranceBiomeDistribution => FormatBiomeDistribution(_dungeonEntranceBiomeDistribution);
     public bool DungeonLayerEnabled => WorldGenerationLayerSettingsV2.EnableDungeons;
     public IReadOnlyList<DungeonEntranceSiteV3> DungeonEntrances => _dungeonEntrances;
+    public int BanditCampCount => _banditCamps.Count;
+    public int RoadLinkedBanditCampCount
+    {
+        get
+        {
+            int count = 0;
+            foreach (BanditCampSiteV3 camp in _banditCamps)
+            {
+                if (camp.LinkedRoadId > 0)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+    }
+    public int RejectedBanditCampPlacementCount { get; private set; }
+    public string BanditCampKindDistribution => FormatBanditCampKindDistribution(_banditCampKindDistribution);
+    public string BanditCampBiomeDistribution => FormatBiomeDistribution(_banditCampBiomeDistribution);
+    public bool BanditLayerEnabled => WorldGenerationLayerSettingsV2.EnableBanditCamps;
+    public IReadOnlyList<BanditCampSiteV3> BanditCamps => _banditCamps;
+    public int FactionOutpostCount => _factionOutposts.Count;
+    public int RoadLinkedFactionOutpostCount
+    {
+        get
+        {
+            int count = 0;
+            foreach (FactionOutpostSiteV3 outpost in _factionOutposts)
+            {
+                if (outpost.LinkedRoadId > 0)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+    }
+    public int RejectedFactionOutpostPlacementCount { get; private set; }
+    public string FactionOutpostKindDistribution => FormatFactionOutpostKindDistribution(_factionOutpostKindDistribution);
+    public string FactionOutpostOwnerDistribution => FormatFactionOutpostOwnerDistribution(_factionOutpostOwnerDistribution);
+    public string FactionOutpostBiomeDistribution => FormatBiomeDistribution(_factionOutpostBiomeDistribution);
+    public bool FactionOutpostLayerEnabled => WorldGenerationLayerSettingsV2.EnableFactionOutposts;
+    public IReadOnlyList<FactionOutpostSiteV3> FactionOutposts => _factionOutposts;
     public int BiomeRegionCount => _biomeRegions.Count;
     public int MajorBiomeRegionCount { get; private set; }
     public int MinorBiomeRegionCount { get; private set; }
@@ -176,6 +230,8 @@ public sealed class FlatlandWorldPlanV3
         GenerateForests();
         GenerateRuins();
         GenerateDungeonEntrances();
+        GenerateBanditCamps();
+        GenerateFactionOutposts();
         AssignSettlementRoles();
         GenerateRoadTargetAnchors();
         GenerateBranchRoads();
@@ -196,6 +252,8 @@ public sealed class FlatlandWorldPlanV3
         _quarryRegions.Clear();
         _ruinSites.Clear();
         _dungeonEntrances.Clear();
+        _banditCamps.Clear();
+        _factionOutposts.Clear();
         _biomeRegions.Clear();
         PrimaryRoadCount = 0;
         SecondaryRoadCount = 0;
@@ -212,6 +270,8 @@ public sealed class FlatlandWorldPlanV3
         RoadTargetQuarryCount = 0;
         RoadTargetRuinCount = 0;
         RoadTargetDungeonEntranceCount = 0;
+        RoadTargetBanditCampCount = 0;
+        RoadTargetFactionOutpostCount = 0;
         RoadTargetForestEdgeCount = 0;
         RoadTargetWorldEdgeExitCount = 0;
         FutureRoadTargetCount = 0;
@@ -225,6 +285,8 @@ public sealed class FlatlandWorldPlanV3
         RejectedQuarryPlacementCount = 0;
         RejectedRuinPlacementCount = 0;
         RejectedDungeonEntrancePlacementCount = 0;
+        RejectedBanditCampPlacementCount = 0;
+        RejectedFactionOutpostPlacementCount = 0;
         MajorBiomeRegionCount = 0;
         MinorBiomeRegionCount = 0;
         BiomeForestLandCount = 0;
@@ -238,6 +300,9 @@ public sealed class FlatlandWorldPlanV3
         _nearestToWorldCenterDistance = 0.0f;
         ClearFeatureBiomeDistributions();
         ClearDistribution(_dungeonEntranceKindDistribution);
+        ClearDistribution(_banditCampKindDistribution);
+        ClearDistribution(_factionOutpostKindDistribution);
+        ClearDistribution(_factionOutpostOwnerDistribution);
         ClearDistribution(_settlementRoleDistribution);
         _isBuilt = false;
     }
@@ -341,6 +406,28 @@ public sealed class FlatlandWorldPlanV3
             }
         }
 
+        if (WorldGenerationLayerSettingsV2.EnableBanditCamps)
+        {
+            foreach (BanditCampSiteV3 camp in _banditCamps)
+            {
+                if (camp.Bounds.Intersects(chunkRect, includeBorders: true))
+                {
+                    context.AddBanditCamp(camp);
+                }
+            }
+        }
+
+        if (WorldGenerationLayerSettingsV2.EnableFactionOutposts)
+        {
+            foreach (FactionOutpostSiteV3 outpost in _factionOutposts)
+            {
+                if (outpost.Bounds.Intersects(chunkRect, includeBorders: true))
+                {
+                    context.AddFactionOutpost(outpost);
+                }
+            }
+        }
+
         if (WorldGenerationLayerSettingsV2.EnableForests)
         {
             foreach (ForestRegionV3 forest in _forestRegions)
@@ -368,6 +455,16 @@ public sealed class FlatlandWorldPlanV3
         if (WorldGenerationLayerSettingsV2.EnableRoads)
         {
             RasterRoads(context);
+        }
+
+        if (WorldGenerationLayerSettingsV2.EnableFactionOutposts)
+        {
+            RasterFactionOutposts(context);
+        }
+
+        if (WorldGenerationLayerSettingsV2.EnableBanditCamps)
+        {
+            RasterBanditCamps(context);
         }
 
         if (WorldGenerationLayerSettingsV2.EnableRuins)
@@ -415,6 +512,11 @@ public sealed class FlatlandWorldPlanV3
             HasOreSpot = context.HasOreSpot[index],
             IsDungeonEntrance = context.IsDungeonEntrance[index],
             DungeonEntranceKind = context.DungeonEntranceKind[index],
+            IsBanditCamp = context.IsBanditCamp[index],
+            BanditCampKind = context.BanditCampKind[index],
+            IsFactionOutpost = context.IsFactionOutpost[index],
+            FactionOutpostKind = context.FactionOutpostKind[index],
+            FactionOutpostOwner = context.FactionOutpostOwner[index],
             LandmarkKind = context.LandmarkKind[index],
             ForestStrength = context.ForestStrength[index],
             IsForest = context.ForestStrength[index] > 0.42f
@@ -1407,6 +1509,8 @@ public sealed class FlatlandWorldPlanV3
         RoadTargetQuarryCount = 0;
         RoadTargetRuinCount = 0;
         RoadTargetDungeonEntranceCount = 0;
+        RoadTargetBanditCampCount = 0;
+        RoadTargetFactionOutpostCount = 0;
         RoadTargetForestEdgeCount = 0;
         RoadTargetWorldEdgeExitCount = 0;
         FutureRoadTargetCount = 0;
@@ -1422,6 +1526,8 @@ public sealed class FlatlandWorldPlanV3
         AddQuarryRoadTargets(ref nextId, ref random);
         AddRuinRoadTargets(ref nextId, ref random);
         AddDungeonEntranceRoadTargets(ref nextId, ref random);
+        AddBanditCampRoadTargets(ref nextId, ref random);
+        AddFactionOutpostRoadTargets(ref nextId, ref random);
         AddForestEdgeRoadTargets(ref nextId, ref random);
         AddWorldEdgeExitTargets(ref nextId, ref random);
     }
@@ -1573,6 +1679,127 @@ public sealed class FlatlandWorldPlanV3
         }
 
         AssignRoadLinkedDungeonEntrances(ref random);
+    }
+
+    private void GenerateBanditCamps()
+    {
+        _banditCamps.Clear();
+        RejectedBanditCampPlacementCount = 0;
+        ClearDistribution(_banditCampBiomeDistribution);
+        ClearDistribution(_banditCampKindDistribution);
+
+        if (!WorldGenerationLayerSettingsV2.EnableBanditCamps)
+        {
+            return;
+        }
+
+        int targetCount = GetTargetBanditCampCount();
+        if (targetCount <= 0)
+        {
+            return;
+        }
+
+        DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 11101));
+        float edgeMargin = Mathf.Max(96.0f, _settings.V3BanditCampMaxRadius + 72.0f);
+        int minX = Mathf.CeilToInt(edgeMargin);
+        int minY = Mathf.CeilToInt(edgeMargin);
+        int maxX = Mathf.FloorToInt(WorldSize.WidthCells - edgeMargin - 1.0f);
+        int maxY = Mathf.FloorToInt(WorldSize.HeightCells - edgeMargin - 1.0f);
+        if (minX > maxX || minY > maxY)
+        {
+            return;
+        }
+
+        int maxAttempts = Mathf.Max(targetCount * 12, targetCount * Mathf.Max(1, _settings.V3BanditCampPlacementMaxAttemptsPerSite));
+        int nextId = 1;
+        for (int attempt = 0; _banditCamps.Count < targetCount && attempt < maxAttempts; attempt++)
+        {
+            float radius = random.Range(Mathf.Max(7.0f, _settings.V3BanditCampMinRadius), Mathf.Max(_settings.V3BanditCampMinRadius, _settings.V3BanditCampMaxRadius));
+            Vector2 center = new(random.RangeInclusive(minX, maxX), random.RangeInclusive(minY, maxY));
+            if (!CanPlaceBanditCamp(center, radius))
+            {
+                RejectedBanditCampPlacementCount++;
+                continue;
+            }
+
+            BiomeKindV3 biome = ResolveBiomeKindForPlacement(center);
+            float weight = GetBanditCampBiomeWeight(biome) * GetBanditCampFeatureWeight(center, out string nearbyFeatureHint);
+            if (!AcceptBiomeWeightedPlacement(biome, weight, ref random))
+            {
+                RejectedBanditCampPlacementCount++;
+                continue;
+            }
+
+            BanditCampKindV3 kind = PickBanditCampKind(center, biome, nearbyFeatureHint, ref random);
+            BanditCampSiteV3 site = CreateBanditCampSite(nextId++, kind, center, radius, nearbyFeatureHint, ref random);
+            _banditCamps.Add(site);
+            IncrementDistribution(_banditCampBiomeDistribution, biome);
+            IncrementDistribution(_banditCampKindDistribution, (int)kind);
+        }
+
+        AssignRoadLinkedBanditCamps(ref random);
+    }
+
+    private void GenerateFactionOutposts()
+    {
+        _factionOutposts.Clear();
+        RejectedFactionOutpostPlacementCount = 0;
+        ClearDistribution(_factionOutpostBiomeDistribution);
+        ClearDistribution(_factionOutpostKindDistribution);
+        ClearDistribution(_factionOutpostOwnerDistribution);
+
+        if (!WorldGenerationLayerSettingsV2.EnableFactionOutposts)
+        {
+            return;
+        }
+
+        int targetCount = GetTargetFactionOutpostCount();
+        if (targetCount <= 0)
+        {
+            return;
+        }
+
+        DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 12101));
+        float edgeMargin = Mathf.Max(96.0f, _settings.V3FactionOutpostMaxRadius + 80.0f);
+        int minX = Mathf.CeilToInt(edgeMargin);
+        int minY = Mathf.CeilToInt(edgeMargin);
+        int maxX = Mathf.FloorToInt(WorldSize.WidthCells - edgeMargin - 1.0f);
+        int maxY = Mathf.FloorToInt(WorldSize.HeightCells - edgeMargin - 1.0f);
+        if (minX > maxX || minY > maxY)
+        {
+            return;
+        }
+
+        int maxAttempts = Mathf.Max(targetCount * 12, targetCount * Mathf.Max(1, _settings.V3FactionOutpostPlacementMaxAttemptsPerSite));
+        int nextId = 1;
+        for (int attempt = 0; _factionOutposts.Count < targetCount && attempt < maxAttempts; attempt++)
+        {
+            float radius = random.Range(Mathf.Max(8.0f, _settings.V3FactionOutpostMinRadius), Mathf.Max(_settings.V3FactionOutpostMinRadius, _settings.V3FactionOutpostMaxRadius));
+            Vector2 center = new(random.RangeInclusive(minX, maxX), random.RangeInclusive(minY, maxY));
+            if (!CanPlaceFactionOutpost(center, radius))
+            {
+                RejectedFactionOutpostPlacementCount++;
+                continue;
+            }
+
+            BiomeKindV3 biome = ResolveBiomeKindForPlacement(center);
+            float weight = GetFactionOutpostBiomeWeight(biome) * GetFactionOutpostFeatureWeight(center, out VillageSiteV2? nearbySettlement, out string influenceHint);
+            if (!AcceptBiomeWeightedPlacement(biome, weight, ref random))
+            {
+                RejectedFactionOutpostPlacementCount++;
+                continue;
+            }
+
+            FactionOutpostKindV3 kind = PickFactionOutpostKind(biome, nearbySettlement, influenceHint, ref random);
+            FactionOutpostOwnerV3 owner = PickFactionOutpostOwner(biome, nearbySettlement, influenceHint, ref random);
+            FactionOutpostSiteV3 site = CreateFactionOutpostSite(nextId++, kind, owner, center, radius, nearbySettlement?.Id ?? -1, influenceHint, ref random);
+            _factionOutposts.Add(site);
+            IncrementDistribution(_factionOutpostBiomeDistribution, biome);
+            IncrementDistribution(_factionOutpostKindDistribution, (int)kind);
+            IncrementDistribution(_factionOutpostOwnerDistribution, (int)owner);
+        }
+
+        AssignRoadLinkedFactionOutposts(ref random);
     }
 
     private void GenerateLandmarksPlaceholder()
@@ -2181,6 +2408,113 @@ public sealed class FlatlandWorldPlanV3
         }
     }
 
+    private void RasterBanditCamps(FlatlandChunkGenerationContextV2 context)
+    {
+        WorldV2PerformanceProfiler profiler = WorldV2PerformanceProfiler.Instance;
+        long start = profiler.BeginSample();
+
+        foreach (BanditCampSiteV3 camp in context.RelevantBanditCamps)
+        {
+            RasterBanditCamp(context, camp);
+        }
+
+        profiler.EndSample(WorldV2PerformanceProfiler.FlatlandSiteSample, start, context.ChunkCoord);
+    }
+
+    private void RasterBanditCamp(FlatlandChunkGenerationContextV2 context, BanditCampSiteV3 camp)
+    {
+        int minGlobalX = Mathf.FloorToInt(camp.Bounds.Position.X);
+        int minGlobalY = Mathf.FloorToInt(camp.Bounds.Position.Y);
+        int maxGlobalX = Mathf.CeilToInt(camp.Bounds.End.X);
+        int maxGlobalY = Mathf.CeilToInt(camp.Bounds.End.Y);
+        if (!TryGetLocalBounds(context, minGlobalX, minGlobalY, maxGlobalX, maxGlobalY, out int minX, out int minY, out int maxX, out int maxY))
+        {
+            return;
+        }
+
+        for (int y = minY; y <= maxY; y++)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                int index = FlatlandChunkGenerationContextV2.ToIndex(x, y);
+                if (context.IsVillage[index] || context.IsStartingVillage[index] || context.IsRoad[index])
+                {
+                    continue;
+                }
+
+                Vector2I cell = context.ToGlobalCell(x, y);
+                float strength = GetBanditCampPotentialAt(camp, cell);
+                if (strength <= 0.0f)
+                {
+                    continue;
+                }
+
+                float distance = new Vector2(cell.X + 0.5f, cell.Y + 0.5f).DistanceTo(camp.Center);
+                context.IsBanditCamp[index] = true;
+                context.BanditCampKind[index] = camp.Kind;
+                context.IsLandmark[index] = true;
+                context.LandmarkKind[index] = LandmarkKindV2.BanditCamp;
+                context.SiteDistance[index] = Mathf.Min(context.SiteDistance[index], distance);
+                context.SiteRadius[index] = camp.ApproxRadius;
+                context.HasLandmarkTile = true;
+            }
+        }
+    }
+
+    private void RasterFactionOutposts(FlatlandChunkGenerationContextV2 context)
+    {
+        WorldV2PerformanceProfiler profiler = WorldV2PerformanceProfiler.Instance;
+        long start = profiler.BeginSample();
+
+        foreach (FactionOutpostSiteV3 outpost in context.RelevantFactionOutposts)
+        {
+            RasterFactionOutpost(context, outpost);
+        }
+
+        profiler.EndSample(WorldV2PerformanceProfiler.FlatlandSiteSample, start, context.ChunkCoord);
+    }
+
+    private void RasterFactionOutpost(FlatlandChunkGenerationContextV2 context, FactionOutpostSiteV3 outpost)
+    {
+        int minGlobalX = Mathf.FloorToInt(outpost.Bounds.Position.X);
+        int minGlobalY = Mathf.FloorToInt(outpost.Bounds.Position.Y);
+        int maxGlobalX = Mathf.CeilToInt(outpost.Bounds.End.X);
+        int maxGlobalY = Mathf.CeilToInt(outpost.Bounds.End.Y);
+        if (!TryGetLocalBounds(context, minGlobalX, minGlobalY, maxGlobalX, maxGlobalY, out int minX, out int minY, out int maxX, out int maxY))
+        {
+            return;
+        }
+
+        for (int y = minY; y <= maxY; y++)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                int index = FlatlandChunkGenerationContextV2.ToIndex(x, y);
+                if (context.IsVillage[index] || context.IsStartingVillage[index] || context.IsRoad[index])
+                {
+                    continue;
+                }
+
+                Vector2I cell = context.ToGlobalCell(x, y);
+                float strength = GetFactionOutpostPotentialAt(outpost, cell);
+                if (strength <= 0.0f)
+                {
+                    continue;
+                }
+
+                float distance = new Vector2(cell.X + 0.5f, cell.Y + 0.5f).DistanceTo(outpost.Center);
+                context.IsFactionOutpost[index] = true;
+                context.FactionOutpostKind[index] = outpost.Kind;
+                context.FactionOutpostOwner[index] = outpost.Owner;
+                context.IsLandmark[index] = true;
+                context.LandmarkKind[index] = LandmarkKindV2.FactionOutpost;
+                context.SiteDistance[index] = Mathf.Min(context.SiteDistance[index], distance);
+                context.SiteRadius[index] = outpost.ApproxRadius;
+                context.HasLandmarkTile = true;
+            }
+        }
+    }
+
     private void RasterForests(FlatlandChunkGenerationContextV2 context)
     {
         WorldV2PerformanceProfiler profiler = WorldV2PerformanceProfiler.Instance;
@@ -2581,6 +2915,40 @@ public sealed class FlatlandWorldPlanV3
         return potential > 0.26f ? Mathf.Clamp(potential, 0.0f, 1.0f) : 0.0f;
     }
 
+    private float GetBanditCampPotentialAt(BanditCampSiteV3 camp, Vector2I cell)
+    {
+        Vector2 point = new(cell.X + 0.5f, cell.Y + 0.5f);
+        float radius = Mathf.Max(4.0f, camp.ApproxRadius);
+        float distance = point.DistanceTo(camp.Center);
+        if (distance > radius * 1.20f)
+        {
+            return 0.0f;
+        }
+
+        float normalizedDistance = distance / radius;
+        float edgeNoise = (StableUnitFloat(cell.X + camp.Id * 29, cell.Y - camp.Id * 17, camp.Seed + 61) - 0.5f) * 0.24f;
+        float detail = StableUnitFloat(cell.X / 2 + camp.Id * 7, cell.Y / 2 - camp.Id * 13, camp.Seed + 97);
+        float potential = (1.0f - normalizedDistance + edgeNoise) * 0.76f + detail * 0.24f;
+        return potential > 0.30f ? Mathf.Clamp(potential, 0.0f, 1.0f) : 0.0f;
+    }
+
+    private float GetFactionOutpostPotentialAt(FactionOutpostSiteV3 outpost, Vector2I cell)
+    {
+        Vector2 point = new(cell.X + 0.5f, cell.Y + 0.5f);
+        float radius = Mathf.Max(5.0f, outpost.ApproxRadius);
+        float distance = point.DistanceTo(outpost.Center);
+        if (distance > radius * 1.16f)
+        {
+            return 0.0f;
+        }
+
+        float normalizedDistance = distance / radius;
+        float edgeNoise = (StableUnitFloat(cell.X + outpost.Id * 37, cell.Y - outpost.Id * 23, outpost.Seed + 53) - 0.5f) * 0.14f;
+        float orderedYard = Mathf.Abs((StableUnitFloat(cell.X / 3 + outpost.Id * 5, cell.Y / 3 - outpost.Id * 3, outpost.Seed + 109) - 0.5f) * 0.12f);
+        float potential = 1.0f - normalizedDistance + edgeNoise - orderedYard;
+        return potential > 0.26f ? Mathf.Clamp(potential, 0.0f, 1.0f) : 0.0f;
+    }
+
     private static void RasterForestFallbackEllipse(FlatlandChunkGenerationContextV2 context, ForestClusterSiteV2 forest)
     {
         float range = Mathf.Max(forest.Length, forest.Width) * 0.62f + 18.0f;
@@ -2628,6 +2996,30 @@ public sealed class FlatlandWorldPlanV3
         if (sample.IsRoad)
         {
             sample.TileType = roadStrength >= 0.46f ? TileType.Road : TileType.Dirt;
+            return;
+        }
+
+        if (sample.IsFactionOutpost)
+        {
+            sample.Biome = BiomeTypeV2.TradeRoadZone;
+            sample.LandmarkKind = LandmarkKindV2.FactionOutpost;
+            float coreRatio = siteRadius > 0.0f ? siteDistance / siteRadius : 1.0f;
+            sample.TileType = coreRatio <= 0.46f
+                ? TileType.FactionOutpost
+                : sample.FactionOutpostKind == FactionOutpostKindV3.BorderFort ? TileType.StoneField : TileType.Dirt;
+            sample.IsBuildRestricted = true;
+            return;
+        }
+
+        if (sample.IsBanditCamp)
+        {
+            sample.Biome = BiomeTypeV2.BanditTerritory;
+            sample.LandmarkKind = LandmarkKindV2.BanditCamp;
+            float coreRatio = siteRadius > 0.0f ? siteDistance / siteRadius : 1.0f;
+            sample.TileType = coreRatio <= 0.46f
+                ? TileType.BanditCamp
+                : sample.BanditCampKind == BanditCampKindV3.RuinCamp ? TileType.Rubble : TileType.Dirt;
+            sample.IsBuildRestricted = true;
             return;
         }
 
@@ -2965,6 +3357,617 @@ public sealed class FlatlandWorldPlanV3
         for (int i = 0; i < count; i++)
         {
             candidates[i].IsRoadLinked = true;
+        }
+    }
+
+    private int GetTargetBanditCampCount()
+    {
+        DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 11113));
+        return MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Medium => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3MediumBanditCampMinCount),
+                Mathf.Max(0, _settings.V3MediumBanditCampMaxCount)),
+            WorldMapSizePresetV2.Large => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3LargeBanditCampMinCount),
+                Mathf.Max(0, _settings.V3LargeBanditCampMaxCount)),
+            WorldMapSizePresetV2.Huge => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3HugeBanditCampMinCount),
+                Mathf.Max(0, _settings.V3HugeBanditCampMaxCount)),
+            WorldMapSizePresetV2.Small or _ => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3SmallBanditCampMinCount),
+                Mathf.Max(0, _settings.V3SmallBanditCampMaxCount))
+        };
+    }
+
+    private int GetTargetFactionOutpostCount()
+    {
+        DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 12113));
+        return MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Medium => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3MediumFactionOutpostMinCount),
+                Mathf.Max(0, _settings.V3MediumFactionOutpostMaxCount)),
+            WorldMapSizePresetV2.Large => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3LargeFactionOutpostMinCount),
+                Mathf.Max(0, _settings.V3LargeFactionOutpostMaxCount)),
+            WorldMapSizePresetV2.Huge => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3HugeFactionOutpostMinCount),
+                Mathf.Max(0, _settings.V3HugeFactionOutpostMaxCount)),
+            WorldMapSizePresetV2.Small or _ => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3SmallFactionOutpostMinCount),
+                Mathf.Max(0, _settings.V3SmallFactionOutpostMaxCount))
+        };
+    }
+
+    private int GetDesiredRoadLinkedBanditCampCount(ref DeterministicRandom random)
+    {
+        int campCount = _banditCamps.Count;
+        if (campCount == 0)
+        {
+            return 0;
+        }
+
+        int desired = MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Medium => Mathf.RoundToInt(campCount * random.Range(0.25f, 0.40f)),
+            WorldMapSizePresetV2.Large => Mathf.RoundToInt(campCount * random.Range(0.20f, 0.35f)),
+            WorldMapSizePresetV2.Huge => Mathf.RoundToInt(campCount * random.Range(0.15f, 0.30f)),
+            WorldMapSizePresetV2.Small or _ => 1
+        };
+
+        return Mathf.Clamp(desired, 0, campCount);
+    }
+
+    private void AssignRoadLinkedBanditCamps(ref DeterministicRandom random)
+    {
+        foreach (BanditCampSiteV3 camp in _banditCamps)
+        {
+            camp.IsRoadLinked = false;
+            camp.LinkedRoadId = -1;
+        }
+
+        int desired = GetDesiredRoadLinkedBanditCampCount(ref random);
+        if (desired <= 0 || _roads.Count == 0)
+        {
+            return;
+        }
+
+        List<BanditCampSiteV3> candidates = new();
+        foreach (BanditCampSiteV3 camp in _banditCamps)
+        {
+            float distance = GetNearestNonBranchRoadDistance(camp.Center);
+            if (distance < _settings.V3BranchRoadMinLength * 0.50f || distance > _settings.V3BranchRoadMaxLength * 1.05f)
+            {
+                continue;
+            }
+
+            candidates.Add(camp);
+        }
+
+        candidates.Sort((a, b) =>
+        {
+            float aScore = GetNearestNonBranchRoadDistance(a.Center) + StableUnitFloat(a.Id, WorldSeed, 11141) * 96.0f;
+            float bScore = GetNearestNonBranchRoadDistance(b.Center) + StableUnitFloat(b.Id, WorldSeed, 11141) * 96.0f;
+            return aScore.CompareTo(bScore);
+        });
+
+        int count = Mathf.Min(desired, candidates.Count);
+        for (int i = 0; i < count; i++)
+        {
+            candidates[i].IsRoadLinked = true;
+        }
+    }
+
+    private int GetDesiredRoadLinkedFactionOutpostCount(ref DeterministicRandom random)
+    {
+        int outpostCount = _factionOutposts.Count;
+        if (outpostCount == 0)
+        {
+            return 0;
+        }
+
+        int desired = MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Medium => Mathf.RoundToInt(outpostCount * random.Range(0.60f, 0.80f)),
+            WorldMapSizePresetV2.Large => Mathf.RoundToInt(outpostCount * random.Range(0.60f, 0.80f)),
+            WorldMapSizePresetV2.Huge => Mathf.RoundToInt(outpostCount * random.Range(0.55f, 0.75f)),
+            WorldMapSizePresetV2.Small or _ => 1
+        };
+
+        return Mathf.Clamp(desired, 0, outpostCount);
+    }
+
+    private void AssignRoadLinkedFactionOutposts(ref DeterministicRandom random)
+    {
+        foreach (FactionOutpostSiteV3 outpost in _factionOutposts)
+        {
+            outpost.IsRoadLinked = false;
+            outpost.LinkedRoadId = -1;
+        }
+
+        int desired = GetDesiredRoadLinkedFactionOutpostCount(ref random);
+        if (desired <= 0 || _roads.Count == 0)
+        {
+            return;
+        }
+
+        List<FactionOutpostSiteV3> candidates = new();
+        foreach (FactionOutpostSiteV3 outpost in _factionOutposts)
+        {
+            float distance = GetNearestNonBranchRoadDistance(outpost.Center);
+            if (distance < _settings.V3BranchRoadMinLength * 0.42f || distance > _settings.V3BranchRoadMaxLength * 1.12f)
+            {
+                continue;
+            }
+
+            candidates.Add(outpost);
+        }
+
+        candidates.Sort((a, b) =>
+        {
+            float aScore = GetNearestNonBranchRoadDistance(a.Center) + StableUnitFloat(a.Id, WorldSeed, 12141) * 58.0f;
+            float bScore = GetNearestNonBranchRoadDistance(b.Center) + StableUnitFloat(b.Id, WorldSeed, 12141) * 58.0f;
+            return aScore.CompareTo(bScore);
+        });
+
+        int count = Mathf.Min(desired, candidates.Count);
+        for (int i = 0; i < count; i++)
+        {
+            candidates[i].IsRoadLinked = true;
+        }
+    }
+
+    private bool CanPlaceBanditCamp(Vector2 center, float radius)
+    {
+        foreach (VillageSiteV2 village in _villages)
+        {
+            float tierBuffer = village.Scale is VillageScaleV2.Town or VillageScaleV2.CityCandidate ? 124.0f : 74.0f;
+            float required = village.Radius + radius + (village.IsStartingVillage ? 220.0f : tierBuffer);
+            if (center.DistanceTo(village.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (RoadPathV2 road in _roads)
+        {
+            float required = road.Width + radius * 0.32f + 6.0f;
+            if (road.DistanceToPath(center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (DungeonEntranceSiteV3 dungeon in _dungeonEntrances)
+        {
+            float required = radius + dungeon.ApproxRadius + 92.0f;
+            if (center.DistanceTo(dungeon.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (BanditCampSiteV3 camp in _banditCamps)
+        {
+            float required = radius + camp.ApproxRadius + Mathf.Max(100.0f, _settings.V3BanditCampMinDistance);
+            if (center.DistanceTo(camp.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool CanPlaceFactionOutpost(Vector2 center, float radius)
+    {
+        foreach (VillageSiteV2 village in _villages)
+        {
+            float tierBuffer = village.Scale is VillageScaleV2.Town or VillageScaleV2.CityCandidate ? 74.0f : 58.0f;
+            float required = village.Radius + radius + (village.IsStartingVillage ? 170.0f : tierBuffer);
+            if (center.DistanceTo(village.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (RoadPathV2 road in _roads)
+        {
+            float required = road.Width + radius * 0.28f + 4.0f;
+            if (road.DistanceToPath(center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (BanditCampSiteV3 camp in _banditCamps)
+        {
+            float required = radius + camp.ApproxRadius + 150.0f;
+            if (center.DistanceTo(camp.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (DungeonEntranceSiteV3 dungeon in _dungeonEntrances)
+        {
+            float required = radius + dungeon.ApproxRadius + 110.0f;
+            if (center.DistanceTo(dungeon.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (FactionOutpostSiteV3 outpost in _factionOutposts)
+        {
+            float required = radius + outpost.ApproxRadius + Mathf.Max(120.0f, _settings.V3FactionOutpostMinDistance);
+            if (center.DistanceTo(outpost.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private BanditCampSiteV3 CreateBanditCampSite(
+        int id,
+        BanditCampKindV3 kind,
+        Vector2 center,
+        float radius,
+        string nearbyFeatureHint,
+        ref DeterministicRandom random)
+    {
+        float boundsRadius = radius + 9.0f;
+        return new BanditCampSiteV3
+        {
+            Id = id,
+            Kind = kind,
+            Center = center,
+            ApproxRadius = radius,
+            Bounds = new Rect2(center - new Vector2(boundsRadius, boundsRadius), new Vector2(boundsRadius * 2.0f, boundsRadius * 2.0f)),
+            Seed = HashIntId(id, WorldSeed, 11201),
+            ThreatTier = random.RangeInclusive(1, 3),
+            NearbyFeatureHint = nearbyFeatureHint
+        };
+    }
+
+    private FactionOutpostSiteV3 CreateFactionOutpostSite(
+        int id,
+        FactionOutpostKindV3 kind,
+        FactionOutpostOwnerV3 owner,
+        Vector2 center,
+        float radius,
+        int nearbySettlementId,
+        string influenceHint,
+        ref DeterministicRandom random)
+    {
+        float boundsRadius = radius + 10.0f;
+        return new FactionOutpostSiteV3
+        {
+            Id = id,
+            Kind = kind,
+            Owner = owner,
+            Center = center,
+            ApproxRadius = radius,
+            Bounds = new Rect2(center - new Vector2(boundsRadius, boundsRadius), new Vector2(boundsRadius * 2.0f, boundsRadius * 2.0f)),
+            Seed = HashIntId(id, WorldSeed, 12201),
+            NearbySettlementId = nearbySettlementId,
+            InfluenceHint = influenceHint
+        };
+    }
+
+    private float GetBanditCampBiomeWeight(BiomeKindV3 biome)
+    {
+        if (!WorldGenerationLayerSettingsV2.EnableBiomes)
+        {
+            return 1.0f;
+        }
+
+        return biome switch
+        {
+            BiomeKindV3.ForestLand => _settings.V3ForestLandBanditCampWeightMultiplier,
+            BiomeKindV3.RockyHills => _settings.V3RockyHillsBanditCampWeightMultiplier,
+            BiomeKindV3.Dryland => _settings.V3DrylandBanditCampWeightMultiplier,
+            BiomeKindV3.Wasteland => _settings.V3WastelandBanditCampWeightMultiplier,
+            _ => _settings.V3PlainsBanditCampWeightMultiplier
+        };
+    }
+
+    private float GetFactionOutpostBiomeWeight(BiomeKindV3 biome)
+    {
+        if (!WorldGenerationLayerSettingsV2.EnableBiomes)
+        {
+            return 1.0f;
+        }
+
+        return biome switch
+        {
+            BiomeKindV3.ForestLand => _settings.V3ForestLandFactionOutpostWeightMultiplier,
+            BiomeKindV3.RockyHills => _settings.V3RockyHillsFactionOutpostWeightMultiplier,
+            BiomeKindV3.Dryland => _settings.V3DrylandFactionOutpostWeightMultiplier,
+            BiomeKindV3.Wasteland => _settings.V3WastelandFactionOutpostWeightMultiplier,
+            _ => _settings.V3PlainsFactionOutpostWeightMultiplier
+        };
+    }
+
+    private float GetBanditCampFeatureWeight(Vector2 center, out string nearbyFeatureHint)
+    {
+        nearbyFeatureHint = string.Empty;
+        float multiplier = 1.0f;
+        float bestDistance = float.MaxValue;
+
+        foreach (RuinSiteV3 ruin in _ruinSites)
+        {
+            float distance = center.DistanceTo(ruin.Center) - ruin.ApproxRadius;
+            if (distance < 300.0f)
+            {
+                multiplier += 0.34f;
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    nearbyFeatureHint = "Ruin";
+                }
+                break;
+            }
+        }
+
+        foreach (ForestRegionV3 forest in _forestRegions)
+        {
+            float distance = Mathf.Abs(center.DistanceTo(forest.Center) - forest.ApproxRadius);
+            if (distance < 190.0f)
+            {
+                multiplier += 0.28f;
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    nearbyFeatureHint = "ForestEdge";
+                }
+                break;
+            }
+        }
+
+        float roadDistance = GetNearestNonBranchRoadDistance(center);
+        if (roadDistance < 230.0f)
+        {
+            multiplier += 0.22f;
+            if (roadDistance < bestDistance)
+            {
+                nearbyFeatureHint = "Road";
+            }
+        }
+
+        return Mathf.Clamp(multiplier, 0.70f, 1.82f);
+    }
+
+    private float GetFactionOutpostFeatureWeight(Vector2 center, out VillageSiteV2? nearbySettlement, out string influenceHint)
+    {
+        nearbySettlement = null;
+        influenceHint = string.Empty;
+        float multiplier = 1.0f;
+
+        float roadDistance = GetNearestNonBranchRoadDistance(center);
+        if (roadDistance < 260.0f)
+        {
+            multiplier += 0.42f;
+            influenceHint = "Road";
+        }
+        else if (roadDistance > 620.0f)
+        {
+            multiplier -= 0.18f;
+            influenceHint = "Isolated";
+        }
+
+        if (TryFindNearbySettlementForOutpost(center, out VillageSiteV2? settlement, out float settlementDistance) && settlement != null)
+        {
+            nearbySettlement = settlement;
+            float preferredDistance = settlement.Scale is VillageScaleV2.Town or VillageScaleV2.CityCandidate ? 460.0f : 320.0f;
+            if (settlementDistance < preferredDistance)
+            {
+                multiplier += settlement.Scale is VillageScaleV2.Town or VillageScaleV2.CityCandidate ? 0.38f : 0.18f;
+                if (settlement.Scale is VillageScaleV2.Town or VillageScaleV2.CityCandidate)
+                {
+                    influenceHint = "TradeHub";
+                }
+                else
+                {
+                    influenceHint = settlement.Role == SettlementRoleV3.TradeHub ? "TradeHub" : settlement.Role == SettlementRoleV3.Frontier ? "Frontier" : "Settlement";
+                }
+            }
+        }
+
+        return Mathf.Clamp(multiplier, 0.62f, 1.85f);
+    }
+
+    private bool TryFindNearbySettlementForOutpost(Vector2 center, out VillageSiteV2? settlement, out float distance)
+    {
+        settlement = null;
+        distance = float.MaxValue;
+        foreach (VillageSiteV2 village in _villages)
+        {
+            float current = center.DistanceTo(village.Center) - village.Radius;
+            if (current < distance)
+            {
+                distance = current;
+                settlement = village;
+            }
+        }
+
+        return settlement != null && distance < 720.0f;
+    }
+
+    private BanditCampKindV3 PickBanditCampKind(Vector2 center, BiomeKindV3 biome, string nearbyFeatureHint, ref DeterministicRandom random)
+    {
+        float hidden = 1.0f + random.NextUnit() * 0.18f;
+        float roadside = 0.62f + random.NextUnit() * 0.18f;
+        float ruin = 0.58f + random.NextUnit() * 0.18f;
+        float forest = 0.66f + random.NextUnit() * 0.18f;
+        float wasteland = 0.58f + random.NextUnit() * 0.18f;
+
+        switch (biome)
+        {
+            case BiomeKindV3.ForestLand:
+                forest += 1.02f;
+                hidden += 0.24f;
+                break;
+            case BiomeKindV3.Wasteland:
+                wasteland += 1.04f;
+                ruin += 0.56f;
+                break;
+            case BiomeKindV3.Dryland:
+                roadside += 0.54f;
+                wasteland += 0.42f;
+                break;
+            case BiomeKindV3.RockyHills:
+                hidden += 0.42f;
+                break;
+        }
+
+        if (nearbyFeatureHint == "Ruin")
+        {
+            ruin += 0.88f;
+        }
+        else if (nearbyFeatureHint == "ForestEdge")
+        {
+            forest += 0.72f;
+        }
+        else if (nearbyFeatureHint == "Road")
+        {
+            roadside += 0.80f;
+        }
+
+        BanditCampKindV3 bestKind = BanditCampKindV3.HiddenCamp;
+        float bestScore = hidden;
+        ConsiderBanditKind(BanditCampKindV3.RoadsideAmbush, roadside, ref bestKind, ref bestScore);
+        ConsiderBanditKind(BanditCampKindV3.RuinCamp, ruin, ref bestKind, ref bestScore);
+        ConsiderBanditKind(BanditCampKindV3.ForestHideout, forest, ref bestKind, ref bestScore);
+        ConsiderBanditKind(BanditCampKindV3.WastelandRaidCamp, wasteland, ref bestKind, ref bestScore);
+        return bestKind;
+    }
+
+    private FactionOutpostKindV3 PickFactionOutpostKind(BiomeKindV3 biome, VillageSiteV2? nearbySettlement, string influenceHint, ref DeterministicRandom random)
+    {
+        float watch = 1.0f + random.NextUnit() * 0.16f;
+        float guard = 0.82f + random.NextUnit() * 0.16f;
+        float trade = 0.66f + random.NextUnit() * 0.16f;
+        float border = 0.62f + random.NextUnit() * 0.16f;
+        float survey = 0.70f + random.NextUnit() * 0.16f;
+
+        switch (biome)
+        {
+            case BiomeKindV3.Plains:
+                watch += 0.32f;
+                trade += 0.38f;
+                guard += 0.28f;
+                break;
+            case BiomeKindV3.Dryland:
+                border += 0.62f;
+                survey += 0.32f;
+                break;
+            case BiomeKindV3.RockyHills:
+                survey += 0.62f;
+                guard += 0.30f;
+                break;
+            case BiomeKindV3.ForestLand:
+                watch += 0.30f;
+                guard += 0.20f;
+                break;
+            case BiomeKindV3.Wasteland:
+                border += 0.48f;
+                survey += 0.36f;
+                break;
+        }
+
+        if (nearbySettlement?.Role == SettlementRoleV3.TradeHub || influenceHint == "TradeHub")
+        {
+            trade += 0.74f;
+        }
+
+        if (nearbySettlement?.Role == SettlementRoleV3.Frontier || influenceHint == "Frontier")
+        {
+            border += 0.48f;
+            guard += 0.34f;
+        }
+
+        if (influenceHint == "Isolated")
+        {
+            survey += 0.54f;
+        }
+
+        FactionOutpostKindV3 bestKind = FactionOutpostKindV3.WatchPost;
+        float bestScore = watch;
+        ConsiderFactionKind(FactionOutpostKindV3.GuardCamp, guard, ref bestKind, ref bestScore);
+        ConsiderFactionKind(FactionOutpostKindV3.TradePost, trade, ref bestKind, ref bestScore);
+        ConsiderFactionKind(FactionOutpostKindV3.BorderFort, border, ref bestKind, ref bestScore);
+        ConsiderFactionKind(FactionOutpostKindV3.SurveyPost, survey, ref bestKind, ref bestScore);
+        return bestKind;
+    }
+
+    private FactionOutpostOwnerV3 PickFactionOutpostOwner(BiomeKindV3 biome, VillageSiteV2? nearbySettlement, string influenceHint, ref DeterministicRandom random)
+    {
+        float kingdom = 0.76f + random.NextUnit() * 0.14f;
+        float merchant = 0.48f + random.NextUnit() * 0.14f;
+        float frontier = 0.62f + random.NextUnit() * 0.14f;
+        float militia = 0.58f + random.NextUnit() * 0.14f;
+        float unknown = 0.28f + random.NextUnit() * 0.14f;
+
+        if (nearbySettlement?.Scale is VillageScaleV2.Town or VillageScaleV2.CityCandidate)
+        {
+            kingdom += 0.46f;
+            merchant += 0.24f;
+        }
+
+        if (nearbySettlement?.Role == SettlementRoleV3.TradeHub || influenceHint == "TradeHub")
+        {
+            merchant += 0.76f;
+        }
+
+        if (nearbySettlement?.Role == SettlementRoleV3.Frontier || biome is BiomeKindV3.Dryland or BiomeKindV3.Wasteland)
+        {
+            frontier += 0.44f;
+            militia += 0.24f;
+        }
+
+        if (biome == BiomeKindV3.Wasteland || influenceHint == "Isolated")
+        {
+            unknown += 0.42f;
+            frontier += 0.22f;
+        }
+
+        FactionOutpostOwnerV3 bestOwner = FactionOutpostOwnerV3.Kingdom;
+        float bestScore = kingdom;
+        ConsiderFactionOwner(FactionOutpostOwnerV3.MerchantGuild, merchant, ref bestOwner, ref bestScore);
+        ConsiderFactionOwner(FactionOutpostOwnerV3.NeutralFrontier, frontier, ref bestOwner, ref bestScore);
+        ConsiderFactionOwner(FactionOutpostOwnerV3.LocalMilitia, militia, ref bestOwner, ref bestScore);
+        ConsiderFactionOwner(FactionOutpostOwnerV3.Unknown, unknown, ref bestOwner, ref bestScore);
+        return bestOwner;
+    }
+
+    private static void ConsiderBanditKind(BanditCampKindV3 kind, float score, ref BanditCampKindV3 bestKind, ref float bestScore)
+    {
+        if (score > bestScore)
+        {
+            bestKind = kind;
+            bestScore = score;
+        }
+    }
+
+    private static void ConsiderFactionKind(FactionOutpostKindV3 kind, float score, ref FactionOutpostKindV3 bestKind, ref float bestScore)
+    {
+        if (score > bestScore)
+        {
+            bestKind = kind;
+            bestScore = score;
+        }
+    }
+
+    private static void ConsiderFactionOwner(FactionOutpostOwnerV3 owner, float score, ref FactionOutpostOwnerV3 bestOwner, ref float bestScore)
+    {
+        if (score > bestScore)
+        {
+            bestOwner = owner;
+            bestScore = score;
         }
     }
 
@@ -3900,6 +4903,80 @@ public sealed class FlatlandWorldPlanV3
         }
     }
 
+    private void AddBanditCampRoadTargets(ref int nextId, ref DeterministicRandom random)
+    {
+        if (!WorldGenerationLayerSettingsV2.EnableBanditCamps)
+        {
+            return;
+        }
+
+        foreach (BanditCampSiteV3 camp in _banditCamps)
+        {
+            if (!camp.IsRoadLinked)
+            {
+                continue;
+            }
+
+            Vector2 direction = Vector2.Right.Rotated(random.NextUnit() * Mathf.Tau);
+            if (TryFindNearestNonBranchRoadPoint(camp.Center, out Vector2 roadPoint))
+            {
+                Vector2 toRoad = roadPoint - camp.Center;
+                if (toRoad.LengthSquared() > 0.001f)
+                {
+                    direction = toRoad.Normalized();
+                }
+            }
+
+            Vector2 position = ClampPointToWorld(camp.Center + direction * camp.ApproxRadius * random.Range(0.78f, 1.08f), 48.0f);
+            RoadTargetAnchorV3 anchor = CreateRoadTarget(nextId, RoadTargetKindV3.BanditCamp, position, Mathf.Max(8.0f, camp.ApproxRadius * 0.50f), camp.Id, true);
+            if (!TryAddRoadTarget(anchor))
+            {
+                RejectedRoadTargetCount++;
+                continue;
+            }
+
+            nextId++;
+            RoadTargetBanditCampCount++;
+        }
+    }
+
+    private void AddFactionOutpostRoadTargets(ref int nextId, ref DeterministicRandom random)
+    {
+        if (!WorldGenerationLayerSettingsV2.EnableFactionOutposts)
+        {
+            return;
+        }
+
+        foreach (FactionOutpostSiteV3 outpost in _factionOutposts)
+        {
+            if (!outpost.IsRoadLinked)
+            {
+                continue;
+            }
+
+            Vector2 direction = Vector2.Right.Rotated(random.NextUnit() * Mathf.Tau);
+            if (TryFindNearestNonBranchRoadPoint(outpost.Center, out Vector2 roadPoint))
+            {
+                Vector2 toRoad = roadPoint - outpost.Center;
+                if (toRoad.LengthSquared() > 0.001f)
+                {
+                    direction = toRoad.Normalized();
+                }
+            }
+
+            Vector2 position = ClampPointToWorld(outpost.Center + direction * outpost.ApproxRadius * random.Range(0.80f, 1.10f), 48.0f);
+            RoadTargetAnchorV3 anchor = CreateRoadTarget(nextId, RoadTargetKindV3.FactionOutpost, position, Mathf.Max(8.0f, outpost.ApproxRadius * 0.46f), outpost.Id, true);
+            if (!TryAddRoadTarget(anchor))
+            {
+                RejectedRoadTargetCount++;
+                continue;
+            }
+
+            nextId++;
+            RoadTargetFactionOutpostCount++;
+        }
+    }
+
     private void AddForestEdgeRoadTargets(ref int nextId, ref DeterministicRandom random)
     {
         int targetLimit = GetTargetBranchRoadCount(ref random);
@@ -4096,6 +5173,18 @@ public sealed class FlatlandWorldPlanV3
             targetCount = Mathf.Max(targetCount, Mathf.Min(dungeonTargetCount, MapSizePreset == WorldMapSizePresetV2.Small ? 1 : 3));
         }
 
+        int banditTargetCount = CountRoadTargets(RoadTargetKindV3.BanditCamp);
+        if (banditTargetCount > 0)
+        {
+            targetCount = Mathf.Max(targetCount, Mathf.Min(banditTargetCount, MapSizePreset == WorldMapSizePresetV2.Small ? 1 : 3));
+        }
+
+        int factionTargetCount = CountRoadTargets(RoadTargetKindV3.FactionOutpost);
+        if (factionTargetCount > 0)
+        {
+            targetCount = Mathf.Max(targetCount, Mathf.Min(factionTargetCount, MapSizePreset == WorldMapSizePresetV2.Small ? 1 : 4));
+        }
+
         targetCount = Mathf.Min(targetCount, _roadTargetAnchors.Count);
         if (targetCount <= 0)
         {
@@ -4168,7 +5257,7 @@ public sealed class FlatlandWorldPlanV3
             for (int attempt = 0; attempt < 12; attempt++)
             {
                 RoadTargetAnchorV3 target = _roadTargetAnchors[random.RangeInclusive(0, _roadTargetAnchors.Count - 1)];
-                if ((target.Kind == RoadTargetKindV3.Ruin || target.Kind == RoadTargetKindV3.DungeonEntrance) && !connectedTargetIds.Contains(target.Id))
+                if (IsImplementedRoadTargetKind(target.Kind) && !connectedTargetIds.Contains(target.Id))
                 {
                     return target;
                 }
@@ -4201,6 +5290,14 @@ public sealed class FlatlandWorldPlanV3
         return count;
     }
 
+    private static bool IsImplementedRoadTargetKind(RoadTargetKindV3 kind)
+    {
+        return kind is RoadTargetKindV3.Ruin
+            or RoadTargetKindV3.DungeonEntrance
+            or RoadTargetKindV3.BanditCamp
+            or RoadTargetKindV3.FactionOutpost;
+    }
+
     private void MarkRoadTargetLinked(RoadTargetAnchorV3 target, int roadId)
     {
         if (target.Kind == RoadTargetKindV3.Ruin)
@@ -4221,6 +5318,28 @@ public sealed class FlatlandWorldPlanV3
                 if (dungeon.Id == target.LinkedFeatureId)
                 {
                     dungeon.LinkedRoadId = roadId;
+                    return;
+                }
+            }
+        }
+        else if (target.Kind == RoadTargetKindV3.BanditCamp)
+        {
+            foreach (BanditCampSiteV3 camp in _banditCamps)
+            {
+                if (camp.Id == target.LinkedFeatureId)
+                {
+                    camp.LinkedRoadId = roadId;
+                    return;
+                }
+            }
+        }
+        else if (target.Kind == RoadTargetKindV3.FactionOutpost)
+        {
+            foreach (FactionOutpostSiteV3 outpost in _factionOutposts)
+            {
+                if (outpost.Id == target.LinkedFeatureId)
+                {
+                    outpost.LinkedRoadId = roadId;
                     return;
                 }
             }
@@ -4294,7 +5413,7 @@ public sealed class FlatlandWorldPlanV3
         }
 
         List<Vector2> points = BuildBranchRoadPoints(start, end, roadId, ref random);
-        if (points.Count < 2 || BranchPathHitsProtectedVillage(points) || BranchPathCutsQuarryCore(points, target))
+        if (points.Count < 2 || BranchPathHitsProtectedVillage(points) || BranchPathCutsTargetCore(points, target))
         {
             return false;
         }
@@ -4537,32 +5656,47 @@ public sealed class FlatlandWorldPlanV3
         return false;
     }
 
-    private bool BranchPathCutsQuarryCore(IReadOnlyList<Vector2> points, RoadTargetAnchorV3 target)
+    private bool BranchPathCutsTargetCore(IReadOnlyList<Vector2> points, RoadTargetAnchorV3 target)
     {
-        if (target.Kind != RoadTargetKindV3.Quarry)
+        if (target.Kind == RoadTargetKindV3.Quarry)
         {
-            return false;
-        }
-
-        QuarryRegionV3? quarry = null;
-        foreach (QuarryRegionV3 candidate in _quarryRegions)
-        {
-            if (candidate.Id == target.LinkedFeatureId)
+            foreach (QuarryRegionV3 quarry in _quarryRegions)
             {
-                quarry = candidate;
-                break;
+                if (quarry.Id == target.LinkedFeatureId)
+                {
+                    return BranchPathCutsCore(points, quarry.Center, quarry.ApproxRadius * 0.52f);
+                }
+            }
+        }
+        else if (target.Kind == RoadTargetKindV3.BanditCamp)
+        {
+            foreach (BanditCampSiteV3 camp in _banditCamps)
+            {
+                if (camp.Id == target.LinkedFeatureId)
+                {
+                    return BranchPathCutsCore(points, camp.Center, camp.ApproxRadius * 0.56f);
+                }
+            }
+        }
+        else if (target.Kind == RoadTargetKindV3.FactionOutpost)
+        {
+            foreach (FactionOutpostSiteV3 outpost in _factionOutposts)
+            {
+                if (outpost.Id == target.LinkedFeatureId)
+                {
+                    return BranchPathCutsCore(points, outpost.Center, outpost.ApproxRadius * 0.54f);
+                }
             }
         }
 
-        if (quarry == null)
-        {
-            return false;
-        }
+        return false;
+    }
 
-        float coreRadius = quarry.ApproxRadius * 0.52f;
+    private static bool BranchPathCutsCore(IReadOnlyList<Vector2> points, Vector2 center, float coreRadius)
+    {
         for (int i = 0; i < points.Count - 2; i++)
         {
-            if (points[i].DistanceTo(quarry.Center) < coreRadius)
+            if (points[i].DistanceTo(center) < coreRadius)
             {
                 return true;
             }
@@ -5140,7 +6274,7 @@ public sealed class FlatlandWorldPlanV3
 
     public string GetDebugSummary()
     {
-        return $"V3 settlements: count={VillageCount} hamlet={HamletCount} village={VillageTierCount} large={LargeVillageCount} town={TownCount} cityCandidate={CityCandidateCount} startId={StartingVillageId} startTier={StartingSettlementTier} startRole={StartingSettlementRole} startCenter={StartingVillageCenter} spawn={PlayerSpawnCell} nearestCenter={NearestToWorldCenterDistance:0.0} roleDist={SettlementRoleDistribution} biomes={BiomeRegionCount} majorBiomes={MajorBiomeRegionCount} minorBiomes={MinorBiomeRegionCount} avgMajorBiomeRadius={AverageMajorBiomeRadius:0} avgMinorBiomeRadius={AverageMinorBiomeRadius:0} biomeKinds forest/rocky/dry/waste={BiomeForestLandCount}/{BiomeRockyHillsCount}/{BiomeDrylandCount}/{BiomeWastelandCount} biomeLayer={BiomeLayerEnabled} roads={RoadCount} primary={PrimaryRoadCount} secondary={SecondaryRoadCount} extra={ExtraRoadCount} branch={BranchRoadCount} nodes={RoadNodeCount} junctions={RoadJunctionCount} maxDegree={MaxRoadJunctionDegree} trunks={SharedTrunkCount} merged={MergedRoadCandidateCount} rejectedJunctions={RejectedRoadJunctionCount} rejectedHighDegree={RejectedHighDegreeJunctionCount} rejectedCrossings={RejectedRoadCrossingCount} rejectedTooLong={RejectedRoadTooLongCount} targets={RoadTargetAnchorCount} quarryTargets={RoadTargetQuarryCount} ruinTargets={RoadTargetRuinCount} dungeonTargets={RoadTargetDungeonEntranceCount} forestTargets={RoadTargetForestEdgeCount} edgeTargets={RoadTargetWorldEdgeExitCount} futureTargets={FutureRoadTargetCount} rejectedTargets={RejectedRoadTargetCount} rejectedBranches={RejectedBranchRoadCount} roadLayer={RoadLayerEnabled} forestRegions={ForestRegionCount} majorForests={MajorForestRegionCount} minorForests={MinorForestPatchCount} forestLayer={ForestLayerEnabled} rejectedForests={RejectedForestPlacementCount} forestBiomeDist={ForestBiomeDistribution} quarryRegions={QuarryRegionCount} majorQuarries={MajorQuarryCount} minorQuarries={MinorQuarryCount} quarryLayer={QuarryLayerEnabled} rejectedQuarries={RejectedQuarryPlacementCount} quarryBiomeDist={QuarryBiomeDistribution} ruins={RuinSiteCount} roadLinkedRuins={RoadLinkedRuinCount} ruinLayer={RuinLayerEnabled} rejectedRuins={RejectedRuinPlacementCount} ruinBiomeDist={RuinBiomeDistribution} dungeons={DungeonEntranceCount} roadLinkedDungeons={RoadLinkedDungeonEntranceCount} dungeonLayer={DungeonLayerEnabled} rejectedDungeons={RejectedDungeonEntrancePlacementCount} dungeonKinds={DungeonEntranceKindDistribution} dungeonBiomeDist={DungeonEntranceBiomeDistribution}";
+        return $"V3 settlements: count={VillageCount} hamlet={HamletCount} village={VillageTierCount} large={LargeVillageCount} town={TownCount} cityCandidate={CityCandidateCount} startId={StartingVillageId} startTier={StartingSettlementTier} startRole={StartingSettlementRole} startCenter={StartingVillageCenter} spawn={PlayerSpawnCell} nearestCenter={NearestToWorldCenterDistance:0.0} roleDist={SettlementRoleDistribution} biomes={BiomeRegionCount} majorBiomes={MajorBiomeRegionCount} minorBiomes={MinorBiomeRegionCount} avgMajorBiomeRadius={AverageMajorBiomeRadius:0} avgMinorBiomeRadius={AverageMinorBiomeRadius:0} biomeKinds forest/rocky/dry/waste={BiomeForestLandCount}/{BiomeRockyHillsCount}/{BiomeDrylandCount}/{BiomeWastelandCount} biomeLayer={BiomeLayerEnabled} roads={RoadCount} primary={PrimaryRoadCount} secondary={SecondaryRoadCount} extra={ExtraRoadCount} branch={BranchRoadCount} nodes={RoadNodeCount} junctions={RoadJunctionCount} maxDegree={MaxRoadJunctionDegree} trunks={SharedTrunkCount} merged={MergedRoadCandidateCount} rejectedJunctions={RejectedRoadJunctionCount} rejectedHighDegree={RejectedHighDegreeJunctionCount} rejectedCrossings={RejectedRoadCrossingCount} rejectedTooLong={RejectedRoadTooLongCount} targets={RoadTargetAnchorCount} quarryTargets={RoadTargetQuarryCount} ruinTargets={RoadTargetRuinCount} dungeonTargets={RoadTargetDungeonEntranceCount} banditTargets={RoadTargetBanditCampCount} factionTargets={RoadTargetFactionOutpostCount} forestTargets={RoadTargetForestEdgeCount} edgeTargets={RoadTargetWorldEdgeExitCount} futureTargets={FutureRoadTargetCount} rejectedTargets={RejectedRoadTargetCount} rejectedBranches={RejectedBranchRoadCount} roadLayer={RoadLayerEnabled} forestRegions={ForestRegionCount} majorForests={MajorForestRegionCount} minorForests={MinorForestPatchCount} forestLayer={ForestLayerEnabled} rejectedForests={RejectedForestPlacementCount} forestBiomeDist={ForestBiomeDistribution} quarryRegions={QuarryRegionCount} majorQuarries={MajorQuarryCount} minorQuarries={MinorQuarryCount} quarryLayer={QuarryLayerEnabled} rejectedQuarries={RejectedQuarryPlacementCount} quarryBiomeDist={QuarryBiomeDistribution} ruins={RuinSiteCount} roadLinkedRuins={RoadLinkedRuinCount} ruinLayer={RuinLayerEnabled} rejectedRuins={RejectedRuinPlacementCount} ruinBiomeDist={RuinBiomeDistribution} dungeons={DungeonEntranceCount} roadLinkedDungeons={RoadLinkedDungeonEntranceCount} dungeonLayer={DungeonLayerEnabled} rejectedDungeons={RejectedDungeonEntrancePlacementCount} dungeonKinds={DungeonEntranceKindDistribution} dungeonBiomeDist={DungeonEntranceBiomeDistribution} bandits={BanditCampCount} roadLinkedBandits={RoadLinkedBanditCampCount} banditLayer={BanditLayerEnabled} rejectedBandits={RejectedBanditCampPlacementCount} banditKinds={BanditCampKindDistribution} banditBiomeDist={BanditCampBiomeDistribution} factionOutposts={FactionOutpostCount} roadLinkedFaction={RoadLinkedFactionOutpostCount} factionLayer={FactionOutpostLayerEnabled} rejectedFaction={RejectedFactionOutpostPlacementCount} factionKinds={FactionOutpostKindDistribution} factionOwners={FactionOutpostOwnerDistribution} factionBiomeDist={FactionOutpostBiomeDistribution}";
     }
 
     private void ClearFeatureBiomeDistributions()
@@ -5149,6 +6283,8 @@ public sealed class FlatlandWorldPlanV3
         ClearDistribution(_quarryBiomeDistribution);
         ClearDistribution(_ruinBiomeDistribution);
         ClearDistribution(_dungeonEntranceBiomeDistribution);
+        ClearDistribution(_banditCampBiomeDistribution);
+        ClearDistribution(_factionOutpostBiomeDistribution);
     }
 
     private static void ClearDistribution(int[] distribution)
@@ -5179,6 +6315,21 @@ public sealed class FlatlandWorldPlanV3
     private static string FormatDungeonEntranceKindDistribution(int[] distribution)
     {
         return $"cave/gate/stair/sink/mine={distribution[(int)DungeonEntranceKindV3.CaveMouth]}/{distribution[(int)DungeonEntranceKindV3.AncientGate]}/{distribution[(int)DungeonEntranceKindV3.RuinedStair]}/{distribution[(int)DungeonEntranceKindV3.Sinkhole]}/{distribution[(int)DungeonEntranceKindV3.MineShaft]}";
+    }
+
+    private static string FormatBanditCampKindDistribution(int[] distribution)
+    {
+        return $"hidden/road/ruin/forest/waste={distribution[(int)BanditCampKindV3.HiddenCamp]}/{distribution[(int)BanditCampKindV3.RoadsideAmbush]}/{distribution[(int)BanditCampKindV3.RuinCamp]}/{distribution[(int)BanditCampKindV3.ForestHideout]}/{distribution[(int)BanditCampKindV3.WastelandRaidCamp]}";
+    }
+
+    private static string FormatFactionOutpostKindDistribution(int[] distribution)
+    {
+        return $"watch/guard/trade/border/survey={distribution[(int)FactionOutpostKindV3.WatchPost]}/{distribution[(int)FactionOutpostKindV3.GuardCamp]}/{distribution[(int)FactionOutpostKindV3.TradePost]}/{distribution[(int)FactionOutpostKindV3.BorderFort]}/{distribution[(int)FactionOutpostKindV3.SurveyPost]}";
+    }
+
+    private static string FormatFactionOutpostOwnerDistribution(int[] distribution)
+    {
+        return $"kingdom/merchant/frontier/militia/unknown={distribution[(int)FactionOutpostOwnerV3.Kingdom]}/{distribution[(int)FactionOutpostOwnerV3.MerchantGuild]}/{distribution[(int)FactionOutpostOwnerV3.NeutralFrontier]}/{distribution[(int)FactionOutpostOwnerV3.LocalMilitia]}/{distribution[(int)FactionOutpostOwnerV3.Unknown]}";
     }
 
     private static string FormatRoleDistribution(int[] distribution)

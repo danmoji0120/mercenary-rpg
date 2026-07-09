@@ -71,6 +71,8 @@ public partial class WorldManagerV2 : Node
     public int V3RoadTargetQuarryCount => _generator.V3RoadTargetQuarryCount;
     public int V3RoadTargetRuinCount => _generator.V3RoadTargetRuinCount;
     public int V3RoadTargetDungeonEntranceCount => _generator.V3RoadTargetDungeonEntranceCount;
+    public int V3RoadTargetBanditCampCount => _generator.V3RoadTargetBanditCampCount;
+    public int V3RoadTargetFactionOutpostCount => _generator.V3RoadTargetFactionOutpostCount;
     public int V3RoadTargetForestEdgeCount => _generator.V3RoadTargetForestEdgeCount;
     public int V3RoadTargetWorldEdgeExitCount => _generator.V3RoadTargetWorldEdgeExitCount;
     public int V3FutureRoadTargetCount => _generator.V3FutureRoadTargetCount;
@@ -112,6 +114,19 @@ public partial class WorldManagerV2 : Node
     public string V3DungeonEntranceKindDistribution => _generator.V3DungeonEntranceKindDistribution;
     public string V3DungeonEntranceBiomeDistribution => _generator.V3DungeonEntranceBiomeDistribution;
     public bool V3DungeonLayerEnabled => _generator.V3DungeonLayerEnabled;
+    public int V3BanditCampCount => _generator.V3BanditCampCount;
+    public int V3RoadLinkedBanditCampCount => _generator.V3RoadLinkedBanditCampCount;
+    public int V3RejectedBanditCampPlacementCount => _generator.V3RejectedBanditCampPlacementCount;
+    public string V3BanditCampKindDistribution => _generator.V3BanditCampKindDistribution;
+    public string V3BanditCampBiomeDistribution => _generator.V3BanditCampBiomeDistribution;
+    public bool V3BanditLayerEnabled => _generator.V3BanditLayerEnabled;
+    public int V3FactionOutpostCount => _generator.V3FactionOutpostCount;
+    public int V3RoadLinkedFactionOutpostCount => _generator.V3RoadLinkedFactionOutpostCount;
+    public int V3RejectedFactionOutpostPlacementCount => _generator.V3RejectedFactionOutpostPlacementCount;
+    public string V3FactionOutpostKindDistribution => _generator.V3FactionOutpostKindDistribution;
+    public string V3FactionOutpostOwnerDistribution => _generator.V3FactionOutpostOwnerDistribution;
+    public string V3FactionOutpostBiomeDistribution => _generator.V3FactionOutpostBiomeDistribution;
+    public bool V3FactionOutpostLayerEnabled => _generator.V3FactionOutpostLayerEnabled;
     public int V3BiomeRegionCount => _generator.V3BiomeRegionCount;
     public int V3MajorBiomeRegionCount => _generator.V3MajorBiomeRegionCount;
     public int V3MinorBiomeRegionCount => _generator.V3MinorBiomeRegionCount;
@@ -253,6 +268,16 @@ public partial class WorldManagerV2 : Node
     public IReadOnlyList<DungeonEntranceSiteV3> GetV3MapDungeonEntrances()
     {
         return _generator.GetV3DungeonEntrances();
+    }
+
+    public IReadOnlyList<BanditCampSiteV3> GetV3MapBanditCamps()
+    {
+        return _generator.GetV3BanditCamps();
+    }
+
+    public IReadOnlyList<FactionOutpostSiteV3> GetV3MapFactionOutposts()
+    {
+        return _generator.GetV3FactionOutposts();
     }
 
     public IReadOnlyList<BiomeRegionV3> GetV3MapBiomeRegions()
@@ -397,11 +422,13 @@ public partial class WorldManagerV2 : Node
         GD.Print($"WorldV2 world: map={MapSizePreset} size={WorldMapSize.WidthCells}x{WorldMapSize.HeightCells} chunks={WorldMapSize.ChunkWidth}x{WorldMapSize.ChunkHeight} plan={PlanVersion} generated={GeneratedPlanType} seed={WorldSeed} bounds={WorldBounds.Position}..{WorldBounds.End - Vector2I.One}");
         GD.Print(V3VillageDebugSummary);
         GD.Print($"V3 biomes: enabled={V3BiomeLayerEnabled} mode={V3BiomeResolveMode} regions={V3BiomeRegionCount} major={V3MajorBiomeRegionCount} minor={V3MinorBiomeRegionCount} avgMajorRadius={V3AverageMajorBiomeRadius:0} avgMinorRadius={V3AverageMinorBiomeRadius:0} forestLand={V3BiomeForestLandCount} rocky={V3BiomeRockyHillsCount} dry={V3BiomeDrylandCount} wasteland={V3BiomeWastelandCount}");
-        GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} ruinTargets={V3RoadTargetRuinCount} dungeonTargets={V3RoadTargetDungeonEntranceCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
+        GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} ruinTargets={V3RoadTargetRuinCount} dungeonTargets={V3RoadTargetDungeonEntranceCount} banditTargets={V3RoadTargetBanditCampCount} factionTargets={V3RoadTargetFactionOutpostCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
         GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount} rejected={V3RejectedForestPlacementCount} biomeDist={V3ForestBiomeDistribution}");
         GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount} biomeDist={V3QuarryBiomeDistribution}");
         GD.Print($"V3 ruins: enabled={V3RuinLayerEnabled} sites={V3RuinSiteCount} roadLinked={V3RoadLinkedRuinCount} rejected={V3RejectedRuinPlacementCount} biomeDist={V3RuinBiomeDistribution}");
         GD.Print($"V3 dungeons: enabled={V3DungeonLayerEnabled} entrances={V3DungeonEntranceCount} roadLinked={V3RoadLinkedDungeonEntranceCount} rejected={V3RejectedDungeonEntrancePlacementCount} kinds={V3DungeonEntranceKindDistribution} biomeDist={V3DungeonEntranceBiomeDistribution}");
+        GD.Print($"V3 bandits: enabled={V3BanditLayerEnabled} camps={V3BanditCampCount} roadLinked={V3RoadLinkedBanditCampCount} rejected={V3RejectedBanditCampPlacementCount} kinds={V3BanditCampKindDistribution} biomeDist={V3BanditCampBiomeDistribution}");
+        GD.Print($"V3 faction outposts: enabled={V3FactionOutpostLayerEnabled} outposts={V3FactionOutpostCount} roadLinked={V3RoadLinkedFactionOutpostCount} rejected={V3RejectedFactionOutpostPlacementCount} kinds={V3FactionOutpostKindDistribution} owners={V3FactionOutpostOwnerDistribution} biomeDist={V3FactionOutpostBiomeDistribution}");
         _streamManager?.PrintLoadedChunks();
         GD.Print(WorldGenerationLayerSettingsV2.GetSummary());
     }
@@ -422,11 +449,13 @@ public partial class WorldManagerV2 : Node
         GD.Print($"WorldV2 world: map={MapSizePreset} size={WorldMapSize.WidthCells}x{WorldMapSize.HeightCells} plan={PlanVersion} generated={GeneratedPlanType} seed={WorldSeed}");
         GD.Print(V3VillageDebugSummary);
         GD.Print($"V3 biomes: enabled={V3BiomeLayerEnabled} mode={V3BiomeResolveMode} regions={V3BiomeRegionCount} major={V3MajorBiomeRegionCount} minor={V3MinorBiomeRegionCount} avgMajorRadius={V3AverageMajorBiomeRadius:0} avgMinorRadius={V3AverageMinorBiomeRadius:0} forestLand={V3BiomeForestLandCount} rocky={V3BiomeRockyHillsCount} dry={V3BiomeDrylandCount} wasteland={V3BiomeWastelandCount}");
-        GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} ruinTargets={V3RoadTargetRuinCount} dungeonTargets={V3RoadTargetDungeonEntranceCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
+        GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} ruinTargets={V3RoadTargetRuinCount} dungeonTargets={V3RoadTargetDungeonEntranceCount} banditTargets={V3RoadTargetBanditCampCount} factionTargets={V3RoadTargetFactionOutpostCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
         GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount} rejected={V3RejectedForestPlacementCount} biomeDist={V3ForestBiomeDistribution}");
         GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount} biomeDist={V3QuarryBiomeDistribution}");
         GD.Print($"V3 ruins: enabled={V3RuinLayerEnabled} sites={V3RuinSiteCount} roadLinked={V3RoadLinkedRuinCount} rejected={V3RejectedRuinPlacementCount} biomeDist={V3RuinBiomeDistribution}");
         GD.Print($"V3 dungeons: enabled={V3DungeonLayerEnabled} entrances={V3DungeonEntranceCount} roadLinked={V3RoadLinkedDungeonEntranceCount} rejected={V3RejectedDungeonEntrancePlacementCount} kinds={V3DungeonEntranceKindDistribution} biomeDist={V3DungeonEntranceBiomeDistribution}");
+        GD.Print($"V3 bandits: enabled={V3BanditLayerEnabled} camps={V3BanditCampCount} roadLinked={V3RoadLinkedBanditCampCount} rejected={V3RejectedBanditCampPlacementCount} kinds={V3BanditCampKindDistribution} biomeDist={V3BanditCampBiomeDistribution}");
+        GD.Print($"V3 faction outposts: enabled={V3FactionOutpostLayerEnabled} outposts={V3FactionOutpostCount} roadLinked={V3RoadLinkedFactionOutpostCount} rejected={V3RejectedFactionOutpostPlacementCount} kinds={V3FactionOutpostKindDistribution} owners={V3FactionOutpostOwnerDistribution} biomeDist={V3FactionOutpostBiomeDistribution}");
         WorldV2PerformanceProfiler.Instance.PrintSummary();
     }
 
@@ -552,8 +581,8 @@ public partial class WorldManagerV2 : Node
     {
         return $"{WorldId}:{WorldSeed}:{MapSizePreset}:{PlanVersion}:{WorldMapSize.WidthCells}x{WorldMapSize.HeightCells}:"
             + $"{V3VillageCount}:{V3HamletCount}:{V3VillageTierCount}:{V3LargeVillageCount}:{V3TownCount}:{V3CityCandidateCount}:{V3SettlementRoleDistribution}:"
-            + $"{V3RoadCount}:{V3BiomeRegionCount}:{V3AverageMajorBiomeRadius:0}:{V3AverageMinorBiomeRadius:0}:{V3ForestRegionCount}:{V3QuarryRegionCount}:{V3RuinSiteCount}:{V3DungeonEntranceCount}:"
-            + $"{V3ForestBiomeDistribution}:{V3QuarryBiomeDistribution}:{V3RuinBiomeDistribution}:{V3DungeonEntranceKindDistribution}:{V3DungeonEntranceBiomeDistribution}:"
+            + $"{V3RoadCount}:{V3BiomeRegionCount}:{V3AverageMajorBiomeRadius:0}:{V3AverageMinorBiomeRadius:0}:{V3ForestRegionCount}:{V3QuarryRegionCount}:{V3RuinSiteCount}:{V3DungeonEntranceCount}:{V3BanditCampCount}:{V3FactionOutpostCount}:"
+            + $"{V3ForestBiomeDistribution}:{V3QuarryBiomeDistribution}:{V3RuinBiomeDistribution}:{V3DungeonEntranceKindDistribution}:{V3DungeonEntranceBiomeDistribution}:{V3BanditCampKindDistribution}:{V3BanditCampBiomeDistribution}:{V3FactionOutpostKindDistribution}:{V3FactionOutpostOwnerDistribution}:{V3FactionOutpostBiomeDistribution}:"
             + WorldGenerationLayerSettingsV2.GetSummary();
     }
 
@@ -609,6 +638,13 @@ public partial class WorldManagerV2 : Node
             LandmarkKind = cell.LandmarkKind,
             IsQuarry = cell.IsQuarry,
             HasOreSpot = cell.HasOreSpot,
+            IsDungeonEntrance = cell.IsDungeonEntrance,
+            DungeonEntranceKind = cell.DungeonEntranceKind,
+            IsBanditCamp = cell.IsBanditCamp,
+            BanditCampKind = cell.BanditCampKind,
+            IsFactionOutpost = cell.IsFactionOutpost,
+            FactionOutpostKind = cell.FactionOutpostKind,
+            FactionOutpostOwner = cell.FactionOutpostOwner,
             ForestStrength = cell.ForestStrength,
             IsForest = cell.ForestStrength > 0.34f,
             IsDenseForest = cell.ForestStrength > 0.62f,

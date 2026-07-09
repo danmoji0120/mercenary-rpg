@@ -19,6 +19,8 @@ public static class WorldMapTextureBuilderV2
     private static readonly Color QuarryColor = new(0.42f, 0.43f, 0.39f, 1.0f);
     private static readonly Color RuinColor = new(0.45f, 0.38f, 0.31f, 1.0f);
     private static readonly Color DungeonEntranceColor = new(0.20f, 0.16f, 0.24f, 1.0f);
+    private static readonly Color BanditCampColor = new(0.42f, 0.18f, 0.14f, 1.0f);
+    private static readonly Color FactionOutpostColor = new(0.34f, 0.43f, 0.54f, 1.0f);
 
     public static Texture2D Build(WorldManagerV2 manager, WorldGenerationSettingsV2 settings, out Vector2I textureSize, out double buildMs)
     {
@@ -88,6 +90,22 @@ public static class WorldMapTextureBuilderV2
             foreach (DungeonEntranceSiteV3 dungeon in manager.GetV3MapDungeonEntrances())
             {
                 DrawDungeonEntrance(image, manager.WorldMapSize, dungeon);
+            }
+        }
+
+        if (WorldGenerationLayerSettingsV2.EnableBanditCamps)
+        {
+            foreach (BanditCampSiteV3 camp in manager.GetV3MapBanditCamps())
+            {
+                DrawBanditCamp(image, manager.WorldMapSize, camp);
+            }
+        }
+
+        if (WorldGenerationLayerSettingsV2.EnableFactionOutposts)
+        {
+            foreach (FactionOutpostSiteV3 outpost in manager.GetV3MapFactionOutposts())
+            {
+                DrawFactionOutpost(image, manager.WorldMapSize, outpost);
             }
         }
 
@@ -203,6 +221,24 @@ public static class WorldMapTextureBuilderV2
         DrawCircleOutline(image, center, radius + 1, dungeon.IsRoadLinked
             ? new Color(0.68f, 0.58f, 0.38f, 0.85f)
             : new Color(0.08f, 0.07f, 0.10f, 0.70f));
+    }
+
+    private static void DrawBanditCamp(Image image, WorldMapSizeDefinitionV2 worldSize, BanditCampSiteV3 camp)
+    {
+        Vector2I center = WorldToPixel(image, worldSize, camp.Center);
+        float scale = image.GetWidth() / (float)worldSize.WidthCells;
+        int radius = Mathf.Clamp(Mathf.RoundToInt(camp.ApproxRadius * scale), camp.IsRoadLinked ? 3 : 2, camp.IsRoadLinked ? 6 : 5);
+        DrawFilledCircle(image, center, radius, BanditCampColor);
+        DrawCircleOutline(image, center, radius + 1, new Color(0.12f, 0.05f, 0.04f, camp.IsRoadLinked ? 0.90f : 0.72f));
+    }
+
+    private static void DrawFactionOutpost(Image image, WorldMapSizeDefinitionV2 worldSize, FactionOutpostSiteV3 outpost)
+    {
+        Vector2I center = WorldToPixel(image, worldSize, outpost.Center);
+        float scale = image.GetWidth() / (float)worldSize.WidthCells;
+        int radius = Mathf.Clamp(Mathf.RoundToInt(outpost.ApproxRadius * scale), outpost.IsRoadLinked ? 3 : 2, outpost.IsRoadLinked ? 6 : 5);
+        DrawFilledSquare(image, center, radius, FactionOutpostColor);
+        DrawSquareOutline(image, center, radius + 1, new Color(0.12f, 0.16f, 0.20f, outpost.IsRoadLinked ? 0.90f : 0.72f));
     }
 
     private static void DrawRoad(Image image, WorldMapSizeDefinitionV2 worldSize, RoadPathV2 road)
@@ -383,6 +419,31 @@ public static class WorldMapTextureBuilderV2
             {
                 int distanceSquared = x * x + y * y;
                 if (distanceSquared <= outerSquared && distanceSquared >= innerSquared)
+                {
+                    SetPixelSafe(image, center.X + x, center.Y + y, color);
+                }
+            }
+        }
+    }
+
+    private static void DrawFilledSquare(Image image, Vector2I center, int radius, Color color)
+    {
+        for (int y = -radius; y <= radius; y++)
+        {
+            for (int x = -radius; x <= radius; x++)
+            {
+                SetPixelSafe(image, center.X + x, center.Y + y, color);
+            }
+        }
+    }
+
+    private static void DrawSquareOutline(Image image, Vector2I center, int radius, Color color)
+    {
+        for (int y = -radius; y <= radius; y++)
+        {
+            for (int x = -radius; x <= radius; x++)
+            {
+                if (Mathf.Abs(x) == radius || Mathf.Abs(y) == radius)
                 {
                     SetPixelSafe(image, center.X + x, center.Y + y, color);
                 }

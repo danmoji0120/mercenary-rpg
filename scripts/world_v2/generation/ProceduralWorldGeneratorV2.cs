@@ -428,6 +428,24 @@ public sealed class ProceduralWorldGeneratorV2
         }
     }
 
+    public int V3RoadTargetBanditCampCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadTargetBanditCampCount : 0;
+        }
+    }
+
+    public int V3RoadTargetFactionOutpostCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadTargetFactionOutpostCount : 0;
+        }
+    }
+
     public int V3RoadTargetForestEdgeCount
     {
         get
@@ -762,6 +780,109 @@ public sealed class ProceduralWorldGeneratorV2
 
     public bool V3DungeonLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.DungeonLayerEnabled;
 
+    public int V3BanditCampCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.BanditCampCount : 0;
+        }
+    }
+
+    public int V3RoadLinkedBanditCampCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadLinkedBanditCampCount : 0;
+        }
+    }
+
+    public int V3RejectedBanditCampPlacementCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RejectedBanditCampPlacementCount : 0;
+        }
+    }
+
+    public string V3BanditCampKindDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.BanditCampKindDistribution : "hidden/road/ruin/forest/waste=0/0/0/0/0";
+        }
+    }
+
+    public string V3BanditCampBiomeDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.BanditCampBiomeDistribution : "P/F/R/D/W=0/0/0/0/0";
+        }
+    }
+
+    public bool V3BanditLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.BanditLayerEnabled;
+
+    public int V3FactionOutpostCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.FactionOutpostCount : 0;
+        }
+    }
+
+    public int V3RoadLinkedFactionOutpostCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadLinkedFactionOutpostCount : 0;
+        }
+    }
+
+    public int V3RejectedFactionOutpostPlacementCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RejectedFactionOutpostPlacementCount : 0;
+        }
+    }
+
+    public string V3FactionOutpostKindDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.FactionOutpostKindDistribution : "watch/guard/trade/border/survey=0/0/0/0/0";
+        }
+    }
+
+    public string V3FactionOutpostOwnerDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.FactionOutpostOwnerDistribution : "kingdom/merchant/frontier/militia/unknown=0/0/0/0/0";
+        }
+    }
+
+    public string V3FactionOutpostBiomeDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.FactionOutpostBiomeDistribution : "P/F/R/D/W=0/0/0/0/0";
+        }
+    }
+
+    public bool V3FactionOutpostLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.FactionOutpostLayerEnabled;
+
     public int V3BiomeRegionCount
     {
         get
@@ -897,6 +1018,22 @@ public sealed class ProceduralWorldGeneratorV2
             : System.Array.Empty<DungeonEntranceSiteV3>();
     }
 
+    public IReadOnlyList<BanditCampSiteV3> GetV3BanditCamps()
+    {
+        EnsureNoiseProfile(_generationRequest.Seed);
+        return _generationRequest.PlanVersion == WorldPlanVersionV2.V3
+            ? _flatlandPlanV3.BanditCamps
+            : System.Array.Empty<BanditCampSiteV3>();
+    }
+
+    public IReadOnlyList<FactionOutpostSiteV3> GetV3FactionOutposts()
+    {
+        EnsureNoiseProfile(_generationRequest.Seed);
+        return _generationRequest.PlanVersion == WorldPlanVersionV2.V3
+            ? _flatlandPlanV3.FactionOutposts
+            : System.Array.Empty<FactionOutpostSiteV3>();
+    }
+
     public IReadOnlyList<BiomeRegionV3> GetV3BiomeRegions()
     {
         EnsureNoiseProfile(_generationRequest.Seed);
@@ -947,6 +1084,11 @@ public sealed class ProceduralWorldGeneratorV2
             HasOreSpot = sample.HasOreSpot,
             IsDungeonEntrance = sample.IsDungeonEntrance,
             DungeonEntranceKind = sample.DungeonEntranceKind,
+            IsBanditCamp = sample.IsBanditCamp,
+            BanditCampKind = sample.BanditCampKind,
+            IsFactionOutpost = sample.IsFactionOutpost,
+            FactionOutpostKind = sample.FactionOutpostKind,
+            FactionOutpostOwner = sample.FactionOutpostOwner,
             ForestStrength = sample.ForestStrength,
             IsBuildRestricted = sample.IsBuildRestricted,
             IsWalkable = sample.IsWalkable,
