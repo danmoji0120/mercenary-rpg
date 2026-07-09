@@ -196,6 +196,22 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public float V3MajorQuarryWarpStrength { get; set; } = 24.0f;
     [Export] public float V3MinorQuarryWarpStrength { get; set; } = 10.0f;
     [Export] public float V3QuarryOreSpotChance { get; set; } = 0.018f;
+    [Export] public int V3SmallRuinMinCount { get; set; } = 3;
+    [Export] public int V3SmallRuinMaxCount { get; set; } = 6;
+    [Export] public int V3MediumRuinMinCount { get; set; } = 10;
+    [Export] public int V3MediumRuinMaxCount { get; set; } = 18;
+    [Export] public int V3LargeRuinMinCount { get; set; } = 28;
+    [Export] public int V3LargeRuinMaxCount { get; set; } = 48;
+    [Export] public float V3RuinMinRadius { get; set; } = 13.0f;
+    [Export] public float V3RuinMaxRadius { get; set; } = 34.0f;
+    [Export] public int V3RuinPlacementMaxAttemptsPerSite { get; set; } = 90;
+    [Export] public float V3RuinNoiseScale { get; set; } = 0.075f;
+    [Export] public float V3RuinWarpStrength { get; set; } = 7.5f;
+
+    [ExportGroup("World Map Overlay")]
+    [Export] public int WorldMapSmallTextureSize { get; set; } = 512;
+    [Export] public int WorldMapMediumTextureSize { get; set; } = 768;
+    [Export] public int WorldMapLargeTextureSize { get; set; } = 1024;
 
     public Vector2I StartCenter => new(StartCenterX, StartCenterY);
 

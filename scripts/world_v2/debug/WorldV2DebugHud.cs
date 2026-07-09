@@ -58,11 +58,12 @@ public partial class WorldV2DebugHud : Control
             : $"sector: {metadata.SectorCoord} / {metadata.Type}";
         string worldConfigLine = $"map: {manager.MapSizePreset} {manager.WorldMapSize.WidthCells}x{manager.WorldMapSize.HeightCells} cells chunks={manager.WorldMapSize.ChunkWidth}x{manager.WorldMapSize.ChunkHeight} plan={manager.PlanVersion} generated={manager.GeneratedPlanType}";
         string worldBoundsLine = $"bounds: cells={manager.WorldBounds.Position}..{manager.WorldBounds.End - Vector2I.One}";
+        string worldMapLine = $"world map: visible={manager.WorldMapOverlayVisible} texture={manager.WorldMapTextureSize.X}x{manager.WorldMapTextureSize.Y} build={manager.WorldMapBuildMs:0.0}ms cached={manager.WorldMapCached} reason={manager.WorldMapLastBuildReason}";
         string v3VillageLine = manager.PlanVersion == WorldPlanVersionV2.V3
             ? $"v3 villages: count={manager.V3VillageCount} startId={manager.V3StartingVillageId} center={manager.V3StartingVillageCenter} spawn={manager.V3PlayerSpawnCell} nearest={manager.V3NearestToWorldCenterDistance:0.0}"
             : "v3 villages: inactive";
         string v3RoadLine = manager.PlanVersion == WorldPlanVersionV2.V3
-            ? $"v3 roads: enabled={manager.V3RoadLayerEnabled} total={manager.V3RoadCount} primary={manager.V3PrimaryRoadCount} secondary={manager.V3SecondaryRoadCount} branch={manager.V3BranchRoadCount} nodes={manager.V3RoadNodeCount} junctions={manager.V3RoadJunctionCount} maxDeg={manager.V3MaxRoadJunctionDegree} trunks={manager.V3SharedTrunkCount} merged={manager.V3MergedRoadCandidateCount} rejectJ/deg/x/long={manager.V3RejectedRoadJunctionCount}/{manager.V3RejectedHighDegreeJunctionCount}/{manager.V3RejectedRoadCrossingCount}/{manager.V3RejectedRoadTooLongCount} targets={manager.V3RoadTargetAnchorCount} q/f/e/future={manager.V3RoadTargetQuarryCount}/{manager.V3RoadTargetForestEdgeCount}/{manager.V3RoadTargetWorldEdgeExitCount}/{manager.V3FutureRoadTargetCount} rejectT/B={manager.V3RejectedRoadTargetCount}/{manager.V3RejectedBranchRoadCount}"
+            ? $"v3 roads: enabled={manager.V3RoadLayerEnabled} total={manager.V3RoadCount} primary={manager.V3PrimaryRoadCount} secondary={manager.V3SecondaryRoadCount} branch={manager.V3BranchRoadCount} nodes={manager.V3RoadNodeCount} junctions={manager.V3RoadJunctionCount} maxDeg={manager.V3MaxRoadJunctionDegree} trunks={manager.V3SharedTrunkCount} merged={manager.V3MergedRoadCandidateCount} rejectJ/deg/x/long={manager.V3RejectedRoadJunctionCount}/{manager.V3RejectedHighDegreeJunctionCount}/{manager.V3RejectedRoadCrossingCount}/{manager.V3RejectedRoadTooLongCount} targets={manager.V3RoadTargetAnchorCount} q/r/f/e/future={manager.V3RoadTargetQuarryCount}/{manager.V3RoadTargetRuinCount}/{manager.V3RoadTargetForestEdgeCount}/{manager.V3RoadTargetWorldEdgeExitCount}/{manager.V3FutureRoadTargetCount} rejectT/B={manager.V3RejectedRoadTargetCount}/{manager.V3RejectedBranchRoadCount}"
             : "v3 roads: inactive";
         string v3ForestLine = manager.PlanVersion == WorldPlanVersionV2.V3
             ? $"v3 forests: enabled={manager.V3ForestLayerEnabled} regions={manager.V3ForestRegionCount} major={manager.V3MajorForestRegionCount} minor={manager.V3MinorForestPatchCount}"
@@ -70,6 +71,9 @@ public partial class WorldV2DebugHud : Control
         string v3QuarryLine = manager.PlanVersion == WorldPlanVersionV2.V3
             ? $"v3 quarries: enabled={manager.V3QuarryLayerEnabled} regions={manager.V3QuarryRegionCount} major={manager.V3MajorQuarryCount} minor={manager.V3MinorQuarryCount} rejected={manager.V3RejectedQuarryPlacementCount}"
             : "v3 quarries: inactive";
+        string v3RuinLine = manager.PlanVersion == WorldPlanVersionV2.V3
+            ? $"v3 ruins: enabled={manager.V3RuinLayerEnabled} sites={manager.V3RuinSiteCount} roadLinked={manager.V3RoadLinkedRuinCount} rejected={manager.V3RejectedRuinPlacementCount}"
+            : "v3 ruins: inactive";
         string dangerLine = metadata == null
             ? "danger/resources: -"
             : $"danger: {metadata.DangerLevel:0.00}  resources: {metadata.ResourceRichness:0.00}";
@@ -161,16 +165,19 @@ public partial class WorldV2DebugHud : Control
                 $"v3 forest regions: small={settings.V3SmallMajorForestMinCount}-{settings.V3SmallMajorForestMaxCount}/{settings.V3SmallMinorForestMinCount}-{settings.V3SmallMinorForestMaxCount} medium={settings.V3MediumMajorForestMinCount}-{settings.V3MediumMajorForestMaxCount}/{settings.V3MediumMinorForestMinCount}-{settings.V3MediumMinorForestMaxCount} large={settings.V3LargeMajorForestMinCount}-{settings.V3LargeMajorForestMaxCount}/{settings.V3LargeMinorForestMinCount}-{settings.V3LargeMinorForestMaxCount}\n" +
                 $"v3 quarries: small={settings.V3SmallMajorQuarryMinCount}-{settings.V3SmallMajorQuarryMaxCount}/{settings.V3SmallMinorQuarryMinCount}-{settings.V3SmallMinorQuarryMaxCount} medium={settings.V3MediumMajorQuarryMinCount}-{settings.V3MediumMajorQuarryMaxCount}/{settings.V3MediumMinorQuarryMinCount}-{settings.V3MediumMinorQuarryMaxCount} large={settings.V3LargeMajorQuarryMinCount}-{settings.V3LargeMajorQuarryMaxCount}/{settings.V3LargeMinorQuarryMinCount}-{settings.V3LargeMinorQuarryMaxCount}\n" +
                 $"v3 quarry field: radius major={settings.V3MajorQuarryMinRadius:0}-{settings.V3MajorQuarryMaxRadius:0} minor={settings.V3MinorQuarryMinRadius:0}-{settings.V3MinorQuarryMaxRadius:0} oreChance={settings.V3QuarryOreSpotChance:P1}\n" +
+                $"v3 ruins: small={settings.V3SmallRuinMinCount}-{settings.V3SmallRuinMaxCount} medium={settings.V3MediumRuinMinCount}-{settings.V3MediumRuinMaxCount} large={settings.V3LargeRuinMinCount}-{settings.V3LargeRuinMaxCount} radius={settings.V3RuinMinRadius:0}-{settings.V3RuinMaxRadius:0}\n" +
                 $"v3 road graph: nearest={settings.V3RoadNearestNeighborCount} extraRatio={settings.V3RoadExtraEdgeRatio:0.00} sharedExit={settings.V3SharedExitTrunkEnabled} maxDegree={settings.V3MaxRoadJunctionDegree} maxCross={settings.V3MaxRoadCrossingsPerEdge}\n" +
                 $"v3 branch roads: small={settings.V3SmallBranchRoadMinCount}-{settings.V3SmallBranchRoadMaxCount} medium={settings.V3MediumBranchRoadMinCount}-{settings.V3MediumBranchRoadMaxCount} large={settings.V3LargeBranchRoadMinCount}-{settings.V3LargeBranchRoadMaxCount} length={settings.V3BranchRoadMinLength:0}-{settings.V3BranchRoadMaxLength:0} targets={manager.V3RoadTargetAnchorCount}\n" +
                 $"roads: width={settings.RoadWidth:0.0} forestPenalty={settings.RoadForestPenalty:0} riverPenalty={settings.RoadRiverPenalty:0} villageAttract={settings.RoadVillageAttraction:0.00}\n" +
                 $"sites: villageRadius={settings.VillageRadius:0} startRadius={settings.StartVillageRadius:0} landmarks={settings.LandmarkCountPerRegion} quarries={settings.QuarryCountPerRegion}\n" +
                 $"road chances: ruin={settings.RuinRoadChance:P0} dungeon={settings.DungeonRoadChance:P0} bandit={settings.BanditRoadChance:P0} faction={settings.FactionRoadChance:P0} quarry={settings.QuarryRoadChance:P0}\n" +
                 $"{biomeStatsLine}\n" +
+                $"{worldMapLine}\n" +
                 $"{v3VillageLine}\n" +
                 $"{v3RoadLine}\n" +
                 $"{v3ForestLine}\n" +
                 $"{v3QuarryLine}\n" +
+                $"{v3RuinLine}\n" +
                 $"{performanceLine}\n" +
                 $"{generationProfileLine}\n" +
                 $"{renderProfileLine}\n" +
@@ -196,10 +203,12 @@ public partial class WorldV2DebugHud : Control
             $"seed: {manager.WorldSeed}\n" +
             $"{worldConfigLine}\n" +
             $"{worldBoundsLine}\n" +
+            $"{worldMapLine}\n" +
             $"{v3VillageLine}\n" +
             $"{v3RoadLine}\n" +
             $"{v3ForestLine}\n" +
             $"{v3QuarryLine}\n" +
+            $"{v3RuinLine}\n" +
             $"{sectorLine}\n" +
             $"{dangerLine}\n" +
             $"{biomeStatsLine}\n" +

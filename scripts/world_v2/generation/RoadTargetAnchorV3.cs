@@ -5,6 +5,7 @@ namespace WorldV2;
 public enum RoadTargetKindV3
 {
     Quarry,
+    Ruin,
     ForestEdge,
     WorldEdgeExit,
     FutureRuinSite,

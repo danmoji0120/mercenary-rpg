@@ -338,6 +338,15 @@ public sealed class ProceduralWorldGeneratorV2
         }
     }
 
+    public int V3RoadTargetRuinCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadTargetRuinCount : 0;
+        }
+    }
+
     public int V3RoadTargetForestEdgeCount
     {
         get
@@ -559,6 +568,75 @@ public sealed class ProceduralWorldGeneratorV2
     }
 
     public bool V3QuarryLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.QuarryLayerEnabled;
+
+    public int V3RuinSiteCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RuinSiteCount : 0;
+        }
+    }
+
+    public int V3RoadLinkedRuinCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RoadLinkedRuinCount : 0;
+        }
+    }
+
+    public int V3RejectedRuinPlacementCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RejectedRuinPlacementCount : 0;
+        }
+    }
+
+    public bool V3RuinLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.RuinLayerEnabled;
+
+    public IReadOnlyList<VillageSiteV2> GetV3Villages()
+    {
+        EnsureNoiseProfile(_generationRequest.Seed);
+        return _generationRequest.PlanVersion == WorldPlanVersionV2.V3
+            ? _flatlandPlanV3.Villages
+            : System.Array.Empty<VillageSiteV2>();
+    }
+
+    public IReadOnlyList<RoadPathV2> GetV3Roads()
+    {
+        EnsureNoiseProfile(_generationRequest.Seed);
+        return _generationRequest.PlanVersion == WorldPlanVersionV2.V3
+            ? _flatlandPlanV3.Roads
+            : System.Array.Empty<RoadPathV2>();
+    }
+
+    public IReadOnlyList<ForestRegionV3> GetV3ForestRegions()
+    {
+        EnsureNoiseProfile(_generationRequest.Seed);
+        return _generationRequest.PlanVersion == WorldPlanVersionV2.V3
+            ? _flatlandPlanV3.ForestRegions
+            : System.Array.Empty<ForestRegionV3>();
+    }
+
+    public IReadOnlyList<QuarryRegionV3> GetV3QuarryRegions()
+    {
+        EnsureNoiseProfile(_generationRequest.Seed);
+        return _generationRequest.PlanVersion == WorldPlanVersionV2.V3
+            ? _flatlandPlanV3.QuarryRegions
+            : System.Array.Empty<QuarryRegionV3>();
+    }
+
+    public IReadOnlyList<RuinSiteV3> GetV3RuinSites()
+    {
+        EnsureNoiseProfile(_generationRequest.Seed);
+        return _generationRequest.PlanVersion == WorldPlanVersionV2.V3
+            ? _flatlandPlanV3.RuinSites
+            : System.Array.Empty<RuinSiteV3>();
+    }
 
     public static int MakeSectorSeed(int worldSeed, Vector2I sectorCoord)
     {

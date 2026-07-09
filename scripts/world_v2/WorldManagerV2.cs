@@ -61,6 +61,7 @@ public partial class WorldManagerV2 : Node
     public int V3BranchRoadCount => _generator.V3BranchRoadCount;
     public int V3RoadTargetAnchorCount => _generator.V3RoadTargetAnchorCount;
     public int V3RoadTargetQuarryCount => _generator.V3RoadTargetQuarryCount;
+    public int V3RoadTargetRuinCount => _generator.V3RoadTargetRuinCount;
     public int V3RoadTargetForestEdgeCount => _generator.V3RoadTargetForestEdgeCount;
     public int V3RoadTargetWorldEdgeExitCount => _generator.V3RoadTargetWorldEdgeExitCount;
     public int V3FutureRoadTargetCount => _generator.V3FutureRoadTargetCount;
@@ -88,6 +89,15 @@ public partial class WorldManagerV2 : Node
     public int V3MinorQuarryCount => _generator.V3MinorQuarryCount;
     public int V3RejectedQuarryPlacementCount => _generator.V3RejectedQuarryPlacementCount;
     public bool V3QuarryLayerEnabled => _generator.V3QuarryLayerEnabled;
+    public int V3RuinSiteCount => _generator.V3RuinSiteCount;
+    public int V3RoadLinkedRuinCount => _generator.V3RoadLinkedRuinCount;
+    public int V3RejectedRuinPlacementCount => _generator.V3RejectedRuinPlacementCount;
+    public bool V3RuinLayerEnabled => _generator.V3RuinLayerEnabled;
+    public bool WorldMapOverlayVisible { get; private set; }
+    public Vector2I WorldMapTextureSize { get; private set; }
+    public double WorldMapBuildMs { get; private set; }
+    public bool WorldMapCached { get; private set; }
+    public string WorldMapLastBuildReason { get; private set; } = "not built";
 
     private readonly ProceduralWorldGeneratorV2 _generator = new();
     private readonly Dictionary<Vector2I, SectorMetadata> _metadataBySector = new();
@@ -97,6 +107,8 @@ public partial class WorldManagerV2 : Node
     private WorldStreamManagerV2? _streamManager;
     private WorldV2DebugHud? _debugHud;
     private WorldGenerationSettingsV2? _generationSettings;
+    private Texture2D? _worldMapTexture;
+    private string _worldMapCacheKey = string.Empty;
 
     public override void _Ready()
     {
@@ -183,6 +195,57 @@ public partial class WorldManagerV2 : Node
         return GenerationRequest;
     }
 
+    public IReadOnlyList<VillageSiteV2> GetV3MapVillages()
+    {
+        return _generator.GetV3Villages();
+    }
+
+    public IReadOnlyList<RoadPathV2> GetV3MapRoads()
+    {
+        return _generator.GetV3Roads();
+    }
+
+    public IReadOnlyList<ForestRegionV3> GetV3MapForestRegions()
+    {
+        return _generator.GetV3ForestRegions();
+    }
+
+    public IReadOnlyList<QuarryRegionV3> GetV3MapQuarryRegions()
+    {
+        return _generator.GetV3QuarryRegions();
+    }
+
+    public IReadOnlyList<RuinSiteV3> GetV3MapRuinSites()
+    {
+        return _generator.GetV3RuinSites();
+    }
+
+    public Texture2D GetOrBuildWorldMapTexture(string reason)
+    {
+        ApplyGenerationSettings();
+        string cacheKey = BuildWorldMapCacheKey();
+        if (_worldMapTexture != null && _worldMapCacheKey == cacheKey)
+        {
+            WorldMapCached = true;
+            WorldMapLastBuildReason = "cached";
+            return _worldMapTexture;
+        }
+
+        _worldMapTexture = WorldMapTextureBuilderV2.Build(this, GetGenerationSettings(), out Vector2I textureSize, out double buildMs);
+        WorldMapTextureSize = textureSize;
+        WorldMapBuildMs = buildMs;
+        WorldMapCached = false;
+        WorldMapLastBuildReason = reason;
+        _worldMapCacheKey = cacheKey;
+        return _worldMapTexture;
+    }
+
+    public void SetWorldMapOverlayVisible(bool visible)
+    {
+        WorldMapOverlayVisible = visible;
+        UpdateDebugHud();
+    }
+
     public void UpdateStreamingCenter(Vector2I centerGlobalCellCoord, Vector2I centerGlobalChunkCoord, bool updateHud = true)
     {
         Vector2I sectorCoord = WorldV2CoordinateUtility.GlobalCellToSectorCoord(centerGlobalCellCoord);
@@ -232,6 +295,7 @@ public partial class WorldManagerV2 : Node
             long resetStart = WorldV2PerformanceProfiler.Instance.BeginSample();
             _generator.ClearGeneratedPlanCache();
             _metadataBySector.Clear();
+            ClearWorldMapTextureCache();
             ClearRuntimeStructures();
             _streamManager?.ClearAllChunkCaches();
             _streamManager?.RefreshStreaming(force: true);
@@ -243,6 +307,16 @@ public partial class WorldManagerV2 : Node
 
         _streamManager?.RebuildVisibleRenderersFromCache();
         UpdateDebugHud("Rebuilt visible renderers from cached chunk data.");
+    }
+
+    private void ClearWorldMapTextureCache()
+    {
+        _worldMapTexture = null;
+        _worldMapCacheKey = string.Empty;
+        WorldMapCached = false;
+        WorldMapTextureSize = Vector2I.Zero;
+        WorldMapBuildMs = 0.0;
+        WorldMapLastBuildReason = "cache cleared";
     }
 
     public void PrintDebugHelp()
@@ -282,9 +356,10 @@ public partial class WorldManagerV2 : Node
         ResolveReferences();
         GD.Print($"WorldV2 world: map={MapSizePreset} size={WorldMapSize.WidthCells}x{WorldMapSize.HeightCells} chunks={WorldMapSize.ChunkWidth}x{WorldMapSize.ChunkHeight} plan={PlanVersion} generated={GeneratedPlanType} seed={WorldSeed} bounds={WorldBounds.Position}..{WorldBounds.End - Vector2I.One}");
         GD.Print(V3VillageDebugSummary);
-        GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
+        GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} ruinTargets={V3RoadTargetRuinCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
         GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount}");
         GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount}");
+        GD.Print($"V3 ruins: enabled={V3RuinLayerEnabled} sites={V3RuinSiteCount} roadLinked={V3RoadLinkedRuinCount} rejected={V3RejectedRuinPlacementCount}");
         _streamManager?.PrintLoadedChunks();
         GD.Print(WorldGenerationLayerSettingsV2.GetSummary());
     }
@@ -304,9 +379,10 @@ public partial class WorldManagerV2 : Node
     {
         GD.Print($"WorldV2 world: map={MapSizePreset} size={WorldMapSize.WidthCells}x{WorldMapSize.HeightCells} plan={PlanVersion} generated={GeneratedPlanType} seed={WorldSeed}");
         GD.Print(V3VillageDebugSummary);
-        GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
+        GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} ruinTargets={V3RoadTargetRuinCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
         GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount}");
         GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount}");
+        GD.Print($"V3 ruins: enabled={V3RuinLayerEnabled} sites={V3RuinSiteCount} roadLinked={V3RoadLinkedRuinCount} rejected={V3RejectedRuinPlacementCount}");
         WorldV2PerformanceProfiler.Instance.PrintSummary();
     }
 
@@ -426,6 +502,13 @@ public partial class WorldManagerV2 : Node
     {
         ResolveReferences();
         return _generationSettings ?? WorldGenerationSettingsV2.Default;
+    }
+
+    private string BuildWorldMapCacheKey()
+    {
+        return $"{WorldId}:{WorldSeed}:{MapSizePreset}:{PlanVersion}:{WorldMapSize.WidthCells}x{WorldMapSize.HeightCells}:"
+            + $"{V3VillageCount}:{V3RoadCount}:{V3ForestRegionCount}:{V3QuarryRegionCount}:{V3RuinSiteCount}:"
+            + WorldGenerationLayerSettingsV2.GetSummary();
     }
 
     private void ClearRuntimeStructures()

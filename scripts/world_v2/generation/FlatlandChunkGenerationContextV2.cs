@@ -12,6 +12,7 @@ public sealed class FlatlandChunkGenerationContextV2
     private readonly HashSet<int> _forestRegionIds = new();
     private readonly HashSet<int> _quarryClusterIds = new();
     private readonly HashSet<int> _quarryRegionIds = new();
+    private readonly HashSet<int> _ruinSiteIds = new();
     private readonly HashSet<int> _riverIds = new();
     private readonly HashSet<int> _roadIds = new();
 
@@ -35,6 +36,7 @@ public sealed class FlatlandChunkGenerationContextV2
     public List<ForestRegionV3> RelevantForestRegions { get; } = new();
     public List<QuarryClusterV3> RelevantQuarryClusters { get; } = new();
     public List<QuarryRegionV3> RelevantQuarryRegions { get; } = new();
+    public List<RuinSiteV3> RelevantRuinSites { get; } = new();
     public List<RiverPathV2> RelevantRivers { get; } = new();
     public List<RoadPathV2> RelevantRoads { get; } = new();
 
@@ -48,6 +50,7 @@ public sealed class FlatlandChunkGenerationContextV2
     public int RelevantQuarryClusterCount => RelevantQuarryClusters.Count;
     public int RelevantQuarryRegionCount => RelevantQuarryRegions.Count;
     public int RelevantQuarryCandidateCount => RelevantQuarryClusterCount + RelevantQuarryRegionCount;
+    public int RelevantRuinSiteCount => RelevantRuinSites.Count;
     public float NearestVillageDistance { get; set; } = float.MaxValue;
     public bool HasVillageTile { get; set; }
     public bool HasRoadTile { get; set; }
@@ -60,13 +63,14 @@ public sealed class FlatlandChunkGenerationContextV2
     public int RoadCacheReadyRegionCount { get; set; }
     public int RoadCacheMissingRegionCount { get; set; }
     public int QuarryCount => CountLandmarks(LandmarkKindV2.Quarry);
-    public int RuinCount => CountLandmarks(LandmarkKindV2.Ruin);
+    public int RuinCount => RelevantRuinSiteCount + CountLandmarks(LandmarkKindV2.Ruin);
     public int DungeonCount => CountLandmarks(LandmarkKindV2.Dungeon);
     public int BanditCampCount => CountLandmarks(LandmarkKindV2.BanditCamp);
     public int FactionOutpostCount => CountLandmarks(LandmarkKindV2.FactionOutpost);
     public bool HasSlowContextWarning =>
         RelevantRoadCount > 12
         || RelevantLandmarkCount > 12
+        || RelevantRuinSiteCount > 12
         || RelevantForestCandidateCount > 12
         || RelevantQuarryCandidateCount > 10
         || RelevantVillageCount > 4;
@@ -110,7 +114,7 @@ public sealed class FlatlandChunkGenerationContextV2
         string nearestVillage = NearestVillageDistance >= float.MaxValue * 0.5f
             ? "-"
             : NearestVillageDistance.ToString("0.0");
-        return $"warn={HasSlowContextWarning} villageCtx={ContainsVillage} villages={RelevantVillageCount} roads={RelevantRoadCount} forests={RelevantForestCandidateCount} forestRegions={RelevantForestRegionCount} quarries={RelevantQuarryCandidateCount + QuarryCount} quarryRegions={RelevantQuarryRegionCount} oreSpots={OreSpotTileCount} ruins={RuinCount} dungeons={DungeonCount} bandits={BanditCampCount} faction={FactionOutpostCount} nearestVillage={nearestVillage} hasVillageTile={HasVillageTile} hasRoadTile={HasRoadTile} hasLandmarkTile={HasLandmarkTile} dirt={DirtTileCount} forestClears={ForestEdgeClearCount} overlapResolved={SiteOverlapResolvedCount} rejectedSites={RejectedSitePlacementCount} roadReady={RoadCacheReadyRegionCount} roadMissing={RoadCacheMissingRegionCount}";
+        return $"warn={HasSlowContextWarning} villageCtx={ContainsVillage} villages={RelevantVillageCount} roads={RelevantRoadCount} forests={RelevantForestCandidateCount} forestRegions={RelevantForestRegionCount} quarries={RelevantQuarryCandidateCount + QuarryCount} quarryRegions={RelevantQuarryRegionCount} oreSpots={OreSpotTileCount} ruins={RuinCount} ruinSites={RelevantRuinSiteCount} dungeons={DungeonCount} bandits={BanditCampCount} faction={FactionOutpostCount} nearestVillage={nearestVillage} hasVillageTile={HasVillageTile} hasRoadTile={HasRoadTile} hasLandmarkTile={HasLandmarkTile} dirt={DirtTileCount} forestClears={ForestEdgeClearCount} overlapResolved={SiteOverlapResolvedCount} rejectedSites={RejectedSitePlacementCount} roadReady={RoadCacheReadyRegionCount} roadMissing={RoadCacheMissingRegionCount}";
     }
 
     private int CountLandmarks(LandmarkKindV2 kind)
@@ -172,6 +176,14 @@ public sealed class FlatlandChunkGenerationContextV2
         if (_quarryRegionIds.Add(quarry.Id))
         {
             RelevantQuarryRegions.Add(quarry);
+        }
+    }
+
+    public void AddRuinSite(RuinSiteV3 ruin)
+    {
+        if (_ruinSiteIds.Add(ruin.Id))
+        {
+            RelevantRuinSites.Add(ruin);
         }
     }
 

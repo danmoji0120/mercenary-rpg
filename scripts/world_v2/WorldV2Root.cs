@@ -10,6 +10,7 @@ public partial class WorldV2Root : Node2D
     private WorldV2CameraController? _camera;
     private WorldStreamManagerV2? _streamManager;
     private WorldV2LoadingOverlay? _loadingOverlay;
+    private WorldMapOverlayV2? _worldMapOverlay;
     private bool _cameraInputWasLocked;
 
     public override void _Ready()
@@ -20,6 +21,7 @@ public partial class WorldV2Root : Node2D
         _camera = GetNodeOrNull<WorldV2CameraController>("Camera2D");
         _streamManager = GetNodeOrNull<WorldStreamManagerV2>("WorldStreamManagerV2");
         CreateLoadingOverlay();
+        CreateWorldMapOverlay();
 
         if (_camera != null)
         {
@@ -30,7 +32,7 @@ public partial class WorldV2Root : Node2D
     public override void _Process(double delta)
     {
         bool loading = _streamManager != null && !_streamManager.IsInitialLoadingComplete;
-        SetCameraInputLocked(loading);
+        SetCameraInputLocked(loading || IsWorldMapOverlayOpen());
         _loadingOverlay?.Refresh(_streamManager);
     }
 
@@ -38,6 +40,22 @@ public partial class WorldV2Root : Node2D
     {
         if (@event is InputEventKey keyEvent && keyEvent.Pressed && !keyEvent.Echo)
         {
+            if (IsWorldMapOverlayOpen())
+            {
+                if (keyEvent.Keycode is Key.M or Key.Escape)
+                {
+                    _worldMapOverlay?.HideMap();
+                }
+
+                return;
+            }
+
+            if (keyEvent.Keycode == Key.M && !IsWorldInputLocked())
+            {
+                ToggleWorldMapOverlay();
+                return;
+            }
+
             if (IsWorldInputLocked() && !IsDebugKeyAllowedWhileLoading(keyEvent.Keycode))
             {
                 return;
@@ -49,7 +67,7 @@ public partial class WorldV2Root : Node2D
 
         if (@event is InputEventMouseButton mouseButton && mouseButton.Pressed)
         {
-            if (IsWorldInputLocked())
+            if (IsWorldInputLocked() || IsWorldMapOverlayOpen())
             {
                 return;
             }
@@ -252,6 +270,36 @@ public partial class WorldV2Root : Node2D
             Name = "WorldV2LoadingOverlay"
         };
         canvasLayer.AddChild(_loadingOverlay);
+    }
+
+    private void CreateWorldMapOverlay()
+    {
+        CanvasLayer? canvasLayer = GetNodeOrNull<CanvasLayer>("CanvasLayer");
+        if (canvasLayer == null)
+        {
+            return;
+        }
+
+        _worldMapOverlay = new WorldMapOverlayV2
+        {
+            Name = "WorldMapOverlayV2"
+        };
+        canvasLayer.AddChild(_worldMapOverlay);
+    }
+
+    private void ToggleWorldMapOverlay()
+    {
+        if (_worldManager == null || _worldMapOverlay == null)
+        {
+            return;
+        }
+
+        _worldMapOverlay.Toggle(_worldManager);
+    }
+
+    private bool IsWorldMapOverlayOpen()
+    {
+        return _worldMapOverlay?.IsOpen == true;
     }
 
     private bool IsWorldInputLocked()

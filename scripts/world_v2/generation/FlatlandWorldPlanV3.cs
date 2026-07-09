@@ -15,6 +15,7 @@ public sealed class FlatlandWorldPlanV3
     private readonly List<ForestRegionV3> _forestRegions = new();
     private readonly List<QuarryClusterV3> _quarryClusters = new();
     private readonly List<QuarryRegionV3> _quarryRegions = new();
+    private readonly List<RuinSiteV3> _ruinSites = new();
     private bool _isBuilt;
     private int _startingVillageId = -1;
     private Vector2I _playerSpawnCell;
@@ -49,6 +50,7 @@ public sealed class FlatlandWorldPlanV3
     public int RejectedRoadTooLongCount { get; private set; }
     public int RoadTargetAnchorCount => _roadTargetAnchors.Count;
     public int RoadTargetQuarryCount { get; private set; }
+    public int RoadTargetRuinCount { get; private set; }
     public int RoadTargetForestEdgeCount { get; private set; }
     public int RoadTargetWorldEdgeExitCount { get; private set; }
     public int FutureRoadTargetCount { get; private set; }
@@ -73,6 +75,26 @@ public sealed class FlatlandWorldPlanV3
     public bool QuarryLayerEnabled => WorldGenerationLayerSettingsV2.EnableQuarries;
     public IReadOnlyList<QuarryClusterV3> QuarryClusters => _quarryClusters;
     public IReadOnlyList<QuarryRegionV3> QuarryRegions => _quarryRegions;
+    public int RuinSiteCount => _ruinSites.Count;
+    public int RoadLinkedRuinCount
+    {
+        get
+        {
+            int count = 0;
+            foreach (RuinSiteV3 ruin in _ruinSites)
+            {
+                if (ruin.LinkedRoadId > 0)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+    }
+    public int RejectedRuinPlacementCount { get; private set; }
+    public bool RuinLayerEnabled => WorldGenerationLayerSettingsV2.EnableRuins;
+    public IReadOnlyList<RuinSiteV3> RuinSites => _ruinSites;
     public bool IsBuilt => _isBuilt;
 
     public void Initialize(WorldGenerationRequestV2 request, WorldGenerationSettingsV2? settings)
@@ -96,6 +118,7 @@ public sealed class FlatlandWorldPlanV3
         GenerateRoads();
         GenerateQuarries();
         GenerateForests();
+        GenerateRuins();
         GenerateRoadTargetAnchors();
         GenerateBranchRoads();
         GenerateLandmarksPlaceholder();
@@ -113,6 +136,7 @@ public sealed class FlatlandWorldPlanV3
         _forestRegions.Clear();
         _quarryClusters.Clear();
         _quarryRegions.Clear();
+        _ruinSites.Clear();
         PrimaryRoadCount = 0;
         SecondaryRoadCount = 0;
         ExtraRoadCount = 0;
@@ -126,6 +150,7 @@ public sealed class FlatlandWorldPlanV3
         RejectedRoadCrossingCount = 0;
         RejectedRoadTooLongCount = 0;
         RoadTargetQuarryCount = 0;
+        RoadTargetRuinCount = 0;
         RoadTargetForestEdgeCount = 0;
         RoadTargetWorldEdgeExitCount = 0;
         FutureRoadTargetCount = 0;
@@ -136,6 +161,7 @@ public sealed class FlatlandWorldPlanV3
         MajorQuarryCount = 0;
         MinorQuarryCount = 0;
         RejectedQuarryPlacementCount = 0;
+        RejectedRuinPlacementCount = 0;
         _startingVillageId = -1;
         _playerSpawnCell = Vector2I.Zero;
         _nearestToWorldCenterDistance = 0.0f;
@@ -206,6 +232,17 @@ public sealed class FlatlandWorldPlanV3
             }
         }
 
+        if (WorldGenerationLayerSettingsV2.EnableRuins)
+        {
+            foreach (RuinSiteV3 ruin in _ruinSites)
+            {
+                if (ruin.Bounds.Intersects(chunkRect, includeBorders: true))
+                {
+                    context.AddRuinSite(ruin);
+                }
+            }
+        }
+
         if (WorldGenerationLayerSettingsV2.EnableForests)
         {
             foreach (ForestRegionV3 forest in _forestRegions)
@@ -228,6 +265,11 @@ public sealed class FlatlandWorldPlanV3
         if (WorldGenerationLayerSettingsV2.EnableRoads)
         {
             RasterRoads(context);
+        }
+
+        if (WorldGenerationLayerSettingsV2.EnableRuins)
+        {
+            RasterRuins(context);
         }
 
         if (WorldGenerationLayerSettingsV2.EnableQuarries)
@@ -930,6 +972,7 @@ public sealed class FlatlandWorldPlanV3
     {
         _roadTargetAnchors.Clear();
         RoadTargetQuarryCount = 0;
+        RoadTargetRuinCount = 0;
         RoadTargetForestEdgeCount = 0;
         RoadTargetWorldEdgeExitCount = 0;
         FutureRoadTargetCount = 0;
@@ -943,6 +986,7 @@ public sealed class FlatlandWorldPlanV3
         DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 8101));
         int nextId = 1;
         AddQuarryRoadTargets(ref nextId, ref random);
+        AddRuinRoadTargets(ref nextId, ref random);
         AddForestEdgeRoadTargets(ref nextId, ref random);
         AddWorldEdgeExitTargets(ref nextId, ref random);
     }
@@ -980,6 +1024,51 @@ public sealed class FlatlandWorldPlanV3
         int nextId = 1;
         PlaceQuarryClusters(majorTarget, true, minX, minY, maxX, maxY, ref nextId, ref random);
         PlaceQuarryClusters(minorTarget, false, minX, minY, maxX, maxY, ref nextId, ref random);
+    }
+
+    private void GenerateRuins()
+    {
+        _ruinSites.Clear();
+        RejectedRuinPlacementCount = 0;
+
+        if (!WorldGenerationLayerSettingsV2.EnableRuins)
+        {
+            return;
+        }
+
+        int targetCount = GetTargetRuinCount();
+        if (targetCount <= 0)
+        {
+            return;
+        }
+
+        DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 9101));
+        float edgeMargin = Mathf.Max(96.0f, _settings.V3RuinMaxRadius + 52.0f);
+        int minX = Mathf.CeilToInt(edgeMargin);
+        int minY = Mathf.CeilToInt(edgeMargin);
+        int maxX = Mathf.FloorToInt(WorldSize.WidthCells - edgeMargin - 1.0f);
+        int maxY = Mathf.FloorToInt(WorldSize.HeightCells - edgeMargin - 1.0f);
+        if (minX > maxX || minY > maxY)
+        {
+            return;
+        }
+
+        int maxAttempts = Mathf.Max(targetCount * 10, targetCount * Mathf.Max(1, _settings.V3RuinPlacementMaxAttemptsPerSite));
+        int nextId = 1;
+        for (int attempt = 0; _ruinSites.Count < targetCount && attempt < maxAttempts; attempt++)
+        {
+            float radius = random.Range(Mathf.Max(8.0f, _settings.V3RuinMinRadius), Mathf.Max(_settings.V3RuinMinRadius, _settings.V3RuinMaxRadius));
+            Vector2 center = new(random.RangeInclusive(minX, maxX), random.RangeInclusive(minY, maxY));
+            if (!CanPlaceRuin(center, radius))
+            {
+                RejectedRuinPlacementCount++;
+                continue;
+            }
+
+            _ruinSites.Add(CreateRuinSite(nextId++, center, radius, ref random));
+        }
+
+        AssignRoadLinkedRuins(ref random);
     }
 
     private void GenerateLandmarksPlaceholder()
@@ -1235,6 +1324,57 @@ public sealed class FlatlandWorldPlanV3
 
                     context.HasOreSpot[index] = true;
                 }
+            }
+        }
+    }
+
+    private void RasterRuins(FlatlandChunkGenerationContextV2 context)
+    {
+        WorldV2PerformanceProfiler profiler = WorldV2PerformanceProfiler.Instance;
+        long start = profiler.BeginSample();
+
+        foreach (RuinSiteV3 ruin in context.RelevantRuinSites)
+        {
+            RasterRuinSite(context, ruin);
+        }
+
+        profiler.EndSample(WorldV2PerformanceProfiler.FlatlandSiteSample, start, context.ChunkCoord);
+    }
+
+    private void RasterRuinSite(FlatlandChunkGenerationContextV2 context, RuinSiteV3 ruin)
+    {
+        int minGlobalX = Mathf.FloorToInt(ruin.Bounds.Position.X);
+        int minGlobalY = Mathf.FloorToInt(ruin.Bounds.Position.Y);
+        int maxGlobalX = Mathf.CeilToInt(ruin.Bounds.End.X);
+        int maxGlobalY = Mathf.CeilToInt(ruin.Bounds.End.Y);
+        if (!TryGetLocalBounds(context, minGlobalX, minGlobalY, maxGlobalX, maxGlobalY, out int minX, out int minY, out int maxX, out int maxY))
+        {
+            return;
+        }
+
+        for (int y = minY; y <= maxY; y++)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                int index = FlatlandChunkGenerationContextV2.ToIndex(x, y);
+                if (context.IsVillage[index] || context.IsStartingVillage[index] || context.IsRoad[index])
+                {
+                    continue;
+                }
+
+                Vector2I cell = context.ToGlobalCell(x, y);
+                float strength = GetRuinPotentialAt(ruin, cell);
+                if (strength <= 0.0f)
+                {
+                    continue;
+                }
+
+                float distance = new Vector2(cell.X + 0.5f, cell.Y + 0.5f).DistanceTo(ruin.Center);
+                context.IsLandmark[index] = true;
+                context.LandmarkKind[index] = LandmarkKindV2.Ruin;
+                context.SiteDistance[index] = Mathf.Min(context.SiteDistance[index], distance);
+                context.SiteRadius[index] = ruin.ApproxRadius;
+                context.HasLandmarkTile = true;
             }
         }
     }
@@ -1511,6 +1651,35 @@ public sealed class FlatlandWorldPlanV3
         return Mathf.Clamp(Mathf.Lerp(0.52f, 1.0f, t) * quarry.Density, 0.0f, 1.0f);
     }
 
+    private float GetRuinPotentialAt(RuinSiteV3 ruin, Vector2I cell)
+    {
+        Vector2 point = new(cell.X + 0.5f, cell.Y + 0.5f);
+        float noiseScale = Mathf.Max(0.001f, _settings.V3RuinNoiseScale);
+        float warpScale = noiseScale * 0.42f;
+        float warpX = (FractalValueNoise(point.X * warpScale, point.Y * warpScale, ruin.Seed + 101, 2) - 0.5f) * 2.0f;
+        float warpY = (FractalValueNoise(point.X * warpScale, point.Y * warpScale, ruin.Seed + 211, 2) - 0.5f) * 2.0f;
+        Vector2 warped = point + new Vector2(warpX, warpY) * Mathf.Max(0.0f, _settings.V3RuinWarpStrength);
+        float radius = Mathf.Max(4.0f, ruin.ApproxRadius);
+        float normalizedDistance = warped.DistanceTo(ruin.Center) / radius;
+        if (normalizedDistance > 1.18f)
+        {
+            return 0.0f;
+        }
+
+        float low = FractalValueNoise(warped.X * noiseScale, warped.Y * noiseScale, ruin.Seed + 307, 2);
+        float edge = FractalValueNoise(warped.X * noiseScale * 2.2f, warped.Y * noiseScale * 2.2f, ruin.Seed + 409, 2);
+        float boundaryShift = (low - 0.5f) * 0.26f + (edge - 0.5f) * 0.10f;
+        float potential = 1.0f - normalizedDistance + boundaryShift;
+        if (normalizedDistance < 0.42f)
+        {
+            potential = Mathf.Max(potential, 0.64f + low * 0.14f);
+        }
+
+        return potential > 0.24f
+            ? Mathf.Clamp(Mathf.Lerp(0.34f, 1.0f, potential) * ruin.Density, 0.0f, 1.0f)
+            : 0.0f;
+    }
+
     private static void RasterForestFallbackEllipse(FlatlandChunkGenerationContextV2 context, ForestClusterSiteV2 forest)
     {
         float range = Mathf.Max(forest.Length, forest.Width) * 0.62f + 18.0f;
@@ -1561,6 +1730,14 @@ public sealed class FlatlandWorldPlanV3
             return;
         }
 
+        if (sample.IsLandmark && sample.LandmarkKind == LandmarkKindV2.Ruin)
+        {
+            sample.Biome = BiomeTypeV2.RuinedResidential;
+            float coreRatio = siteRadius > 0.0f ? siteDistance / siteRadius : 1.0f;
+            sample.TileType = coreRatio <= 0.48f ? TileType.Ruin : TileType.Rubble;
+            return;
+        }
+
         if (sample.IsQuarry)
         {
             sample.Biome = BiomeTypeV2.QuarryField;
@@ -1605,6 +1782,81 @@ public sealed class FlatlandWorldPlanV3
                 majorCount = random.RangeInclusive(Mathf.Max(0, _settings.V3SmallMajorQuarryMinCount), Mathf.Max(0, _settings.V3SmallMajorQuarryMaxCount));
                 minorCount = random.RangeInclusive(Mathf.Max(0, _settings.V3SmallMinorQuarryMinCount), Mathf.Max(0, _settings.V3SmallMinorQuarryMaxCount));
                 break;
+        }
+    }
+
+    private int GetTargetRuinCount()
+    {
+        DeterministicRandom random = new(MakeSeed(WorldSeed, (int)MapSizePreset, 9113));
+        return MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Medium => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3MediumRuinMinCount),
+                Mathf.Max(0, _settings.V3MediumRuinMaxCount)),
+            WorldMapSizePresetV2.Large => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3LargeRuinMinCount),
+                Mathf.Max(0, _settings.V3LargeRuinMaxCount)),
+            WorldMapSizePresetV2.Small or _ => random.RangeInclusive(
+                Mathf.Max(0, _settings.V3SmallRuinMinCount),
+                Mathf.Max(0, _settings.V3SmallRuinMaxCount))
+        };
+    }
+
+    private int GetDesiredRoadLinkedRuinCount(ref DeterministicRandom random)
+    {
+        int ruinCount = _ruinSites.Count;
+        if (ruinCount == 0)
+        {
+            return 0;
+        }
+
+        int desired = MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Medium => Mathf.RoundToInt(ruinCount * random.Range(0.30f, 0.45f)),
+            WorldMapSizePresetV2.Large => Mathf.RoundToInt(ruinCount * random.Range(0.25f, 0.40f)),
+            WorldMapSizePresetV2.Small or _ => random.RangeInclusive(1, 2)
+        };
+
+        return Mathf.Clamp(desired, 0, ruinCount);
+    }
+
+    private void AssignRoadLinkedRuins(ref DeterministicRandom random)
+    {
+        foreach (RuinSiteV3 ruin in _ruinSites)
+        {
+            ruin.IsRoadLinked = false;
+            ruin.LinkedRoadId = -1;
+        }
+
+        int desired = GetDesiredRoadLinkedRuinCount(ref random);
+        if (desired <= 0 || _roads.Count == 0)
+        {
+            return;
+        }
+
+        List<RuinSiteV3> candidates = new();
+        foreach (RuinSiteV3 ruin in _ruinSites)
+        {
+            float distance = GetNearestNonBranchRoadDistance(ruin.Center);
+            if (distance < _settings.V3BranchRoadMinLength * 0.45f || distance > _settings.V3BranchRoadMaxLength * 1.08f)
+            {
+                continue;
+            }
+
+            candidates.Add(ruin);
+        }
+
+        candidates.Sort((a, b) =>
+        {
+            float aScore = GetNearestNonBranchRoadDistance(a.Center) + StableUnitFloat(a.Id, WorldSeed, 9141) * 80.0f;
+            float bScore = GetNearestNonBranchRoadDistance(b.Center) + StableUnitFloat(b.Id, WorldSeed, 9141) * 80.0f;
+            return aScore.CompareTo(bScore);
+        });
+
+        int count = Mathf.Min(desired, candidates.Count);
+        for (int i = 0; i < count; i++)
+        {
+            candidates[i].IsRoadLinked = true;
         }
     }
 
@@ -1706,6 +1958,63 @@ public sealed class FlatlandWorldPlanV3
             WarpStrength = warp,
             Density = major ? random.Range(0.86f, 1.0f) : random.Range(0.72f, 0.94f),
             IsMajorQuarry = major
+        };
+    }
+
+    private bool CanPlaceRuin(Vector2 center, float radius)
+    {
+        foreach (VillageSiteV2 village in _villages)
+        {
+            float required = village.Radius + radius + (village.IsStartingVillage ? 138.0f : 46.0f);
+            if (center.DistanceTo(village.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (RoadPathV2 road in _roads)
+        {
+            float required = road.Width + radius * 0.24f + 4.0f;
+            if (road.DistanceToPath(center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (RuinSiteV3 ruin in _ruinSites)
+        {
+            float required = radius + ruin.ApproxRadius + 42.0f;
+            if (center.DistanceTo(ruin.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        foreach (QuarryRegionV3 quarry in _quarryRegions)
+        {
+            float required = radius + quarry.ApproxRadius * 0.26f;
+            if (center.DistanceTo(quarry.Center) < required)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private RuinSiteV3 CreateRuinSite(int id, Vector2 center, float radius, ref DeterministicRandom random)
+    {
+        RuinKindV3 kind = (RuinKindV3)random.RangeInclusive(0, 3);
+        float boundsRadius = radius + Mathf.Max(0.0f, _settings.V3RuinWarpStrength) + 9.0f;
+        return new RuinSiteV3
+        {
+            Id = id,
+            Kind = kind,
+            Center = center,
+            ApproxRadius = radius,
+            Bounds = new Rect2(center - new Vector2(boundsRadius, boundsRadius), new Vector2(boundsRadius * 2.0f, boundsRadius * 2.0f)),
+            Seed = HashIntId(id, WorldSeed, 9201),
+            Density = random.Range(0.78f, 1.05f)
         };
     }
 
@@ -2061,6 +2370,43 @@ public sealed class FlatlandWorldPlanV3
         }
     }
 
+    private void AddRuinRoadTargets(ref int nextId, ref DeterministicRandom random)
+    {
+        if (!WorldGenerationLayerSettingsV2.EnableRuins)
+        {
+            return;
+        }
+
+        foreach (RuinSiteV3 ruin in _ruinSites)
+        {
+            if (!ruin.IsRoadLinked)
+            {
+                continue;
+            }
+
+            Vector2 direction = Vector2.Right.Rotated(random.NextUnit() * Mathf.Tau);
+            if (TryFindNearestNonBranchRoadPoint(ruin.Center, out Vector2 roadPoint))
+            {
+                Vector2 toRoad = roadPoint - ruin.Center;
+                if (toRoad.LengthSquared() > 0.001f)
+                {
+                    direction = toRoad.Normalized();
+                }
+            }
+
+            Vector2 position = ClampPointToWorld(ruin.Center + direction * ruin.ApproxRadius * random.Range(0.72f, 0.96f), 48.0f);
+            RoadTargetAnchorV3 anchor = CreateRoadTarget(nextId, RoadTargetKindV3.Ruin, position, Mathf.Max(8.0f, ruin.ApproxRadius * 0.34f), ruin.Id, true);
+            if (!TryAddRoadTarget(anchor))
+            {
+                RejectedRoadTargetCount++;
+                continue;
+            }
+
+            nextId++;
+            RoadTargetRuinCount++;
+        }
+    }
+
     private void AddForestEdgeRoadTargets(ref int nextId, ref DeterministicRandom random)
     {
         int targetLimit = GetTargetBranchRoadCount(ref random);
@@ -2241,10 +2587,20 @@ public sealed class FlatlandWorldPlanV3
         int targetCount = GetTargetBranchRoadCount(ref random);
         if (targetCount <= 0)
         {
-            return;
+            targetCount = Mathf.Min(CountRoadTargets(RoadTargetKindV3.Ruin), 2);
+        }
+
+        int ruinTargetCount = CountRoadTargets(RoadTargetKindV3.Ruin);
+        if (ruinTargetCount > 0)
+        {
+            targetCount = Mathf.Max(targetCount, Mathf.Min(ruinTargetCount, 2));
         }
 
         targetCount = Mathf.Min(targetCount, _roadTargetAnchors.Count);
+        if (targetCount <= 0)
+        {
+            return;
+        }
 
         List<RoadPathV2> primaryRoads = new();
         foreach (RoadPathV2 road in _roads)
@@ -2298,6 +2654,7 @@ public sealed class FlatlandWorldPlanV3
             _roads.Add(branchRoad);
             branchCountByRoad[sourceRoad.Id] = existingBranchCount + 1;
             connectedTargetIds.Add(target.Id);
+            MarkRoadTargetLinked(target, branchRoad.Id);
             BranchRoadCount++;
             nextRoadId++;
         }
@@ -2305,6 +2662,18 @@ public sealed class FlatlandWorldPlanV3
 
     private RoadTargetAnchorV3 PickRoadTargetAnchor(HashSet<int> connectedTargetIds, ref DeterministicRandom random)
     {
+        if (random.NextUnit() < 0.62f)
+        {
+            for (int attempt = 0; attempt < 12; attempt++)
+            {
+                RoadTargetAnchorV3 target = _roadTargetAnchors[random.RangeInclusive(0, _roadTargetAnchors.Count - 1)];
+                if (target.Kind == RoadTargetKindV3.Ruin && !connectedTargetIds.Contains(target.Id))
+                {
+                    return target;
+                }
+            }
+        }
+
         for (int attempt = 0; attempt < 12; attempt++)
         {
             RoadTargetAnchorV3 target = _roadTargetAnchors[random.RangeInclusive(0, _roadTargetAnchors.Count - 1)];
@@ -2315,6 +2684,37 @@ public sealed class FlatlandWorldPlanV3
         }
 
         return _roadTargetAnchors[random.RangeInclusive(0, _roadTargetAnchors.Count - 1)];
+    }
+
+    private int CountRoadTargets(RoadTargetKindV3 kind)
+    {
+        int count = 0;
+        foreach (RoadTargetAnchorV3 target in _roadTargetAnchors)
+        {
+            if (target.Kind == kind)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private void MarkRoadTargetLinked(RoadTargetAnchorV3 target, int roadId)
+    {
+        if (target.Kind != RoadTargetKindV3.Ruin)
+        {
+            return;
+        }
+
+        foreach (RuinSiteV3 ruin in _ruinSites)
+        {
+            if (ruin.Id == target.LinkedFeatureId)
+            {
+                ruin.LinkedRoadId = roadId;
+                return;
+            }
+        }
     }
 
     private bool TryFindBranchSource(
@@ -2725,6 +3125,54 @@ public sealed class FlatlandWorldPlanV3
         return false;
     }
 
+    private float GetNearestNonBranchRoadDistance(Vector2 point)
+    {
+        float best = float.MaxValue;
+        foreach (RoadPathV2 road in _roads)
+        {
+            if (road.Kind == RoadKindV3.Branch)
+            {
+                continue;
+            }
+
+            best = Mathf.Min(best, road.DistanceToPath(point));
+        }
+
+        return best;
+    }
+
+    private bool TryFindNearestNonBranchRoadPoint(Vector2 point, out Vector2 roadPoint)
+    {
+        roadPoint = Vector2.Zero;
+        float best = float.MaxValue;
+        bool found = false;
+
+        foreach (RoadPathV2 road in _roads)
+        {
+            if (road.Kind == RoadKindV3.Branch)
+            {
+                continue;
+            }
+
+            IReadOnlyList<Vector2> points = road.PathPointsWorld;
+            for (int i = 0; i < points.Count - 1; i++)
+            {
+                Vector2 closest = ClosestPointOnSegment(point, points[i], points[i + 1]);
+                float distanceSquared = point.DistanceSquaredTo(closest);
+                if (distanceSquared >= best)
+                {
+                    continue;
+                }
+
+                best = distanceSquared;
+                roadPoint = closest;
+                found = true;
+            }
+        }
+
+        return found;
+    }
+
     private int GetNextRoadId()
     {
         int nextRoadId = 1;
@@ -3059,15 +3507,21 @@ public sealed class FlatlandWorldPlanV3
 
     private static float DistanceToSegmentSquared(Vector2 point, Vector2 a, Vector2 b)
     {
+        Vector2 closest = ClosestPointOnSegment(point, a, b);
+        return point.DistanceSquaredTo(closest);
+    }
+
+    private static Vector2 ClosestPointOnSegment(Vector2 point, Vector2 a, Vector2 b)
+    {
         Vector2 ab = b - a;
         float lengthSquared = ab.LengthSquared();
         if (lengthSquared <= 0.0001f)
         {
-            return point.DistanceSquaredTo(a);
+            return a;
         }
 
         float t = Mathf.Clamp((point - a).Dot(ab) / lengthSquared, 0.0f, 1.0f);
-        return point.DistanceSquaredTo(a + ab * t);
+        return a + ab * t;
     }
 
     private float GetRoadWear(Vector2I cell, int wearSeed, Vector2I chunkCoord)
@@ -3167,7 +3621,7 @@ public sealed class FlatlandWorldPlanV3
 
     public string GetDebugSummary()
     {
-        return $"V3 villages: count={VillageCount} startId={StartingVillageId} startCenter={StartingVillageCenter} spawn={PlayerSpawnCell} nearestCenter={NearestToWorldCenterDistance:0.0} roads={RoadCount} primary={PrimaryRoadCount} secondary={SecondaryRoadCount} extra={ExtraRoadCount} branch={BranchRoadCount} nodes={RoadNodeCount} junctions={RoadJunctionCount} maxDegree={MaxRoadJunctionDegree} trunks={SharedTrunkCount} merged={MergedRoadCandidateCount} rejectedJunctions={RejectedRoadJunctionCount} rejectedHighDegree={RejectedHighDegreeJunctionCount} rejectedCrossings={RejectedRoadCrossingCount} rejectedTooLong={RejectedRoadTooLongCount} targets={RoadTargetAnchorCount} quarryTargets={RoadTargetQuarryCount} forestTargets={RoadTargetForestEdgeCount} edgeTargets={RoadTargetWorldEdgeExitCount} futureTargets={FutureRoadTargetCount} rejectedTargets={RejectedRoadTargetCount} rejectedBranches={RejectedBranchRoadCount} roadLayer={RoadLayerEnabled} forestRegions={ForestRegionCount} majorForests={MajorForestRegionCount} minorForests={MinorForestPatchCount} forestLayer={ForestLayerEnabled} quarryRegions={QuarryRegionCount} majorQuarries={MajorQuarryCount} minorQuarries={MinorQuarryCount} quarryLayer={QuarryLayerEnabled} rejectedQuarries={RejectedQuarryPlacementCount}";
+        return $"V3 villages: count={VillageCount} startId={StartingVillageId} startCenter={StartingVillageCenter} spawn={PlayerSpawnCell} nearestCenter={NearestToWorldCenterDistance:0.0} roads={RoadCount} primary={PrimaryRoadCount} secondary={SecondaryRoadCount} extra={ExtraRoadCount} branch={BranchRoadCount} nodes={RoadNodeCount} junctions={RoadJunctionCount} maxDegree={MaxRoadJunctionDegree} trunks={SharedTrunkCount} merged={MergedRoadCandidateCount} rejectedJunctions={RejectedRoadJunctionCount} rejectedHighDegree={RejectedHighDegreeJunctionCount} rejectedCrossings={RejectedRoadCrossingCount} rejectedTooLong={RejectedRoadTooLongCount} targets={RoadTargetAnchorCount} quarryTargets={RoadTargetQuarryCount} ruinTargets={RoadTargetRuinCount} forestTargets={RoadTargetForestEdgeCount} edgeTargets={RoadTargetWorldEdgeExitCount} futureTargets={FutureRoadTargetCount} rejectedTargets={RejectedRoadTargetCount} rejectedBranches={RejectedBranchRoadCount} roadLayer={RoadLayerEnabled} forestRegions={ForestRegionCount} majorForests={MajorForestRegionCount} minorForests={MinorForestPatchCount} forestLayer={ForestLayerEnabled} quarryRegions={QuarryRegionCount} majorQuarries={MajorQuarryCount} minorQuarries={MinorQuarryCount} quarryLayer={QuarryLayerEnabled} rejectedQuarries={RejectedQuarryPlacementCount} ruins={RuinSiteCount} roadLinkedRuins={RoadLinkedRuinCount} ruinLayer={RuinLayerEnabled} rejectedRuins={RejectedRuinPlacementCount}";
     }
 
     private static FlatlandCellSampleV2 CreateOutOfBoundsSample(Vector2I globalCell)
