@@ -230,6 +230,78 @@ public sealed class ProceduralWorldGeneratorV2
         }
     }
 
+    public int V3HamletCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.HamletCount : 0;
+        }
+    }
+
+    public int V3VillageTierCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.VillageTierCount : 0;
+        }
+    }
+
+    public int V3LargeVillageCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.LargeVillageCount : 0;
+        }
+    }
+
+    public int V3TownCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.TownCount : 0;
+        }
+    }
+
+    public int V3CityCandidateCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.CityCandidateCount : 0;
+        }
+    }
+
+    public string V3SettlementRoleDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.SettlementRoleDistribution : "common/farm/trade/mining/forest/frontier/ruin/start=0/0/0/0/0/0/0/0";
+        }
+    }
+
+    public VillageScaleV2 V3StartingSettlementTier
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.StartingSettlementTier : VillageScaleV2.Village;
+        }
+    }
+
+    public SettlementRoleV3 V3StartingSettlementRole
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.StartingSettlementRole : SettlementRoleV3.StartingSettlement;
+        }
+    }
+
     public int V3StartingVillageId
     {
         get
@@ -520,6 +592,24 @@ public sealed class ProceduralWorldGeneratorV2
         }
     }
 
+    public int V3RejectedForestPlacementCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RejectedForestPlacementCount : 0;
+        }
+    }
+
+    public string V3ForestBiomeDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.ForestBiomeDistribution : "P/F/R/D/W=0/0/0/0/0";
+        }
+    }
+
     public bool V3ForestLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.ForestLayerEnabled;
 
     public int V3QuarryClusterCount
@@ -567,6 +657,15 @@ public sealed class ProceduralWorldGeneratorV2
         }
     }
 
+    public string V3QuarryBiomeDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.QuarryBiomeDistribution : "P/F/R/D/W=0/0/0/0/0";
+        }
+    }
+
     public bool V3QuarryLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.QuarryLayerEnabled;
 
     public int V3RuinSiteCount
@@ -596,7 +695,103 @@ public sealed class ProceduralWorldGeneratorV2
         }
     }
 
+    public string V3RuinBiomeDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.RuinBiomeDistribution : "P/F/R/D/W=0/0/0/0/0";
+        }
+    }
+
     public bool V3RuinLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.RuinLayerEnabled;
+
+    public int V3BiomeRegionCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.BiomeRegionCount : 0;
+        }
+    }
+
+    public int V3MajorBiomeRegionCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.MajorBiomeRegionCount : 0;
+        }
+    }
+
+    public int V3MinorBiomeRegionCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.MinorBiomeRegionCount : 0;
+        }
+    }
+
+    public float V3AverageMajorBiomeRadius
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.AverageMajorBiomeRadius : 0.0f;
+        }
+    }
+
+    public float V3AverageMinorBiomeRadius
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.AverageMinorBiomeRadius : 0.0f;
+        }
+    }
+
+    public int V3BiomeForestLandCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.BiomeForestLandCount : 0;
+        }
+    }
+
+    public int V3BiomeRockyHillsCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.BiomeRockyHillsCount : 0;
+        }
+    }
+
+    public int V3BiomeDrylandCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.BiomeDrylandCount : 0;
+        }
+    }
+
+    public int V3BiomeWastelandCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.BiomeWastelandCount : 0;
+        }
+    }
+
+    public bool V3BiomeLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.BiomeLayerEnabled;
+
+    public string V3BiomeResolveMode => _generationRequest.PlanVersion == WorldPlanVersionV2.V3
+        ? _flatlandPlanV3.BiomeResolveMode
+        : "Inactive";
 
     public IReadOnlyList<VillageSiteV2> GetV3Villages()
     {
@@ -638,6 +833,14 @@ public sealed class ProceduralWorldGeneratorV2
             : System.Array.Empty<RuinSiteV3>();
     }
 
+    public IReadOnlyList<BiomeRegionV3> GetV3BiomeRegions()
+    {
+        EnsureNoiseProfile(_generationRequest.Seed);
+        return _generationRequest.PlanVersion == WorldPlanVersionV2.V3
+            ? _flatlandPlanV3.BiomeRegions
+            : System.Array.Empty<BiomeRegionV3>();
+    }
+
     public static int MakeSectorSeed(int worldSeed, Vector2I sectorCoord)
     {
         uint hash = 2166136261u;
@@ -663,6 +866,7 @@ public sealed class ProceduralWorldGeneratorV2
             SectorCoord = metadata.SectorCoord,
             ChunkCoord = ChunkCoord.FromLocalCell(localCell),
             TileType = sample.TileType,
+            BiomeKind = sample.BiomeKind,
             Biome = sample.Biome,
             ResourceType = WorldResourceTypeV2.None,
             IsWater = sample.IsRiver,

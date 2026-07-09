@@ -10,6 +10,7 @@ public sealed class CellData
     public Vector2I SectorCoord { get; init; }
     public Vector2I ChunkCoord { get; init; }
     public TileType TileType { get; set; }
+    public BiomeKindV3 BiomeKind { get; set; } = BiomeKindV3.Plains;
     public BiomeTypeV2 Biome { get; set; } = BiomeTypeV2.Plains;
     public WorldResourceTypeV2 ResourceType { get; set; } = WorldResourceTypeV2.None;
     public bool IsWater { get; set; }

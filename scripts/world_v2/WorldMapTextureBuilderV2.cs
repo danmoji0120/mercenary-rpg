@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using Godot;
 
@@ -6,6 +7,10 @@ namespace WorldV2;
 public static class WorldMapTextureBuilderV2
 {
     private static readonly Color PlainColor = new(0.24f, 0.43f, 0.25f, 1.0f);
+    private static readonly Color ForestLandBiomeColor = new(0.17f, 0.34f, 0.18f, 1.0f);
+    private static readonly Color RockyHillsBiomeColor = new(0.37f, 0.38f, 0.29f, 1.0f);
+    private static readonly Color DrylandBiomeColor = new(0.48f, 0.44f, 0.25f, 1.0f);
+    private static readonly Color WastelandBiomeColor = new(0.35f, 0.32f, 0.27f, 1.0f);
     private static readonly Color ForestColor = new(0.12f, 0.29f, 0.16f, 1.0f);
     private static readonly Color RoadColor = new(0.46f, 0.34f, 0.20f, 1.0f);
     private static readonly Color BranchRoadColor = new(0.38f, 0.31f, 0.20f, 1.0f);
@@ -48,6 +53,11 @@ public static class WorldMapTextureBuilderV2
 
     private static void DrawV3Features(Image image, WorldManagerV2 manager, WorldGenerationSettingsV2 settings)
     {
+        if (WorldGenerationLayerSettingsV2.EnableBiomes)
+        {
+            DrawBiomeBackground(image, manager.WorldMapSize, manager.GetV3MapBiomeRegions());
+        }
+
         if (WorldGenerationLayerSettingsV2.EnableForests)
         {
             foreach (ForestRegionV3 forest in manager.GetV3MapForestRegions())
@@ -87,6 +97,41 @@ public static class WorldMapTextureBuilderV2
                 DrawVillage(image, manager.WorldMapSize, village);
             }
         }
+    }
+
+    private static void DrawBiomeBackground(Image image, WorldMapSizeDefinitionV2 worldSize, IReadOnlyList<BiomeRegionV3> biomes)
+    {
+        int step = image.GetWidth() >= 1024 ? 2 : 1;
+        for (int y = 0; y < image.GetHeight(); y += step)
+        {
+            for (int x = 0; x < image.GetWidth(); x += step)
+            {
+                int sampleX = Mathf.Min(x + step / 2, image.GetWidth() - 1);
+                int sampleY = Mathf.Min(y + step / 2, image.GetHeight() - 1);
+                Vector2 world = PixelToWorld(image, worldSize, sampleX, sampleY);
+                ResolveMapBiome(world, biomes, out BiomeKindV3 bestKind, out BiomeKindV3 secondKind, out float margin);
+                Color color = GetBiomeColor(bestKind);
+                if (secondKind != bestKind && margin < 0.12f)
+                {
+                    float transition = Mathf.Clamp((0.12f - margin) / 0.12f, 0.0f, 1.0f) * 0.22f;
+                    color = color.Lerp(GetBiomeColor(secondKind), transition);
+                }
+
+                FillPixelBlock(image, x, y, step, color);
+            }
+        }
+    }
+
+    private static Color GetBiomeColor(BiomeKindV3 biomeKind)
+    {
+        return biomeKind switch
+        {
+            BiomeKindV3.ForestLand => ForestLandBiomeColor,
+            BiomeKindV3.RockyHills => RockyHillsBiomeColor,
+            BiomeKindV3.Dryland => DrylandBiomeColor,
+            BiomeKindV3.Wasteland => WastelandBiomeColor,
+            _ => PlainColor
+        };
     }
 
     private static void DrawForestRegion(Image image, WorldMapSizeDefinitionV2 worldSize, ForestRegionV3 forest)
@@ -156,9 +201,29 @@ public static class WorldMapTextureBuilderV2
     {
         Vector2I center = WorldToPixel(image, worldSize, village.Center);
         float scale = image.GetWidth() / (float)worldSize.WidthCells;
-        int radius = Mathf.Clamp(Mathf.RoundToInt(village.Radius * scale), village.IsStartingVillage ? 5 : 3, village.IsStartingVillage ? 11 : 7);
+        int minRadius = village.Scale switch
+        {
+            VillageScaleV2.CityCandidate => 7,
+            VillageScaleV2.Town => 6,
+            VillageScaleV2.LargeVillage => 5,
+            VillageScaleV2.Hamlet => 3,
+            _ => 4
+        };
+        int maxRadius = village.Scale switch
+        {
+            VillageScaleV2.CityCandidate => 13,
+            VillageScaleV2.Town => 11,
+            VillageScaleV2.LargeVillage => 9,
+            VillageScaleV2.Hamlet => 5,
+            _ => 7
+        };
+        int radius = Mathf.Clamp(Mathf.RoundToInt(village.Radius * scale), village.IsStartingVillage ? 5 : minRadius, village.IsStartingVillage ? 12 : maxRadius);
         DrawFilledCircle(image, center, radius, village.IsStartingVillage ? StartingVillageColor : VillageColor);
         DrawCircleOutline(image, center, radius + 1, new Color(0.10f, 0.09f, 0.07f, 0.85f));
+        if (village.Scale is VillageScaleV2.Town or VillageScaleV2.CityCandidate)
+        {
+            DrawCircleOutline(image, center, radius + 3, new Color(0.18f, 0.14f, 0.08f, village.Scale == VillageScaleV2.CityCandidate ? 0.85f : 0.62f));
+        }
     }
 
     private static float GetRegionPotential(Vector2 point, Vector2 center, float radius, float noiseScale, float warpStrength, float threshold, float density, int seed)
@@ -185,6 +250,72 @@ public static class WorldMapTextureBuilderV2
         return potential > threshold
             ? Mathf.Clamp((potential - threshold) / Mathf.Max(0.05f, 1.05f - threshold) * density, 0.0f, 1.0f)
             : 0.0f;
+    }
+
+    private static void ResolveMapBiome(Vector2 point, IReadOnlyList<BiomeRegionV3> biomes, out BiomeKindV3 bestKind, out BiomeKindV3 secondKind, out float margin)
+    {
+        bestKind = BiomeKindV3.Plains;
+        secondKind = BiomeKindV3.Plains;
+        float bestScore = 0.0f;
+        float secondScore = -0.20f;
+
+        foreach (BiomeRegionV3 biome in biomes)
+        {
+            if (!biome.IsMajorRegion && !biome.Bounds.HasPoint(point))
+            {
+                continue;
+            }
+
+            float score = GetBiomeRegionScore(point, biome);
+            if (score > bestScore)
+            {
+                secondScore = bestScore;
+                secondKind = bestKind;
+                bestScore = score;
+                bestKind = biome.Kind;
+            }
+            else if (score > secondScore)
+            {
+                secondScore = score;
+                secondKind = biome.Kind;
+            }
+        }
+
+        margin = Mathf.Clamp(bestScore - secondScore, 0.0f, 1.0f);
+    }
+
+    private static float GetBiomeRegionScore(Vector2 point, BiomeRegionV3 biome)
+    {
+        float safeNoiseScale = Mathf.Max(0.0002f, biome.NoiseScale);
+        float warpScale = safeNoiseScale * 0.22f;
+        float warpX = (FractalValueNoise(point.X * warpScale, point.Y * warpScale, biome.Seed + 101, 1) - 0.5f) * 2.0f;
+        float warpY = (FractalValueNoise(point.X * warpScale, point.Y * warpScale, biome.Seed + 211, 1) - 0.5f) * 2.0f;
+        Vector2 warped = point + new Vector2(warpX, warpY) * Mathf.Max(0.0f, biome.WarpStrength);
+        float normalizedDistance = warped.DistanceTo(biome.Center) / Mathf.Max(4.0f, biome.ApproxRadius);
+        float low = FractalValueNoise(warped.X * safeNoiseScale, warped.Y * safeNoiseScale, biome.Seed + 307, 1);
+        float edge = FractalValueNoise(warped.X * safeNoiseScale * 1.25f, warped.Y * safeNoiseScale * 1.25f, biome.Seed + 409, 1);
+        float boundaryShift = (low - 0.5f) * 0.10f + (edge - 0.5f) * 0.04f;
+
+        if (biome.IsMajorRegion)
+        {
+            float plainsBias = biome.Kind == BiomeKindV3.Plains ? 0.08f : 0.0f;
+            return biome.Weight + plainsBias - normalizedDistance + boundaryShift;
+        }
+
+        if (normalizedDistance > 1.16f)
+        {
+            return -1000.0f;
+        }
+
+        float potential = 1.0f - normalizedDistance + boundaryShift;
+        if (normalizedDistance < 0.55f)
+        {
+            potential = Mathf.Max(potential, 0.72f + (low - 0.5f) * 0.04f);
+        }
+
+        return potential > biome.Threshold
+            ? Mathf.Lerp(0.18f, 0.54f, Mathf.Clamp((potential - biome.Threshold) / Mathf.Max(0.05f, 1.04f - biome.Threshold), 0.0f, 1.0f)) * biome.Weight
+            : -1000.0f;
     }
 
     private static void DrawLine(Image image, Vector2I from, Vector2I to, Color color, int thickness)
@@ -271,6 +402,19 @@ public static class WorldMapTextureBuilderV2
         }
 
         image.SetPixel(x, y, color);
+    }
+
+    private static void FillPixelBlock(Image image, int x, int y, int size, Color color)
+    {
+        int maxY = Mathf.Min(y + size, image.GetHeight());
+        int maxX = Mathf.Min(x + size, image.GetWidth());
+        for (int py = y; py < maxY; py++)
+        {
+            for (int px = x; px < maxX; px++)
+            {
+                image.SetPixel(px, py, color);
+            }
+        }
     }
 
     private static float FractalValueNoise(float x, float y, int salt, int octaves)

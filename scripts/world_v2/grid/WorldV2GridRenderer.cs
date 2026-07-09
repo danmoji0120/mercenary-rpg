@@ -128,6 +128,7 @@ public partial class WorldV2GridRenderer : Node2D
 
         return cell.TileType switch
         {
+            TileType.Grass => GetBiomeGroundColor(cell.BiomeKind),
             TileType.TownPavement => new Color(0.38f, 0.39f, 0.34f),
             TileType.Plaza => new Color(0.45f, 0.43f, 0.35f),
             TileType.Road => new Color(0.56f, 0.46f, 0.27f),
@@ -156,6 +157,18 @@ public partial class WorldV2GridRenderer : Node2D
             TileType.Hills => new Color(0.40f, 0.48f, 0.35f),
             TileType.Mountain => new Color(0.46f, 0.46f, 0.44f),
             TileType.Toxic => new Color(0.30f, 0.35f, 0.21f),
+            _ => new Color(0.37f, 0.53f, 0.31f)
+        };
+    }
+
+    private static Color GetBiomeGroundColor(BiomeKindV3 biomeKind)
+    {
+        return biomeKind switch
+        {
+            BiomeKindV3.ForestLand => new Color(0.33f, 0.49f, 0.31f),
+            BiomeKindV3.RockyHills => new Color(0.41f, 0.46f, 0.34f),
+            BiomeKindV3.Dryland => new Color(0.49f, 0.48f, 0.31f),
+            BiomeKindV3.Wasteland => new Color(0.39f, 0.38f, 0.32f),
             _ => new Color(0.37f, 0.53f, 0.31f)
         };
     }

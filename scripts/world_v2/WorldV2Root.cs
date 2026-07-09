@@ -166,7 +166,8 @@ public partial class WorldV2Root : Node2D
             Key.Key7 => 7,
             Key.Key8 => 8,
             Key.Key9 => 9,
-            _ => 0
+            Key.Key0 => 0,
+            _ => -1
         };
 
         if (!WorldGenerationLayerSettingsV2.ToggleByNumber(number, out string label))

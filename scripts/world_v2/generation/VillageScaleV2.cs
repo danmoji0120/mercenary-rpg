@@ -5,5 +5,6 @@ public enum VillageScaleV2
     Hamlet,
     Village,
     LargeVillage,
-    Town
+    Town,
+    CityCandidate
 }

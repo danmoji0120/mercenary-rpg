@@ -60,19 +60,22 @@ public partial class WorldV2DebugHud : Control
         string worldBoundsLine = $"bounds: cells={manager.WorldBounds.Position}..{manager.WorldBounds.End - Vector2I.One}";
         string worldMapLine = $"world map: visible={manager.WorldMapOverlayVisible} texture={manager.WorldMapTextureSize.X}x{manager.WorldMapTextureSize.Y} build={manager.WorldMapBuildMs:0.0}ms cached={manager.WorldMapCached} reason={manager.WorldMapLastBuildReason}";
         string v3VillageLine = manager.PlanVersion == WorldPlanVersionV2.V3
-            ? $"v3 villages: count={manager.V3VillageCount} startId={manager.V3StartingVillageId} center={manager.V3StartingVillageCenter} spawn={manager.V3PlayerSpawnCell} nearest={manager.V3NearestToWorldCenterDistance:0.0}"
+            ? $"v3 settlements: count={manager.V3VillageCount} ham/v/lg/town/city={manager.V3HamletCount}/{manager.V3VillageTierCount}/{manager.V3LargeVillageCount}/{manager.V3TownCount}/{manager.V3CityCandidateCount} startId={manager.V3StartingVillageId} tier={manager.V3StartingSettlementTier} role={manager.V3StartingSettlementRole} center={manager.V3StartingVillageCenter} spawn={manager.V3PlayerSpawnCell} roles={manager.V3SettlementRoleDistribution}"
             : "v3 villages: inactive";
+        string v3BiomeLine = manager.PlanVersion == WorldPlanVersionV2.V3
+            ? $"v3 biomes: enabled={manager.V3BiomeLayerEnabled} mode={manager.V3BiomeResolveMode} regions={manager.V3BiomeRegionCount} major={manager.V3MajorBiomeRegionCount} minor={manager.V3MinorBiomeRegionCount} avgR={manager.V3AverageMajorBiomeRadius:0}/{manager.V3AverageMinorBiomeRadius:0} plains=fallback forest/rocky/dry/waste={manager.V3BiomeForestLandCount}/{manager.V3BiomeRockyHillsCount}/{manager.V3BiomeDrylandCount}/{manager.V3BiomeWastelandCount}"
+            : "v3 biomes: inactive";
         string v3RoadLine = manager.PlanVersion == WorldPlanVersionV2.V3
             ? $"v3 roads: enabled={manager.V3RoadLayerEnabled} total={manager.V3RoadCount} primary={manager.V3PrimaryRoadCount} secondary={manager.V3SecondaryRoadCount} branch={manager.V3BranchRoadCount} nodes={manager.V3RoadNodeCount} junctions={manager.V3RoadJunctionCount} maxDeg={manager.V3MaxRoadJunctionDegree} trunks={manager.V3SharedTrunkCount} merged={manager.V3MergedRoadCandidateCount} rejectJ/deg/x/long={manager.V3RejectedRoadJunctionCount}/{manager.V3RejectedHighDegreeJunctionCount}/{manager.V3RejectedRoadCrossingCount}/{manager.V3RejectedRoadTooLongCount} targets={manager.V3RoadTargetAnchorCount} q/r/f/e/future={manager.V3RoadTargetQuarryCount}/{manager.V3RoadTargetRuinCount}/{manager.V3RoadTargetForestEdgeCount}/{manager.V3RoadTargetWorldEdgeExitCount}/{manager.V3FutureRoadTargetCount} rejectT/B={manager.V3RejectedRoadTargetCount}/{manager.V3RejectedBranchRoadCount}"
             : "v3 roads: inactive";
         string v3ForestLine = manager.PlanVersion == WorldPlanVersionV2.V3
-            ? $"v3 forests: enabled={manager.V3ForestLayerEnabled} regions={manager.V3ForestRegionCount} major={manager.V3MajorForestRegionCount} minor={manager.V3MinorForestPatchCount}"
+            ? $"v3 forests: enabled={manager.V3ForestLayerEnabled} regions={manager.V3ForestRegionCount} major={manager.V3MajorForestRegionCount} minor={manager.V3MinorForestPatchCount} rejected={manager.V3RejectedForestPlacementCount} dist={manager.V3ForestBiomeDistribution}"
             : "v3 forests: inactive";
         string v3QuarryLine = manager.PlanVersion == WorldPlanVersionV2.V3
-            ? $"v3 quarries: enabled={manager.V3QuarryLayerEnabled} regions={manager.V3QuarryRegionCount} major={manager.V3MajorQuarryCount} minor={manager.V3MinorQuarryCount} rejected={manager.V3RejectedQuarryPlacementCount}"
+            ? $"v3 quarries: enabled={manager.V3QuarryLayerEnabled} regions={manager.V3QuarryRegionCount} major={manager.V3MajorQuarryCount} minor={manager.V3MinorQuarryCount} rejected={manager.V3RejectedQuarryPlacementCount} dist={manager.V3QuarryBiomeDistribution}"
             : "v3 quarries: inactive";
         string v3RuinLine = manager.PlanVersion == WorldPlanVersionV2.V3
-            ? $"v3 ruins: enabled={manager.V3RuinLayerEnabled} sites={manager.V3RuinSiteCount} roadLinked={manager.V3RoadLinkedRuinCount} rejected={manager.V3RejectedRuinPlacementCount}"
+            ? $"v3 ruins: enabled={manager.V3RuinLayerEnabled} sites={manager.V3RuinSiteCount} roadLinked={manager.V3RoadLinkedRuinCount} rejected={manager.V3RejectedRuinPlacementCount} dist={manager.V3RuinBiomeDistribution}"
             : "v3 ruins: inactive";
         string dangerLine = metadata == null
             ? "danger/resources: -"
@@ -150,7 +153,7 @@ public partial class WorldV2DebugHud : Control
         if (streamManager != null)
         {
             flatlandSample = manager.SampleFlatlandAt(streamManager.CenterGlobalCellCoord);
-            sampleLine = $"sample: tile={flatlandSample.TileType} biome={flatlandSample.Biome} forest={flatlandSample.ForestStrength:0.00} restricted={flatlandSample.IsBuildRestricted}";
+            sampleLine = $"sample: tile={flatlandSample.TileType} biome={flatlandSample.Biome} biomeV3={flatlandSample.BiomeKind} forest={flatlandSample.ForestStrength:0.00} restricted={flatlandSample.IsBuildRestricted}";
             featureLine = $"features: river={flatlandSample.IsRiver} bank={flatlandSample.IsRiverBank} bridge={flatlandSample.IsBridgeCandidate} road={flatlandSample.IsRoad} quarry={flatlandSample.IsQuarry} ore={flatlandSample.HasOreSpot}";
             siteLine = $"site: village={flatlandSample.IsVillage} starting={flatlandSample.IsStartingVillage} landmark={flatlandSample.LandmarkKind}";
         }
@@ -162,6 +165,7 @@ public partial class WorldV2DebugHud : Control
                 $"world: {manager.WorldId}  seed: {manager.WorldSeed}\n" +
                 $"rivers: count={settings.RiverCount} width={settings.RiverWidth:0.0} bank={settings.RiverBankWidth:0.0} meander={settings.RiverMeanderStrength:0}\n" +
                 $"forest: clusters={settings.ForestClusterCount} length={settings.ForestClusterMinLength:0}-{settings.ForestClusterMaxLength:0} width={settings.ForestClusterMinWidth:0}-{settings.ForestClusterMaxWidth:0}\n" +
+                $"v3 biome regions: small={settings.V3SmallMajorBiomeMinCount}-{settings.V3SmallMajorBiomeMaxCount}/{settings.V3SmallMinorBiomeMinCount}-{settings.V3SmallMinorBiomeMaxCount} medium={settings.V3MediumMajorBiomeMinCount}-{settings.V3MediumMajorBiomeMaxCount}/{settings.V3MediumMinorBiomeMinCount}-{settings.V3MediumMinorBiomeMaxCount} large={settings.V3LargeMajorBiomeMinCount}-{settings.V3LargeMajorBiomeMaxCount}/{settings.V3LargeMinorBiomeMinCount}-{settings.V3LargeMinorBiomeMaxCount} huge={settings.V3HugeMajorBiomeMinCount}-{settings.V3HugeMajorBiomeMaxCount}/{settings.V3HugeMinorBiomeMinCount}-{settings.V3HugeMinorBiomeMaxCount}\n" +
                 $"v3 forest regions: small={settings.V3SmallMajorForestMinCount}-{settings.V3SmallMajorForestMaxCount}/{settings.V3SmallMinorForestMinCount}-{settings.V3SmallMinorForestMaxCount} medium={settings.V3MediumMajorForestMinCount}-{settings.V3MediumMajorForestMaxCount}/{settings.V3MediumMinorForestMinCount}-{settings.V3MediumMinorForestMaxCount} large={settings.V3LargeMajorForestMinCount}-{settings.V3LargeMajorForestMaxCount}/{settings.V3LargeMinorForestMinCount}-{settings.V3LargeMinorForestMaxCount} huge={settings.V3HugeMajorForestMinCount}-{settings.V3HugeMajorForestMaxCount}/{settings.V3HugeMinorForestMinCount}-{settings.V3HugeMinorForestMaxCount}\n" +
                 $"v3 quarries: small={settings.V3SmallMajorQuarryMinCount}-{settings.V3SmallMajorQuarryMaxCount}/{settings.V3SmallMinorQuarryMinCount}-{settings.V3SmallMinorQuarryMaxCount} medium={settings.V3MediumMajorQuarryMinCount}-{settings.V3MediumMajorQuarryMaxCount}/{settings.V3MediumMinorQuarryMinCount}-{settings.V3MediumMinorQuarryMaxCount} large={settings.V3LargeMajorQuarryMinCount}-{settings.V3LargeMajorQuarryMaxCount}/{settings.V3LargeMinorQuarryMinCount}-{settings.V3LargeMinorQuarryMaxCount} huge={settings.V3HugeMajorQuarryMinCount}-{settings.V3HugeMajorQuarryMaxCount}/{settings.V3HugeMinorQuarryMinCount}-{settings.V3HugeMinorQuarryMaxCount}\n" +
                 $"v3 quarry field: radius major={settings.V3MajorQuarryMinRadius:0}-{settings.V3MajorQuarryMaxRadius:0} minor={settings.V3MinorQuarryMinRadius:0}-{settings.V3MinorQuarryMaxRadius:0} oreChance={settings.V3QuarryOreSpotChance:P1}\n" +
@@ -175,6 +179,7 @@ public partial class WorldV2DebugHud : Control
                 $"{biomeStatsLine}\n" +
                 $"{worldMapLine}\n" +
                 $"{v3VillageLine}\n" +
+                $"{v3BiomeLine}\n" +
                 $"{v3RoadLine}\n" +
                 $"{v3ForestLine}\n" +
                 $"{v3QuarryLine}\n" +
@@ -206,6 +211,7 @@ public partial class WorldV2DebugHud : Control
             $"{worldBoundsLine}\n" +
             $"{worldMapLine}\n" +
             $"{v3VillageLine}\n" +
+            $"{v3BiomeLine}\n" +
             $"{v3RoadLine}\n" +
             $"{v3ForestLine}\n" +
             $"{v3QuarryLine}\n" +

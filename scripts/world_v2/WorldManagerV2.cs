@@ -49,7 +49,15 @@ public partial class WorldManagerV2 : Node
     public Rect2I WorldBounds => WorldMapSize.CellBounds;
     public string GeneratedPlanType => _generator.GeneratedPlanType;
     public int V3VillageCount => _generator.V3VillageCount;
+    public int V3HamletCount => _generator.V3HamletCount;
+    public int V3VillageTierCount => _generator.V3VillageTierCount;
+    public int V3LargeVillageCount => _generator.V3LargeVillageCount;
+    public int V3TownCount => _generator.V3TownCount;
+    public int V3CityCandidateCount => _generator.V3CityCandidateCount;
+    public string V3SettlementRoleDistribution => _generator.V3SettlementRoleDistribution;
     public int V3StartingVillageId => _generator.V3StartingVillageId;
+    public VillageScaleV2 V3StartingSettlementTier => _generator.V3StartingSettlementTier;
+    public SettlementRoleV3 V3StartingSettlementRole => _generator.V3StartingSettlementRole;
     public Vector2I V3StartingVillageCenter => _generator.V3StartingVillageCenter;
     public Vector2I V3PlayerSpawnCell => _generator.PlayerSpawnCell;
     public float V3NearestToWorldCenterDistance => _generator.V3NearestToWorldCenterDistance;
@@ -82,17 +90,32 @@ public partial class WorldManagerV2 : Node
     public int V3MajorForestRegionCount => _generator.V3MajorForestRegionCount;
     public int V3MinorForestPatchCount => _generator.V3MinorForestPatchCount;
     public int V3LargeForestClusterCount => _generator.V3LargeForestClusterCount;
+    public int V3RejectedForestPlacementCount => _generator.V3RejectedForestPlacementCount;
+    public string V3ForestBiomeDistribution => _generator.V3ForestBiomeDistribution;
     public bool V3ForestLayerEnabled => _generator.V3ForestLayerEnabled;
     public int V3QuarryClusterCount => _generator.V3QuarryClusterCount;
     public int V3QuarryRegionCount => _generator.V3QuarryRegionCount;
     public int V3MajorQuarryCount => _generator.V3MajorQuarryCount;
     public int V3MinorQuarryCount => _generator.V3MinorQuarryCount;
     public int V3RejectedQuarryPlacementCount => _generator.V3RejectedQuarryPlacementCount;
+    public string V3QuarryBiomeDistribution => _generator.V3QuarryBiomeDistribution;
     public bool V3QuarryLayerEnabled => _generator.V3QuarryLayerEnabled;
     public int V3RuinSiteCount => _generator.V3RuinSiteCount;
     public int V3RoadLinkedRuinCount => _generator.V3RoadLinkedRuinCount;
     public int V3RejectedRuinPlacementCount => _generator.V3RejectedRuinPlacementCount;
+    public string V3RuinBiomeDistribution => _generator.V3RuinBiomeDistribution;
     public bool V3RuinLayerEnabled => _generator.V3RuinLayerEnabled;
+    public int V3BiomeRegionCount => _generator.V3BiomeRegionCount;
+    public int V3MajorBiomeRegionCount => _generator.V3MajorBiomeRegionCount;
+    public int V3MinorBiomeRegionCount => _generator.V3MinorBiomeRegionCount;
+    public float V3AverageMajorBiomeRadius => _generator.V3AverageMajorBiomeRadius;
+    public float V3AverageMinorBiomeRadius => _generator.V3AverageMinorBiomeRadius;
+    public int V3BiomeForestLandCount => _generator.V3BiomeForestLandCount;
+    public int V3BiomeRockyHillsCount => _generator.V3BiomeRockyHillsCount;
+    public int V3BiomeDrylandCount => _generator.V3BiomeDrylandCount;
+    public int V3BiomeWastelandCount => _generator.V3BiomeWastelandCount;
+    public bool V3BiomeLayerEnabled => _generator.V3BiomeLayerEnabled;
+    public string V3BiomeResolveMode => _generator.V3BiomeResolveMode;
     public bool WorldMapOverlayVisible { get; private set; }
     public Vector2I WorldMapTextureSize { get; private set; }
     public double WorldMapBuildMs { get; private set; }
@@ -220,6 +243,11 @@ public partial class WorldManagerV2 : Node
         return _generator.GetV3RuinSites();
     }
 
+    public IReadOnlyList<BiomeRegionV3> GetV3MapBiomeRegions()
+    {
+        return _generator.GetV3BiomeRegions();
+    }
+
     public Texture2D GetOrBuildWorldMapTexture(string reason)
     {
         ApplyGenerationSettings();
@@ -331,7 +359,7 @@ public partial class WorldManagerV2 : Node
         GD.Print("  F11: rebuild visible renderers from cache, F12: full regenerate and clear structures");
         GD.Print("  Ctrl+1/2/3/4: toggle village/site/road/forest raster diagnostics");
         GD.Print("  Ctrl+5/6/7/8: toggle village/site/road/forest context diagnostics");
-        GD.Print("  Ctrl+Shift+1..8: toggle generation layers, Ctrl+Shift+9: toggle rivers");
+        GD.Print("  Ctrl+Shift+0: toggle biomes, Ctrl+Shift+1..8: toggle generation layers, Ctrl+Shift+9: toggle rivers");
     }
 
     public void PrintRuntimeStateSummary()
@@ -356,10 +384,11 @@ public partial class WorldManagerV2 : Node
         ResolveReferences();
         GD.Print($"WorldV2 world: map={MapSizePreset} size={WorldMapSize.WidthCells}x{WorldMapSize.HeightCells} chunks={WorldMapSize.ChunkWidth}x{WorldMapSize.ChunkHeight} plan={PlanVersion} generated={GeneratedPlanType} seed={WorldSeed} bounds={WorldBounds.Position}..{WorldBounds.End - Vector2I.One}");
         GD.Print(V3VillageDebugSummary);
+        GD.Print($"V3 biomes: enabled={V3BiomeLayerEnabled} mode={V3BiomeResolveMode} regions={V3BiomeRegionCount} major={V3MajorBiomeRegionCount} minor={V3MinorBiomeRegionCount} avgMajorRadius={V3AverageMajorBiomeRadius:0} avgMinorRadius={V3AverageMinorBiomeRadius:0} forestLand={V3BiomeForestLandCount} rocky={V3BiomeRockyHillsCount} dry={V3BiomeDrylandCount} wasteland={V3BiomeWastelandCount}");
         GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} ruinTargets={V3RoadTargetRuinCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
-        GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount}");
-        GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount}");
-        GD.Print($"V3 ruins: enabled={V3RuinLayerEnabled} sites={V3RuinSiteCount} roadLinked={V3RoadLinkedRuinCount} rejected={V3RejectedRuinPlacementCount}");
+        GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount} rejected={V3RejectedForestPlacementCount} biomeDist={V3ForestBiomeDistribution}");
+        GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount} biomeDist={V3QuarryBiomeDistribution}");
+        GD.Print($"V3 ruins: enabled={V3RuinLayerEnabled} sites={V3RuinSiteCount} roadLinked={V3RoadLinkedRuinCount} rejected={V3RejectedRuinPlacementCount} biomeDist={V3RuinBiomeDistribution}");
         _streamManager?.PrintLoadedChunks();
         GD.Print(WorldGenerationLayerSettingsV2.GetSummary());
     }
@@ -379,10 +408,11 @@ public partial class WorldManagerV2 : Node
     {
         GD.Print($"WorldV2 world: map={MapSizePreset} size={WorldMapSize.WidthCells}x{WorldMapSize.HeightCells} plan={PlanVersion} generated={GeneratedPlanType} seed={WorldSeed}");
         GD.Print(V3VillageDebugSummary);
+        GD.Print($"V3 biomes: enabled={V3BiomeLayerEnabled} mode={V3BiomeResolveMode} regions={V3BiomeRegionCount} major={V3MajorBiomeRegionCount} minor={V3MinorBiomeRegionCount} avgMajorRadius={V3AverageMajorBiomeRadius:0} avgMinorRadius={V3AverageMinorBiomeRadius:0} forestLand={V3BiomeForestLandCount} rocky={V3BiomeRockyHillsCount} dry={V3BiomeDrylandCount} wasteland={V3BiomeWastelandCount}");
         GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} ruinTargets={V3RoadTargetRuinCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
-        GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount}");
-        GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount}");
-        GD.Print($"V3 ruins: enabled={V3RuinLayerEnabled} sites={V3RuinSiteCount} roadLinked={V3RoadLinkedRuinCount} rejected={V3RejectedRuinPlacementCount}");
+        GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount} rejected={V3RejectedForestPlacementCount} biomeDist={V3ForestBiomeDistribution}");
+        GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount} biomeDist={V3QuarryBiomeDistribution}");
+        GD.Print($"V3 ruins: enabled={V3RuinLayerEnabled} sites={V3RuinSiteCount} roadLinked={V3RoadLinkedRuinCount} rejected={V3RejectedRuinPlacementCount} biomeDist={V3RuinBiomeDistribution}");
         WorldV2PerformanceProfiler.Instance.PrintSummary();
     }
 
@@ -507,7 +537,9 @@ public partial class WorldManagerV2 : Node
     private string BuildWorldMapCacheKey()
     {
         return $"{WorldId}:{WorldSeed}:{MapSizePreset}:{PlanVersion}:{WorldMapSize.WidthCells}x{WorldMapSize.HeightCells}:"
-            + $"{V3VillageCount}:{V3RoadCount}:{V3ForestRegionCount}:{V3QuarryRegionCount}:{V3RuinSiteCount}:"
+            + $"{V3VillageCount}:{V3HamletCount}:{V3VillageTierCount}:{V3LargeVillageCount}:{V3TownCount}:{V3CityCandidateCount}:{V3SettlementRoleDistribution}:"
+            + $"{V3RoadCount}:{V3BiomeRegionCount}:{V3AverageMajorBiomeRadius:0}:{V3AverageMinorBiomeRadius:0}:{V3ForestRegionCount}:{V3QuarryRegionCount}:{V3RuinSiteCount}:"
+            + $"{V3ForestBiomeDistribution}:{V3QuarryBiomeDistribution}:{V3RuinBiomeDistribution}:"
             + WorldGenerationLayerSettingsV2.GetSummary();
     }
 
@@ -568,6 +600,7 @@ public partial class WorldManagerV2 : Node
             IsDenseForest = cell.ForestStrength > 0.62f,
             IsBuildRestricted = cell.IsBuildRestricted,
             IsWalkable = cell.IsWalkable,
+            BiomeKind = cell.BiomeKind,
             Biome = cell.Biome,
             TileType = cell.TileType
         };

@@ -2,6 +2,7 @@ namespace WorldV2;
 
 public static class WorldGenerationLayerSettingsV2
 {
+    public static bool EnableBiomes { get; set; } = true;
     public static bool EnableVillages { get; set; } = true;
     public static bool EnableRoads { get; set; } = true;
     public static bool EnableForests { get; set; } = true;
@@ -13,7 +14,8 @@ public static class WorldGenerationLayerSettingsV2
     public static bool EnableRivers { get; set; } = true;
 
     public static bool HasAnyEnabledLayer =>
-        EnableVillages
+        EnableBiomes
+        || EnableVillages
         || EnableRoads
         || EnableForests
         || EnableQuarries
@@ -40,13 +42,17 @@ public static class WorldGenerationLayerSettingsV2
 
     public static string GetSummary()
     {
-        return $"layers: villages={EnableVillages} roads={EnableRoads} forests={EnableForests} quarries={EnableQuarries} ruins={EnableRuins} dungeons={EnableDungeons} bandits={EnableBanditCamps} faction={EnableFactionOutposts} rivers={EnableRivers}";
+        return $"layers: biomes={EnableBiomes} villages={EnableVillages} roads={EnableRoads} forests={EnableForests} quarries={EnableQuarries} ruins={EnableRuins} dungeons={EnableDungeons} bandits={EnableBanditCamps} faction={EnableFactionOutposts} rivers={EnableRivers}";
     }
 
     public static bool ToggleByNumber(int number, out string label)
     {
         switch (number)
         {
+            case 0:
+                EnableBiomes = !EnableBiomes;
+                label = "Biomes";
+                return true;
             case 1:
                 EnableVillages = !EnableVillages;
                 label = "Villages";

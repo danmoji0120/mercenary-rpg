@@ -20,6 +20,7 @@ public sealed class FlatlandCellSampleV2
     public bool IsDenseForest { get; set; }
     public bool IsBuildRestricted { get; set; }
     public bool IsWalkable { get; set; } = true;
+    public BiomeKindV3 BiomeKind { get; set; } = BiomeKindV3.Plains;
     public BiomeTypeV2 Biome { get; set; } = BiomeTypeV2.Plains;
     public TileType TileType { get; set; } = TileType.Grass;
 }
