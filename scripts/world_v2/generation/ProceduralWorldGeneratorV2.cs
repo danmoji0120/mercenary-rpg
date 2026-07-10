@@ -637,6 +637,60 @@ public sealed class ProceduralWorldGeneratorV2
         }
     }
 
+    public string V3MajorForestBiomeDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.MajorForestBiomeDistribution : "P/F/R/D/W=0/0/0/0/0";
+        }
+    }
+
+    public string V3MinorForestBiomeDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.MinorForestBiomeDistribution : "P/F/R/D/W=0/0/0/0/0";
+        }
+    }
+
+    public int V3ForestTotalBonusApplied
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.ForestTotalBonusApplied : 0;
+        }
+    }
+
+    public int V3BiomeQuotaFallbackCount
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.BiomeQuotaFallbackCount : 0;
+        }
+    }
+
+    public bool V3BiomeFeatureDistributionEnabled
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.BiomeFeatureDistributionEnabled;
+        }
+    }
+
+    public string V3BiomeCellDistribution
+    {
+        get
+        {
+            EnsureNoiseProfile(_generationRequest.Seed);
+            return _generationRequest.PlanVersion == WorldPlanVersionV2.V3 ? _flatlandPlanV3.BiomeCellDistribution : "P/F/R/D/W=0/0/0/0/0";
+        }
+    }
+
     public bool V3ForestLayerEnabled => _generationRequest.PlanVersion == WorldPlanVersionV2.V3 && _flatlandPlanV3.ForestLayerEnabled;
 
     public int V3QuarryClusterCount

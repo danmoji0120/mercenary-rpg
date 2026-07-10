@@ -95,6 +95,11 @@ public partial class WorldManagerV2 : Node
     public int V3LargeForestClusterCount => _generator.V3LargeForestClusterCount;
     public int V3RejectedForestPlacementCount => _generator.V3RejectedForestPlacementCount;
     public string V3ForestBiomeDistribution => _generator.V3ForestBiomeDistribution;
+    public string V3MajorForestBiomeDistribution => _generator.V3MajorForestBiomeDistribution;
+    public string V3MinorForestBiomeDistribution => _generator.V3MinorForestBiomeDistribution;
+    public int V3ForestTotalBonusApplied => _generator.V3ForestTotalBonusApplied;
+    public int V3BiomeQuotaFallbackCount => _generator.V3BiomeQuotaFallbackCount;
+    public bool V3BiomeFeatureDistributionEnabled => _generator.V3BiomeFeatureDistributionEnabled;
     public bool V3ForestLayerEnabled => _generator.V3ForestLayerEnabled;
     public int V3QuarryClusterCount => _generator.V3QuarryClusterCount;
     public int V3QuarryRegionCount => _generator.V3QuarryRegionCount;
@@ -138,6 +143,7 @@ public partial class WorldManagerV2 : Node
     public int V3BiomeWastelandCount => _generator.V3BiomeWastelandCount;
     public bool V3BiomeLayerEnabled => _generator.V3BiomeLayerEnabled;
     public string V3BiomeResolveMode => _generator.V3BiomeResolveMode;
+    public string V3BiomeCellDistribution => _generator.V3BiomeCellDistribution;
     public bool WorldMapOverlayVisible { get; private set; }
     public Vector2I WorldMapTextureSize { get; private set; }
     public double WorldMapBuildMs { get; private set; }
@@ -423,7 +429,8 @@ public partial class WorldManagerV2 : Node
         GD.Print(V3VillageDebugSummary);
         GD.Print($"V3 biomes: enabled={V3BiomeLayerEnabled} mode={V3BiomeResolveMode} regions={V3BiomeRegionCount} major={V3MajorBiomeRegionCount} minor={V3MinorBiomeRegionCount} avgMajorRadius={V3AverageMajorBiomeRadius:0} avgMinorRadius={V3AverageMinorBiomeRadius:0} forestLand={V3BiomeForestLandCount} rocky={V3BiomeRockyHillsCount} dry={V3BiomeDrylandCount} wasteland={V3BiomeWastelandCount}");
         GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} ruinTargets={V3RoadTargetRuinCount} dungeonTargets={V3RoadTargetDungeonEntranceCount} banditTargets={V3RoadTargetBanditCampCount} factionTargets={V3RoadTargetFactionOutpostCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
-        GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount} rejected={V3RejectedForestPlacementCount} biomeDist={V3ForestBiomeDistribution}");
+        GD.Print($"V3 biomes: sampleP/F/R/D/W={V3BiomeCellDistribution} quotaFallback={V3BiomeQuotaFallbackCount}");
+        GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount} bonus={V3ForestTotalBonusApplied} rejected={V3RejectedForestPlacementCount} biomeDist={V3ForestBiomeDistribution} majorDist={V3MajorForestBiomeDistribution} minorDist={V3MinorForestBiomeDistribution}");
         GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount} biomeDist={V3QuarryBiomeDistribution}");
         GD.Print($"V3 ruins: enabled={V3RuinLayerEnabled} sites={V3RuinSiteCount} roadLinked={V3RoadLinkedRuinCount} rejected={V3RejectedRuinPlacementCount} biomeDist={V3RuinBiomeDistribution}");
         GD.Print($"V3 dungeons: enabled={V3DungeonLayerEnabled} entrances={V3DungeonEntranceCount} roadLinked={V3RoadLinkedDungeonEntranceCount} rejected={V3RejectedDungeonEntrancePlacementCount} kinds={V3DungeonEntranceKindDistribution} biomeDist={V3DungeonEntranceBiomeDistribution}");
@@ -450,7 +457,8 @@ public partial class WorldManagerV2 : Node
         GD.Print(V3VillageDebugSummary);
         GD.Print($"V3 biomes: enabled={V3BiomeLayerEnabled} mode={V3BiomeResolveMode} regions={V3BiomeRegionCount} major={V3MajorBiomeRegionCount} minor={V3MinorBiomeRegionCount} avgMajorRadius={V3AverageMajorBiomeRadius:0} avgMinorRadius={V3AverageMinorBiomeRadius:0} forestLand={V3BiomeForestLandCount} rocky={V3BiomeRockyHillsCount} dry={V3BiomeDrylandCount} wasteland={V3BiomeWastelandCount}");
         GD.Print($"V3 roads: enabled={V3RoadLayerEnabled} total={V3RoadCount} primary={V3PrimaryRoadCount} secondary={V3SecondaryRoadCount} extra={V3ExtraRoadCount} branch={V3BranchRoadCount} nodes={V3RoadNodeCount} junctions={V3RoadJunctionCount} maxDegree={V3MaxRoadJunctionDegree} trunks={V3SharedTrunkCount} merged={V3MergedRoadCandidateCount} rejectedJunctions={V3RejectedRoadJunctionCount} rejectedHighDegree={V3RejectedHighDegreeJunctionCount} rejectedCrossings={V3RejectedRoadCrossingCount} rejectedTooLong={V3RejectedRoadTooLongCount} targets={V3RoadTargetAnchorCount} quarryTargets={V3RoadTargetQuarryCount} ruinTargets={V3RoadTargetRuinCount} dungeonTargets={V3RoadTargetDungeonEntranceCount} banditTargets={V3RoadTargetBanditCampCount} factionTargets={V3RoadTargetFactionOutpostCount} forestTargets={V3RoadTargetForestEdgeCount} edgeTargets={V3RoadTargetWorldEdgeExitCount} futureTargets={V3FutureRoadTargetCount} rejectedTargets={V3RejectedRoadTargetCount} rejectedBranches={V3RejectedBranchRoadCount}");
-        GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount} rejected={V3RejectedForestPlacementCount} biomeDist={V3ForestBiomeDistribution}");
+        GD.Print($"V3 biomes: sampleP/F/R/D/W={V3BiomeCellDistribution} quotaFallback={V3BiomeQuotaFallbackCount}");
+        GD.Print($"V3 forests: enabled={V3ForestLayerEnabled} regions={V3ForestRegionCount} major={V3MajorForestRegionCount} minor={V3MinorForestPatchCount} bonus={V3ForestTotalBonusApplied} rejected={V3RejectedForestPlacementCount} biomeDist={V3ForestBiomeDistribution} majorDist={V3MajorForestBiomeDistribution} minorDist={V3MinorForestBiomeDistribution}");
         GD.Print($"V3 quarries: enabled={V3QuarryLayerEnabled} regions={V3QuarryRegionCount} major={V3MajorQuarryCount} minor={V3MinorQuarryCount} rejected={V3RejectedQuarryPlacementCount} biomeDist={V3QuarryBiomeDistribution}");
         GD.Print($"V3 ruins: enabled={V3RuinLayerEnabled} sites={V3RuinSiteCount} roadLinked={V3RoadLinkedRuinCount} rejected={V3RejectedRuinPlacementCount} biomeDist={V3RuinBiomeDistribution}");
         GD.Print($"V3 dungeons: enabled={V3DungeonLayerEnabled} entrances={V3DungeonEntranceCount} roadLinked={V3RoadLinkedDungeonEntranceCount} rejected={V3RejectedDungeonEntrancePlacementCount} kinds={V3DungeonEntranceKindDistribution} biomeDist={V3DungeonEntranceBiomeDistribution}");
@@ -579,10 +587,15 @@ public partial class WorldManagerV2 : Node
 
     private string BuildWorldMapCacheKey()
     {
+        WorldGenerationSettingsV2 settings = GetGenerationSettings();
         return $"{WorldId}:{WorldSeed}:{MapSizePreset}:{PlanVersion}:{WorldMapSize.WidthCells}x{WorldMapSize.HeightCells}:"
             + $"{V3VillageCount}:{V3HamletCount}:{V3VillageTierCount}:{V3LargeVillageCount}:{V3TownCount}:{V3CityCandidateCount}:{V3SettlementRoleDistribution}:"
             + $"{V3RoadCount}:{V3BiomeRegionCount}:{V3AverageMajorBiomeRadius:0}:{V3AverageMinorBiomeRadius:0}:{V3ForestRegionCount}:{V3QuarryRegionCount}:{V3RuinSiteCount}:{V3DungeonEntranceCount}:{V3BanditCampCount}:{V3FactionOutpostCount}:"
-            + $"{V3ForestBiomeDistribution}:{V3QuarryBiomeDistribution}:{V3RuinBiomeDistribution}:{V3DungeonEntranceKindDistribution}:{V3DungeonEntranceBiomeDistribution}:{V3BanditCampKindDistribution}:{V3BanditCampBiomeDistribution}:{V3FactionOutpostKindDistribution}:{V3FactionOutpostOwnerDistribution}:{V3FactionOutpostBiomeDistribution}:"
+            + $"{V3BiomeFeatureDistributionEnabled}:{V3BiomeQuotaFallbackCount}:{V3BiomeCellDistribution}:{V3ForestBiomeDistribution}:{V3MajorForestBiomeDistribution}:{V3MinorForestBiomeDistribution}:{V3QuarryBiomeDistribution}:{V3RuinBiomeDistribution}:{V3DungeonEntranceKindDistribution}:{V3DungeonEntranceBiomeDistribution}:{V3BanditCampKindDistribution}:{V3BanditCampBiomeDistribution}:{V3FactionOutpostKindDistribution}:{V3FactionOutpostOwnerDistribution}:{V3FactionOutpostBiomeDistribution}:"
+            + $"{settings.V3EnableBiomeFeatureDistribution}:{settings.V3BiomeQuotaFallbackEnabled}:{settings.V3BiomePlacementMaxAttempts}:{settings.V3SmallForestBonusRatio}:{settings.V3MediumForestBonusRatio}:{settings.V3LargeForestBonusRatio}:{settings.V3HugeForestBonusRatio}:"
+            + $"{settings.V3PlainsForestDistributionWeight}:{settings.V3ForestLandForestDistributionWeight}:{settings.V3RockyHillsForestDistributionWeight}:{settings.V3DrylandForestDistributionWeight}:{settings.V3WastelandForestDistributionWeight}:"
+            + $"{settings.V3PlainsQuarryDistributionWeight}:{settings.V3ForestLandQuarryDistributionWeight}:{settings.V3RockyHillsQuarryDistributionWeight}:{settings.V3DrylandQuarryDistributionWeight}:{settings.V3WastelandQuarryDistributionWeight}:"
+            + $"{settings.V3PlainsRuinDistributionWeight}:{settings.V3ForestLandRuinDistributionWeight}:{settings.V3RockyHillsRuinDistributionWeight}:{settings.V3DrylandRuinDistributionWeight}:{settings.V3WastelandRuinDistributionWeight}:"
             + WorldGenerationLayerSettingsV2.GetSummary();
     }
 

@@ -7,11 +7,11 @@ namespace WorldV2;
 public static class WorldMapTextureBuilderV2
 {
     private static readonly Color PlainColor = new(0.24f, 0.43f, 0.25f, 1.0f);
-    private static readonly Color ForestLandBiomeColor = new(0.17f, 0.34f, 0.18f, 1.0f);
-    private static readonly Color RockyHillsBiomeColor = new(0.37f, 0.38f, 0.29f, 1.0f);
-    private static readonly Color DrylandBiomeColor = new(0.48f, 0.44f, 0.25f, 1.0f);
-    private static readonly Color WastelandBiomeColor = new(0.35f, 0.32f, 0.27f, 1.0f);
-    private static readonly Color ForestColor = new(0.12f, 0.29f, 0.16f, 1.0f);
+    private static readonly Color ForestLandBiomeColor = new(0.22f, 0.39f, 0.23f, 1.0f);
+    private static readonly Color RockyHillsBiomeColor = new(0.39f, 0.40f, 0.31f, 1.0f);
+    private static readonly Color DrylandBiomeColor = new(0.45f, 0.41f, 0.27f, 1.0f);
+    private static readonly Color WastelandBiomeColor = new(0.34f, 0.30f, 0.28f, 1.0f);
+    private static readonly Color ForestColor = new(0.09f, 0.25f, 0.13f, 1.0f);
     private static readonly Color RoadColor = new(0.46f, 0.34f, 0.20f, 1.0f);
     private static readonly Color BranchRoadColor = new(0.38f, 0.31f, 0.20f, 1.0f);
     private static readonly Color VillageColor = new(0.72f, 0.63f, 0.43f, 1.0f);

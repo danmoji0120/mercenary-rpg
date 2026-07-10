@@ -139,6 +139,33 @@ public partial class WorldGenerationSettingsV2 : Node
     [Export] public float V3WastelandQuarryWeightMultiplier { get; set; } = 1.10f;
     [Export] public float V3WastelandRuinWeightMultiplier { get; set; } = 1.60f;
 
+    [ExportGroup("V3 Biome Feature Distribution")]
+    [Export] public bool V3EnableBiomeFeatureDistribution { get; set; } = true;
+    [Export] public bool V3BiomeQuotaFallbackEnabled { get; set; } = true;
+    [Export] public int V3BiomePlacementMaxAttempts { get; set; } = 36;
+    [Export] public float V3SmallForestBonusRatio { get; set; } = 0.03f;
+    [Export] public float V3MediumForestBonusRatio { get; set; } = 0.07f;
+    [Export] public float V3LargeForestBonusRatio { get; set; } = 0.12f;
+    [Export] public float V3HugeForestBonusRatio { get; set; } = 0.16f;
+
+    [Export] public float V3PlainsForestDistributionWeight { get; set; } = 0.25f;
+    [Export] public float V3ForestLandForestDistributionWeight { get; set; } = 0.50f;
+    [Export] public float V3RockyHillsForestDistributionWeight { get; set; } = 0.13f;
+    [Export] public float V3DrylandForestDistributionWeight { get; set; } = 0.07f;
+    [Export] public float V3WastelandForestDistributionWeight { get; set; } = 0.05f;
+
+    [Export] public float V3PlainsQuarryDistributionWeight { get; set; } = 0.25f;
+    [Export] public float V3ForestLandQuarryDistributionWeight { get; set; } = 0.08f;
+    [Export] public float V3RockyHillsQuarryDistributionWeight { get; set; } = 0.45f;
+    [Export] public float V3DrylandQuarryDistributionWeight { get; set; } = 0.12f;
+    [Export] public float V3WastelandQuarryDistributionWeight { get; set; } = 0.10f;
+
+    [Export] public float V3PlainsRuinDistributionWeight { get; set; } = 0.22f;
+    [Export] public float V3ForestLandRuinDistributionWeight { get; set; } = 0.08f;
+    [Export] public float V3RockyHillsRuinDistributionWeight { get; set; } = 0.18f;
+    [Export] public float V3DrylandRuinDistributionWeight { get; set; } = 0.22f;
+    [Export] public float V3WastelandRuinDistributionWeight { get; set; } = 0.30f;
+
     [ExportGroup("V3 Villages")]
     [Export] public int V3SmallVillageCount { get; set; } = 9;
     [Export] public int V3MediumVillageCount { get; set; } = 24;
@@ -518,6 +545,28 @@ public partial class WorldGenerationSettingsV2 : Node
         V3WastelandForestWeightMultiplier = 0.45f;
         V3WastelandQuarryWeightMultiplier = 1.10f;
         V3WastelandRuinWeightMultiplier = 1.60f;
+        V3EnableBiomeFeatureDistribution = true;
+        V3BiomeQuotaFallbackEnabled = true;
+        V3BiomePlacementMaxAttempts = 36;
+        V3SmallForestBonusRatio = 0.03f;
+        V3MediumForestBonusRatio = 0.07f;
+        V3LargeForestBonusRatio = 0.12f;
+        V3HugeForestBonusRatio = 0.16f;
+        V3PlainsForestDistributionWeight = 0.25f;
+        V3ForestLandForestDistributionWeight = 0.50f;
+        V3RockyHillsForestDistributionWeight = 0.13f;
+        V3DrylandForestDistributionWeight = 0.07f;
+        V3WastelandForestDistributionWeight = 0.05f;
+        V3PlainsQuarryDistributionWeight = 0.25f;
+        V3ForestLandQuarryDistributionWeight = 0.08f;
+        V3RockyHillsQuarryDistributionWeight = 0.45f;
+        V3DrylandQuarryDistributionWeight = 0.12f;
+        V3WastelandQuarryDistributionWeight = 0.10f;
+        V3PlainsRuinDistributionWeight = 0.22f;
+        V3ForestLandRuinDistributionWeight = 0.08f;
+        V3RockyHillsRuinDistributionWeight = 0.18f;
+        V3DrylandRuinDistributionWeight = 0.22f;
+        V3WastelandRuinDistributionWeight = 0.30f;
         V3SmallVillageCount = 9;
         V3MediumVillageCount = 24;
         V3LargeVillageCount = 56;

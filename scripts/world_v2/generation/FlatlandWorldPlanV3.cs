@@ -5,6 +5,13 @@ namespace WorldV2;
 
 public sealed class FlatlandWorldPlanV3
 {
+    private enum BiomeFeatureDistributionKind
+    {
+        Forest,
+        Quarry,
+        Ruin
+    }
+
     private WorldGenerationRequestV2 _request = WorldGenerationRequestV2.CreateDevDefault(20260707);
     private WorldGenerationSettingsV2 _settings = WorldGenerationSettingsV2.Default;
     private readonly List<VillageSiteV2> _villages = new();
@@ -20,7 +27,10 @@ public sealed class FlatlandWorldPlanV3
     private readonly List<BanditCampSiteV3> _banditCamps = new();
     private readonly List<FactionOutpostSiteV3> _factionOutposts = new();
     private readonly List<BiomeRegionV3> _biomeRegions = new();
+    private readonly int[] _biomeCellDistribution = new int[5];
     private readonly int[] _forestBiomeDistribution = new int[5];
+    private readonly int[] _majorForestBiomeDistribution = new int[5];
+    private readonly int[] _minorForestBiomeDistribution = new int[5];
     private readonly int[] _quarryBiomeDistribution = new int[5];
     private readonly int[] _ruinBiomeDistribution = new int[5];
     private readonly int[] _dungeonEntranceBiomeDistribution = new int[5];
@@ -92,6 +102,9 @@ public sealed class FlatlandWorldPlanV3
     public int LargeForestClusterCount => MajorForestRegionCount;
     public int RejectedForestPlacementCount { get; private set; }
     public string ForestBiomeDistribution => FormatBiomeDistribution(_forestBiomeDistribution);
+    public string MajorForestBiomeDistribution => FormatBiomeDistribution(_majorForestBiomeDistribution);
+    public string MinorForestBiomeDistribution => FormatBiomeDistribution(_minorForestBiomeDistribution);
+    public int ForestTotalBonusApplied { get; private set; }
     public bool ForestLayerEnabled => WorldGenerationLayerSettingsV2.EnableForests;
     public IReadOnlyList<ForestClusterSiteV2> ForestClusters => _forestClusters;
     public IReadOnlyList<ForestRegionV3> ForestRegions => _forestRegions;
@@ -201,6 +214,9 @@ public sealed class FlatlandWorldPlanV3
     public int BiomeWastelandCount { get; private set; }
     public float AverageMajorBiomeRadius { get; private set; }
     public float AverageMinorBiomeRadius { get; private set; }
+    public string BiomeCellDistribution => FormatBiomeDistribution(_biomeCellDistribution);
+    public int BiomeQuotaFallbackCount { get; private set; }
+    public bool BiomeFeatureDistributionEnabled => UseBiomeFeatureDistribution();
     public string BiomeResolveMode => WorldGenerationLayerSettingsV2.EnableBiomes ? "MacroZone" : "Disabled";
     public bool BiomeLayerEnabled => WorldGenerationLayerSettingsV2.EnableBiomes;
     public IReadOnlyList<BiomeRegionV3> BiomeRegions => _biomeRegions;
@@ -280,6 +296,7 @@ public sealed class FlatlandWorldPlanV3
         MajorForestRegionCount = 0;
         MinorForestPatchCount = 0;
         RejectedForestPlacementCount = 0;
+        ForestTotalBonusApplied = 0;
         MajorQuarryCount = 0;
         MinorQuarryCount = 0;
         RejectedQuarryPlacementCount = 0;
@@ -295,10 +312,14 @@ public sealed class FlatlandWorldPlanV3
         BiomeWastelandCount = 0;
         AverageMajorBiomeRadius = 0.0f;
         AverageMinorBiomeRadius = 0.0f;
+        BiomeQuotaFallbackCount = 0;
         _startingVillageId = -1;
         _playerSpawnCell = Vector2I.Zero;
         _nearestToWorldCenterDistance = 0.0f;
         ClearFeatureBiomeDistributions();
+        ClearDistribution(_biomeCellDistribution);
+        ClearDistribution(_majorForestBiomeDistribution);
+        ClearDistribution(_minorForestBiomeDistribution);
         ClearDistribution(_dungeonEntranceKindDistribution);
         ClearDistribution(_banditCampKindDistribution);
         ClearDistribution(_factionOutpostKindDistribution);
@@ -542,6 +563,7 @@ public sealed class FlatlandWorldPlanV3
     private void GenerateBiomeRegions()
     {
         _biomeRegions.Clear();
+        ClearDistribution(_biomeCellDistribution);
         MajorBiomeRegionCount = 0;
         MinorBiomeRegionCount = 0;
         BiomeForestLandCount = 0;
@@ -562,6 +584,7 @@ public sealed class FlatlandWorldPlanV3
         PlaceBiomeRegions(majorTarget, major: true, ref nextId, ref random);
         PlaceBiomeRegions(minorTarget, major: false, ref nextId, ref random);
         UpdateBiomeRadiusAverages();
+        BuildBiomeCellDistributionEstimate();
     }
 
     private void PlaceBiomeRegions(int targetCount, bool major, ref int nextId, ref DeterministicRandom random)
@@ -635,6 +658,28 @@ public sealed class FlatlandWorldPlanV3
 
         AverageMajorBiomeRadius = majorCount > 0 ? majorSum / majorCount : 0.0f;
         AverageMinorBiomeRadius = minorCount > 0 ? minorSum / minorCount : 0.0f;
+    }
+
+    private void BuildBiomeCellDistributionEstimate()
+    {
+        ClearDistribution(_biomeCellDistribution);
+        if (!WorldGenerationLayerSettingsV2.EnableBiomes || _biomeRegions.Count == 0)
+        {
+            return;
+        }
+
+        // A fixed coarse grid describes macro-zone coverage without allocating or walking world cells.
+        const int sampleAxis = 48;
+        for (int y = 0; y < sampleAxis; y++)
+        {
+            int cellY = Mathf.Clamp(Mathf.RoundToInt((y + 0.5f) / sampleAxis * (WorldSize.HeightCells - 1)), 0, WorldSize.HeightCells - 1);
+            for (int x = 0; x < sampleAxis; x++)
+            {
+                int cellX = Mathf.Clamp(Mathf.RoundToInt((x + 0.5f) / sampleAxis * (WorldSize.WidthCells - 1)), 0, WorldSize.WidthCells - 1);
+                BiomeKindV3 biome = ResolveBiomeKindAt(new Vector2I(cellX, cellY), _biomeRegions, out _);
+                IncrementDistribution(_biomeCellDistribution, biome);
+            }
+        }
     }
 
     private void GenerateRiversPlaceholder()
@@ -1440,6 +1485,11 @@ public sealed class FlatlandWorldPlanV3
         }
 
         GetTargetForestRegionCounts(out int majorTarget, out int minorTarget);
+        int forestBaseCount = majorTarget + minorTarget;
+        ForestTotalBonusApplied = UseBiomeFeatureDistribution()
+            ? Mathf.RoundToInt(forestBaseCount * GetForestBonusRatio())
+            : 0;
+        minorTarget += ForestTotalBonusApplied;
         int targetCount = majorTarget + minorTarget;
         if (targetCount <= 0)
         {
@@ -1476,6 +1526,12 @@ public sealed class FlatlandWorldPlanV3
         ref int nextId,
         ref DeterministicRandom random)
     {
+        if (UseBiomeFeatureDistribution())
+        {
+            PlaceForestRegionsWithBiomeQuota(targetCount, major, minX, minY, maxX, maxY, ref nextId, ref random);
+            return;
+        }
+
         int placed = 0;
         int maxAttempts = Mathf.Max(targetCount * 10, 24);
         for (int attempt = 0; placed < targetCount && attempt < maxAttempts; attempt++)
@@ -1490,6 +1546,7 @@ public sealed class FlatlandWorldPlanV3
 
             _forestRegions.Add(region);
             IncrementDistribution(_forestBiomeDistribution, biome);
+            IncrementDistribution(major ? _majorForestBiomeDistribution : _minorForestBiomeDistribution, biome);
             nextId++;
             placed++;
             if (major)
@@ -1501,6 +1558,80 @@ public sealed class FlatlandWorldPlanV3
                 MinorForestPatchCount++;
             }
         }
+    }
+
+    private void PlaceForestRegionsWithBiomeQuota(
+        int targetCount,
+        bool major,
+        int minX,
+        int minY,
+        int maxX,
+        int maxY,
+        ref int nextId,
+        ref DeterministicRandom random)
+    {
+        int[] quota = BuildBiomeQuota(targetCount, BiomeFeatureDistributionKind.Forest);
+        for (int biomeIndex = 0; biomeIndex < quota.Length; biomeIndex++)
+        {
+            BiomeKindV3 targetBiome = (BiomeKindV3)biomeIndex;
+            for (int placement = 0; placement < quota[biomeIndex]; placement++)
+            {
+                if (TryPlaceForestRegion(targetBiome, false, quota, targetCount, major, minX, minY, maxX, maxY, ref nextId, ref random))
+                {
+                    continue;
+                }
+
+                if (_settings.V3BiomeQuotaFallbackEnabled
+                    && TryPlaceForestRegion(targetBiome, true, quota, targetCount, major, minX, minY, maxX, maxY, ref nextId, ref random))
+                {
+                    BiomeQuotaFallbackCount++;
+                }
+            }
+        }
+    }
+
+    private bool TryPlaceForestRegion(
+        BiomeKindV3 targetBiome,
+        bool allowFallback,
+        int[] quota,
+        int targetCount,
+        bool major,
+        int minX,
+        int minY,
+        int maxX,
+        int maxY,
+        ref int nextId,
+        ref DeterministicRandom random)
+    {
+        int maxAttempts = Mathf.Max(1, _settings.V3BiomePlacementMaxAttempts);
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            ForestRegionV3 region = CreateForestRegion(nextId, major, minX, minY, maxX, maxY, ref random);
+            BiomeKindV3 actualBiome = ResolveBiomeKindForPlacement(region.Center);
+            if ((!allowFallback && actualBiome != targetBiome)
+                || (allowFallback && !CanUseBiomeQuotaFallback(actualBiome, quota, _forestBiomeDistribution, targetCount)))
+            {
+                RejectedForestPlacementCount++;
+                continue;
+            }
+
+            _forestRegions.Add(region);
+            IncrementDistribution(_forestBiomeDistribution, actualBiome);
+            IncrementDistribution(major ? _majorForestBiomeDistribution : _minorForestBiomeDistribution, actualBiome);
+            nextId++;
+            if (major)
+            {
+                MajorForestRegionCount++;
+            }
+            else
+            {
+                MinorForestPatchCount++;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private void GenerateRoadTargetAnchors()
@@ -1596,6 +1727,13 @@ public sealed class FlatlandWorldPlanV3
             return;
         }
 
+        if (UseBiomeFeatureDistribution())
+        {
+            PlaceRuinsWithBiomeQuota(targetCount, minX, minY, maxX, maxY, ref random);
+            AssignRoadLinkedRuins(ref random);
+            return;
+        }
+
         int maxAttempts = Mathf.Max(targetCount * 10, targetCount * Mathf.Max(1, _settings.V3RuinPlacementMaxAttemptsPerSite));
         int nextId = 1;
         for (int attempt = 0; _ruinSites.Count < targetCount && attempt < maxAttempts; attempt++)
@@ -1620,6 +1758,74 @@ public sealed class FlatlandWorldPlanV3
         }
 
         AssignRoadLinkedRuins(ref random);
+    }
+
+    private void PlaceRuinsWithBiomeQuota(
+        int targetCount,
+        int minX,
+        int minY,
+        int maxX,
+        int maxY,
+        ref DeterministicRandom random)
+    {
+        int[] quota = BuildBiomeQuota(targetCount, BiomeFeatureDistributionKind.Ruin);
+        int nextId = 1;
+        for (int biomeIndex = 0; biomeIndex < quota.Length; biomeIndex++)
+        {
+            BiomeKindV3 targetBiome = (BiomeKindV3)biomeIndex;
+            for (int placement = 0; placement < quota[biomeIndex]; placement++)
+            {
+                if (TryPlaceRuin(targetBiome, false, quota, targetCount, minX, minY, maxX, maxY, ref nextId, ref random))
+                {
+                    continue;
+                }
+
+                if (_settings.V3BiomeQuotaFallbackEnabled
+                    && TryPlaceRuin(targetBiome, true, quota, targetCount, minX, minY, maxX, maxY, ref nextId, ref random))
+                {
+                    BiomeQuotaFallbackCount++;
+                }
+            }
+        }
+    }
+
+    private bool TryPlaceRuin(
+        BiomeKindV3 targetBiome,
+        bool allowFallback,
+        int[] quota,
+        int targetCount,
+        int minX,
+        int minY,
+        int maxX,
+        int maxY,
+        ref int nextId,
+        ref DeterministicRandom random)
+    {
+        int maxAttempts = Mathf.Max(1, _settings.V3BiomePlacementMaxAttempts);
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            float radius = random.Range(Mathf.Max(8.0f, _settings.V3RuinMinRadius), Mathf.Max(_settings.V3RuinMinRadius, _settings.V3RuinMaxRadius));
+            Vector2 center = new(random.RangeInclusive(minX, maxX), random.RangeInclusive(minY, maxY));
+            if (!CanPlaceRuin(center, radius))
+            {
+                RejectedRuinPlacementCount++;
+                continue;
+            }
+
+            BiomeKindV3 actualBiome = ResolveBiomeKindForPlacement(center);
+            if ((!allowFallback && actualBiome != targetBiome)
+                || (allowFallback && !CanUseBiomeQuotaFallback(actualBiome, quota, _ruinBiomeDistribution, targetCount)))
+            {
+                RejectedRuinPlacementCount++;
+                continue;
+            }
+
+            _ruinSites.Add(CreateRuinSite(nextId++, center, radius, ref random));
+            IncrementDistribution(_ruinBiomeDistribution, actualBiome);
+            return true;
+        }
+
+        return false;
     }
 
     private void GenerateDungeonEntrances()
@@ -1992,6 +2198,109 @@ public sealed class FlatlandWorldPlanV3
 
         Vector2I cell = new(Mathf.RoundToInt(position.X), Mathf.RoundToInt(position.Y));
         return ResolveBiomeKindAt(cell, _biomeRegions, out _);
+    }
+
+    private bool UseBiomeFeatureDistribution()
+    {
+        return WorldGenerationLayerSettingsV2.EnableBiomes && _settings.V3EnableBiomeFeatureDistribution;
+    }
+
+    private float GetForestBonusRatio()
+    {
+        return MapSizePreset switch
+        {
+            WorldMapSizePresetV2.Medium => Mathf.Clamp(_settings.V3MediumForestBonusRatio, 0.0f, 0.20f),
+            WorldMapSizePresetV2.Large => Mathf.Clamp(_settings.V3LargeForestBonusRatio, 0.0f, 0.20f),
+            WorldMapSizePresetV2.Huge => Mathf.Clamp(_settings.V3HugeForestBonusRatio, 0.0f, 0.20f),
+            _ => Mathf.Clamp(_settings.V3SmallForestBonusRatio, 0.0f, 0.20f)
+        };
+    }
+
+    private int[] BuildBiomeQuota(int targetCount, BiomeFeatureDistributionKind featureKind)
+    {
+        int[] quota = new int[5];
+        if (targetCount <= 0)
+        {
+            return quota;
+        }
+
+        float[] remainders = new float[quota.Length];
+        float totalWeight = 0.0f;
+        for (int i = 0; i < quota.Length; i++)
+        {
+            totalWeight += Mathf.Max(0.0f, GetBiomeDistributionWeight((BiomeKindV3)i, featureKind));
+        }
+
+        if (totalWeight <= 0.0001f)
+        {
+            quota[(int)BiomeKindV3.Plains] = targetCount;
+            return quota;
+        }
+
+        int assigned = 0;
+        for (int i = 0; i < quota.Length; i++)
+        {
+            float exact = targetCount * Mathf.Max(0.0f, GetBiomeDistributionWeight((BiomeKindV3)i, featureKind)) / totalWeight;
+            quota[i] = Mathf.FloorToInt(exact);
+            remainders[i] = exact - quota[i];
+            assigned += quota[i];
+        }
+
+        while (assigned < targetCount)
+        {
+            int bestIndex = 0;
+            for (int i = 1; i < remainders.Length; i++)
+            {
+                if (remainders[i] > remainders[bestIndex] + 0.0001f)
+                {
+                    bestIndex = i;
+                }
+            }
+
+            quota[bestIndex]++;
+            remainders[bestIndex] = -1.0f;
+            assigned++;
+        }
+
+        return quota;
+    }
+
+    private bool CanUseBiomeQuotaFallback(BiomeKindV3 biome, int[] quota, int[] currentDistribution, int targetCount)
+    {
+        int index = Mathf.Clamp((int)biome, 0, quota.Length - 1);
+        int allowance = quota[index] + Mathf.Max(1, targetCount / 12);
+        return currentDistribution[index] < allowance;
+    }
+
+    private float GetBiomeDistributionWeight(BiomeKindV3 biome, BiomeFeatureDistributionKind featureKind)
+    {
+        return featureKind switch
+        {
+            BiomeFeatureDistributionKind.Forest => biome switch
+            {
+                BiomeKindV3.ForestLand => _settings.V3ForestLandForestDistributionWeight,
+                BiomeKindV3.RockyHills => _settings.V3RockyHillsForestDistributionWeight,
+                BiomeKindV3.Dryland => _settings.V3DrylandForestDistributionWeight,
+                BiomeKindV3.Wasteland => _settings.V3WastelandForestDistributionWeight,
+                _ => _settings.V3PlainsForestDistributionWeight
+            },
+            BiomeFeatureDistributionKind.Quarry => biome switch
+            {
+                BiomeKindV3.ForestLand => _settings.V3ForestLandQuarryDistributionWeight,
+                BiomeKindV3.RockyHills => _settings.V3RockyHillsQuarryDistributionWeight,
+                BiomeKindV3.Dryland => _settings.V3DrylandQuarryDistributionWeight,
+                BiomeKindV3.Wasteland => _settings.V3WastelandQuarryDistributionWeight,
+                _ => _settings.V3PlainsQuarryDistributionWeight
+            },
+            _ => biome switch
+            {
+                BiomeKindV3.ForestLand => _settings.V3ForestLandRuinDistributionWeight,
+                BiomeKindV3.RockyHills => _settings.V3RockyHillsRuinDistributionWeight,
+                BiomeKindV3.Dryland => _settings.V3DrylandRuinDistributionWeight,
+                BiomeKindV3.Wasteland => _settings.V3WastelandRuinDistributionWeight,
+                _ => _settings.V3PlainsRuinDistributionWeight
+            }
+        };
     }
 
     private static bool AcceptBiomeWeightedPlacement(BiomeKindV3 biome, float multiplier, ref DeterministicRandom random)
@@ -3981,6 +4290,12 @@ public sealed class FlatlandWorldPlanV3
         ref int nextId,
         ref DeterministicRandom random)
     {
+        if (UseBiomeFeatureDistribution())
+        {
+            PlaceQuarryClustersWithBiomeQuota(targetCount, major, minX, minY, maxX, maxY, ref nextId, ref random);
+            return;
+        }
+
         int placed = 0;
         int maxAttempts = Mathf.Max(targetCount * 10, targetCount * Mathf.Max(1, _settings.V3QuarryPlacementMaxAttemptsPerCluster));
         for (int attempt = 0; placed < targetCount && attempt < maxAttempts; attempt++)
@@ -4012,6 +4327,85 @@ public sealed class FlatlandWorldPlanV3
                 MinorQuarryCount++;
             }
         }
+    }
+
+    private void PlaceQuarryClustersWithBiomeQuota(
+        int targetCount,
+        bool major,
+        int minX,
+        int minY,
+        int maxX,
+        int maxY,
+        ref int nextId,
+        ref DeterministicRandom random)
+    {
+        int[] quota = BuildBiomeQuota(targetCount, BiomeFeatureDistributionKind.Quarry);
+        for (int biomeIndex = 0; biomeIndex < quota.Length; biomeIndex++)
+        {
+            BiomeKindV3 targetBiome = (BiomeKindV3)biomeIndex;
+            for (int placement = 0; placement < quota[biomeIndex]; placement++)
+            {
+                if (TryPlaceQuarryCluster(targetBiome, false, quota, targetCount, major, minX, minY, maxX, maxY, ref nextId, ref random))
+                {
+                    continue;
+                }
+
+                if (_settings.V3BiomeQuotaFallbackEnabled
+                    && TryPlaceQuarryCluster(targetBiome, true, quota, targetCount, major, minX, minY, maxX, maxY, ref nextId, ref random))
+                {
+                    BiomeQuotaFallbackCount++;
+                }
+            }
+        }
+    }
+
+    private bool TryPlaceQuarryCluster(
+        BiomeKindV3 targetBiome,
+        bool allowFallback,
+        int[] quota,
+        int targetCount,
+        bool major,
+        int minX,
+        int minY,
+        int maxX,
+        int maxY,
+        ref int nextId,
+        ref DeterministicRandom random)
+    {
+        int maxAttempts = Mathf.Max(1, _settings.V3BiomePlacementMaxAttempts);
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            float radius = PickQuarryRadius(major, ref random);
+            Vector2 center = new(random.RangeInclusive(minX, maxX), random.RangeInclusive(minY, maxY));
+            if (!CanPlaceQuarry(center, radius, major))
+            {
+                RejectedQuarryPlacementCount++;
+                continue;
+            }
+
+            BiomeKindV3 actualBiome = ResolveBiomeKindForPlacement(center);
+            if ((!allowFallback && actualBiome != targetBiome)
+                || (allowFallback && !CanUseBiomeQuotaFallback(actualBiome, quota, _quarryBiomeDistribution, targetCount)))
+            {
+                RejectedQuarryPlacementCount++;
+                continue;
+            }
+
+            _quarryRegions.Add(CreateQuarryRegion(nextId++, center, radius, major, ref random));
+            IncrementDistribution(_quarryBiomeDistribution, actualBiome);
+            if (major)
+            {
+                MajorQuarryCount++;
+            }
+            else
+            {
+                MinorQuarryCount++;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private float PickQuarryRadius(bool major, ref DeterministicRandom random)
@@ -6274,12 +6668,14 @@ public sealed class FlatlandWorldPlanV3
 
     public string GetDebugSummary()
     {
-        return $"V3 settlements: count={VillageCount} hamlet={HamletCount} village={VillageTierCount} large={LargeVillageCount} town={TownCount} cityCandidate={CityCandidateCount} startId={StartingVillageId} startTier={StartingSettlementTier} startRole={StartingSettlementRole} startCenter={StartingVillageCenter} spawn={PlayerSpawnCell} nearestCenter={NearestToWorldCenterDistance:0.0} roleDist={SettlementRoleDistribution} biomes={BiomeRegionCount} majorBiomes={MajorBiomeRegionCount} minorBiomes={MinorBiomeRegionCount} avgMajorBiomeRadius={AverageMajorBiomeRadius:0} avgMinorBiomeRadius={AverageMinorBiomeRadius:0} biomeKinds forest/rocky/dry/waste={BiomeForestLandCount}/{BiomeRockyHillsCount}/{BiomeDrylandCount}/{BiomeWastelandCount} biomeLayer={BiomeLayerEnabled} roads={RoadCount} primary={PrimaryRoadCount} secondary={SecondaryRoadCount} extra={ExtraRoadCount} branch={BranchRoadCount} nodes={RoadNodeCount} junctions={RoadJunctionCount} maxDegree={MaxRoadJunctionDegree} trunks={SharedTrunkCount} merged={MergedRoadCandidateCount} rejectedJunctions={RejectedRoadJunctionCount} rejectedHighDegree={RejectedHighDegreeJunctionCount} rejectedCrossings={RejectedRoadCrossingCount} rejectedTooLong={RejectedRoadTooLongCount} targets={RoadTargetAnchorCount} quarryTargets={RoadTargetQuarryCount} ruinTargets={RoadTargetRuinCount} dungeonTargets={RoadTargetDungeonEntranceCount} banditTargets={RoadTargetBanditCampCount} factionTargets={RoadTargetFactionOutpostCount} forestTargets={RoadTargetForestEdgeCount} edgeTargets={RoadTargetWorldEdgeExitCount} futureTargets={FutureRoadTargetCount} rejectedTargets={RejectedRoadTargetCount} rejectedBranches={RejectedBranchRoadCount} roadLayer={RoadLayerEnabled} forestRegions={ForestRegionCount} majorForests={MajorForestRegionCount} minorForests={MinorForestPatchCount} forestLayer={ForestLayerEnabled} rejectedForests={RejectedForestPlacementCount} forestBiomeDist={ForestBiomeDistribution} quarryRegions={QuarryRegionCount} majorQuarries={MajorQuarryCount} minorQuarries={MinorQuarryCount} quarryLayer={QuarryLayerEnabled} rejectedQuarries={RejectedQuarryPlacementCount} quarryBiomeDist={QuarryBiomeDistribution} ruins={RuinSiteCount} roadLinkedRuins={RoadLinkedRuinCount} ruinLayer={RuinLayerEnabled} rejectedRuins={RejectedRuinPlacementCount} ruinBiomeDist={RuinBiomeDistribution} dungeons={DungeonEntranceCount} roadLinkedDungeons={RoadLinkedDungeonEntranceCount} dungeonLayer={DungeonLayerEnabled} rejectedDungeons={RejectedDungeonEntrancePlacementCount} dungeonKinds={DungeonEntranceKindDistribution} dungeonBiomeDist={DungeonEntranceBiomeDistribution} bandits={BanditCampCount} roadLinkedBandits={RoadLinkedBanditCampCount} banditLayer={BanditLayerEnabled} rejectedBandits={RejectedBanditCampPlacementCount} banditKinds={BanditCampKindDistribution} banditBiomeDist={BanditCampBiomeDistribution} factionOutposts={FactionOutpostCount} roadLinkedFaction={RoadLinkedFactionOutpostCount} factionLayer={FactionOutpostLayerEnabled} rejectedFaction={RejectedFactionOutpostPlacementCount} factionKinds={FactionOutpostKindDistribution} factionOwners={FactionOutpostOwnerDistribution} factionBiomeDist={FactionOutpostBiomeDistribution}";
+        return $"V3 settlements: count={VillageCount} hamlet={HamletCount} village={VillageTierCount} large={LargeVillageCount} town={TownCount} cityCandidate={CityCandidateCount} startId={StartingVillageId} startTier={StartingSettlementTier} startRole={StartingSettlementRole} startCenter={StartingVillageCenter} spawn={PlayerSpawnCell} nearestCenter={NearestToWorldCenterDistance:0.0} roleDist={SettlementRoleDistribution} biomes={BiomeRegionCount} majorBiomes={MajorBiomeRegionCount} minorBiomes={MinorBiomeRegionCount} avgMajorBiomeRadius={AverageMajorBiomeRadius:0} avgMinorBiomeRadius={AverageMinorBiomeRadius:0} biomeKinds forest/rocky/dry/waste={BiomeForestLandCount}/{BiomeRockyHillsCount}/{BiomeDrylandCount}/{BiomeWastelandCount} biomeCells={BiomeCellDistribution} biomeLayer={BiomeLayerEnabled} featureQuota={UseBiomeFeatureDistribution()} fallback={BiomeQuotaFallbackCount} roads={RoadCount} primary={PrimaryRoadCount} secondary={SecondaryRoadCount} extra={ExtraRoadCount} branch={BranchRoadCount} nodes={RoadNodeCount} junctions={RoadJunctionCount} maxDegree={MaxRoadJunctionDegree} trunks={SharedTrunkCount} merged={MergedRoadCandidateCount} rejectedJunctions={RejectedRoadJunctionCount} rejectedHighDegree={RejectedHighDegreeJunctionCount} rejectedCrossings={RejectedRoadCrossingCount} rejectedTooLong={RejectedRoadTooLongCount} targets={RoadTargetAnchorCount} quarryTargets={RoadTargetQuarryCount} ruinTargets={RoadTargetRuinCount} dungeonTargets={RoadTargetDungeonEntranceCount} banditTargets={RoadTargetBanditCampCount} factionTargets={RoadTargetFactionOutpostCount} forestTargets={RoadTargetForestEdgeCount} edgeTargets={RoadTargetWorldEdgeExitCount} futureTargets={FutureRoadTargetCount} rejectedTargets={RejectedRoadTargetCount} rejectedBranches={RejectedBranchRoadCount} roadLayer={RoadLayerEnabled} forestRegions={ForestRegionCount} majorForests={MajorForestRegionCount} minorForests={MinorForestPatchCount} forestBonus={ForestTotalBonusApplied} forestLayer={ForestLayerEnabled} rejectedForests={RejectedForestPlacementCount} forestBiomeDist={ForestBiomeDistribution} forestMajorDist={MajorForestBiomeDistribution} forestMinorDist={MinorForestBiomeDistribution} quarryRegions={QuarryRegionCount} majorQuarries={MajorQuarryCount} minorQuarries={MinorQuarryCount} quarryLayer={QuarryLayerEnabled} rejectedQuarries={RejectedQuarryPlacementCount} quarryBiomeDist={QuarryBiomeDistribution} ruins={RuinSiteCount} roadLinkedRuins={RoadLinkedRuinCount} ruinLayer={RuinLayerEnabled} rejectedRuins={RejectedRuinPlacementCount} ruinBiomeDist={RuinBiomeDistribution} dungeons={DungeonEntranceCount} roadLinkedDungeons={RoadLinkedDungeonEntranceCount} dungeonLayer={DungeonLayerEnabled} rejectedDungeons={RejectedDungeonEntrancePlacementCount} dungeonKinds={DungeonEntranceKindDistribution} dungeonBiomeDist={DungeonEntranceBiomeDistribution} bandits={BanditCampCount} roadLinkedBandits={RoadLinkedBanditCampCount} banditLayer={BanditLayerEnabled} rejectedBandits={RejectedBanditCampPlacementCount} banditKinds={BanditCampKindDistribution} banditBiomeDist={BanditCampBiomeDistribution} factionOutposts={FactionOutpostCount} roadLinkedFaction={RoadLinkedFactionOutpostCount} factionLayer={FactionOutpostLayerEnabled} rejectedFaction={RejectedFactionOutpostPlacementCount} factionKinds={FactionOutpostKindDistribution} factionOwners={FactionOutpostOwnerDistribution} factionBiomeDist={FactionOutpostBiomeDistribution}";
     }
 
     private void ClearFeatureBiomeDistributions()
     {
         ClearDistribution(_forestBiomeDistribution);
+        ClearDistribution(_majorForestBiomeDistribution);
+        ClearDistribution(_minorForestBiomeDistribution);
         ClearDistribution(_quarryBiomeDistribution);
         ClearDistribution(_ruinBiomeDistribution);
         ClearDistribution(_dungeonEntranceBiomeDistribution);
@@ -6309,7 +6705,18 @@ public sealed class FlatlandWorldPlanV3
 
     private static string FormatBiomeDistribution(int[] distribution)
     {
-        return $"P/F/R/D/W={distribution[(int)BiomeKindV3.Plains]}/{distribution[(int)BiomeKindV3.ForestLand]}/{distribution[(int)BiomeKindV3.RockyHills]}/{distribution[(int)BiomeKindV3.Dryland]}/{distribution[(int)BiomeKindV3.Wasteland]}";
+        int total = 0;
+        for (int i = 0; i < distribution.Length; i++)
+        {
+            total += distribution[i];
+        }
+
+        if (total <= 0)
+        {
+            return "P/F/R/D/W=0/0/0/0/0";
+        }
+
+        return $"P/F/R/D/W={distribution[(int)BiomeKindV3.Plains]}/{distribution[(int)BiomeKindV3.ForestLand]}/{distribution[(int)BiomeKindV3.RockyHills]}/{distribution[(int)BiomeKindV3.Dryland]}/{distribution[(int)BiomeKindV3.Wasteland]} ({Mathf.RoundToInt(distribution[(int)BiomeKindV3.Plains] * 100.0f / total)}/{Mathf.RoundToInt(distribution[(int)BiomeKindV3.ForestLand] * 100.0f / total)}/{Mathf.RoundToInt(distribution[(int)BiomeKindV3.RockyHills] * 100.0f / total)}/{Mathf.RoundToInt(distribution[(int)BiomeKindV3.Dryland] * 100.0f / total)}/{Mathf.RoundToInt(distribution[(int)BiomeKindV3.Wasteland] * 100.0f / total)}%)";
     }
 
     private static string FormatDungeonEntranceKindDistribution(int[] distribution)
