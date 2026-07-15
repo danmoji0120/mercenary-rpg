@@ -4,6 +4,7 @@ using GameplayV3.Control;
 using GameplayV3.Control.Runtime;
 using GameplayV3.Mercenary;
 using GameplayV3.Mercenary.Runtime;
+using GameplayV3.Mercenary.UI;
 using GameplayV3.Navigation;
 using GameplayV3.Resources;
 using GameplayV3.Resources.Runtime;
@@ -46,6 +47,7 @@ public partial class WorldV2Root : Node2D
     private ConstructionWorkCoordinatorV3? _constructionWork;
     private DemolitionDesignationControllerV3? _demolitionDesignation;
     private DemolitionWorkCoordinatorV3? _demolitionWork;
+    private MercenaryInspectHudV3? _mercenaryInspectHud;
     private bool _cameraInputWasLocked;
 
     public override void _Ready()
@@ -98,6 +100,7 @@ public partial class WorldV2Root : Node2D
                 {
                     _worldMapOverlay?.HideMap();
                     _constructionUi?.SetWorldMapBlocked(false);
+                    _mercenaryInspectHud?.SetWorldMapBlocked(false);
                     GetViewport().SetInputAsHandled();
                 }
 
@@ -495,9 +498,9 @@ public partial class WorldV2Root : Node2D
             _constructionOverlay=new ConstructionWorldOverlayV3{Name="ConstructionWorldOverlayV3"};gameplayEntities.AddChild(_constructionOverlay);_constructionOverlay.Initialize(construction,_gridRenderer);
             _constructionPlacement=new ConstructionPlacementControllerV3{Name="ConstructionPlacementControllerV3"};gameplayEntities.AddChild(_constructionPlacement);_constructionPlacement.Initialize(construction,resources,stockpiles,mercenaries,navigationQuery,_gridRenderer,_worldManager,_constructionOverlay);
             _constructionWork=new ConstructionWorkCoordinatorV3(construction,resources,stockpiles,work,controlSession,mercenaries,navigationQuery,_worldManager);_constructionWork.Changed+=()=>_constructionOverlay?.Refresh();_constructionWork.ResourcesChanged+=MaterializeResources;
-            _demolitionWork=new DemolitionWorkCoordinatorV3(construction,resources,work,controlSession,mercenaries,navigationQuery,_worldManager.LocalPlayerId,_worldManager.LocalCompanyId,_worldManager.WorldBounds,_constructionWork.CancelForDirectMove,true);_demolitionWork.Changed+=()=>_constructionOverlay?.Refresh();_demolitionWork.ResourcesChanged+=MaterializeResources;
+            _demolitionWork=new DemolitionWorkCoordinatorV3(construction,resources,work,controlSession,mercenaries,navigationQuery,_worldManager.LocalPlayerId,_worldManager.LocalCompanyId,_worldManager.WorldBounds,id=>{_constructionWork.CancelForDirectMove(id);},true);_demolitionWork.Changed+=()=>_constructionOverlay?.Refresh();_demolitionWork.ResourcesChanged+=MaterializeResources;
             _demolitionDesignation=new DemolitionDesignationControllerV3{Name="DemolitionDesignationControllerV3"};gameplayEntities.AddChild(_demolitionDesignation);_demolitionDesignation.Initialize(construction,_gridRenderer,_worldManager,_constructionOverlay,_demolitionWork);
-            controlSession.AttachConstructionCancellation(id=>{_constructionWork.CancelForDirectMove(id);_demolitionWork.CancelForDirectMove(id);});
+            controlSession.AttachConstructionCancellation(id=>_constructionWork.CancelForDirectMove(id)|_demolitionWork.CancelForDirectMove(id));
             work.AttachExternalWorkSupersede(id=>_demolitionWork.CancelForNewWork(id));
             _constructionUi.WoodenWallToolChanged+=active=>_constructionPlacement?.SetActive(active);
             _constructionUi.DemolitionToolChanged+=active=>_demolitionDesignation?.SetActive(active);
@@ -505,6 +508,9 @@ public partial class WorldV2Root : Node2D
             _demolitionDesignation.ActiveChanged+=active=>{if(!active&&_constructionUi?.ActiveConstructionTool=="Demolition")_constructionUi.SetDemolitionTool(false);};
             _mercenaryWorkRuntime.AttachConstruction(_constructionWork);
             _mercenaryWorkRuntime.AttachDemolition(_demolitionWork);
+            _mercenaryInspectHud=new MercenaryInspectHudV3{Name="MercenaryInspectHudV3"};
+            canvasLayer.AddChild(_mercenaryInspectHud);
+            _mercenaryInspectHud.Initialize(controlSession,mercenaries,work,_worldManager,_constructionWork,_demolitionWork);
         }
     }
 
@@ -574,6 +580,7 @@ public partial class WorldV2Root : Node2D
 
         _worldMapOverlay.Toggle(_worldManager);
         _constructionUi?.SetWorldMapBlocked(_worldMapOverlay.IsOpen);
+        _mercenaryInspectHud?.SetWorldMapBlocked(_worldMapOverlay.IsOpen);
     }
 
     private bool IsWorldMapOverlayOpen()

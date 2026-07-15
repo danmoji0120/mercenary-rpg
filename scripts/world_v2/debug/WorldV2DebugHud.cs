@@ -98,6 +98,8 @@ public partial class WorldV2DebugHud : Control
         if(manager.TryGetMercenaryWorkSession(out MercenaryWorkSessionV3? workDiagnosticsSession)&&workDiagnosticsSession!=null){MercenaryWorkDiagnosticsV3 diagnostics=workDiagnosticsSession.Diagnostics;workLine+=$" completed/failed/cancelled/superseded={diagnostics.CompletedWorkCount}/{diagnostics.FailedWorkCount}/{diagnostics.CancelledWorkCount}/{diagnostics.SupersededWorkCount} cycles={diagnostics.CompletedCycleCount} lastFailure={diagnostics.LastFailureReason}";}
         string stockpileLine=$"Stockpile zones/cells/local={manager.StockpileZoneCount}/{manager.StockpileCellCount}/{manager.LocalCompanyZoneCount} mode={manager.StockpileDesignationMode} reserved={manager.ReservedStockpileCellCount} outside={manager.GroundAmountOutsideStockpile} stored W/S={manager.WoodAmountInStockpile}/{manager.StoneAmountInStockpile}";
         string constructionUiLine=$"ConstructionTrayOpen={manager.ConstructionTrayOpen} ActiveConstructionTool={manager.ActiveConstructionTool} StockpileDesignationMode={manager.StockpileDesignationMode} ConstructionUiInputBlockedByWorldMap={manager.ConstructionUiInputBlockedByWorldMap} LastConstructionUiAction={manager.LastConstructionUiAction}";
+        string mercenaryInspectLine=$"InspectHud visible/mode/selected={manager.MercenaryInspectHudVisible}/{manager.MercenaryInspectHudMode}/{manager.MercenaryInspectHudSelectedCount} id={ShortId(manager.MercenaryInspectHudDisplayedId)} work={manager.MercenaryInspectHudWorkType}:{manager.MercenaryInspectHudWorkPhase} carry={manager.MercenaryInspectHudCarry} progress={manager.MercenaryInspectHudProgress:0.00} refresh={manager.MercenaryInspectHudRefreshCount}:{manager.MercenaryInspectHudLastRefreshReason} mapBlocked={manager.MercenaryInspectHudInputBlockedByWorldMap} rect={manager.MercenaryInspectHudGlobalRect} trayRect={manager.ConstructionUiGlobalRect} overlap={manager.MercenaryInspectHudOverlapsConstructionTray}";
+        string mercenaryConditionLine=$"InspectCondition source={manager.MercenaryConditionDataSource} placeholder={manager.MercenaryConditionSnapshotIsPlaceholder} affectsGameplay={manager.MercenaryConditionAffectsGameplay} health/fullness/rest/morale={manager.MercenaryInspectHealth:0.00}/{manager.MercenaryInspectFullness:0.00}/{manager.MercenaryInspectRest:0.00}/{manager.MercenaryInspectMorale:0.00} action={manager.MercenaryInspectHudLastAction}";
         string constructionLine=$"Construction Blueprint/Structure/Blocked={manager.ConstructionBlueprintCount}/{manager.ConstructionStructureCount}/{manager.ConstructionBlockingCellCount} reservations={manager.ConstructionReservationCount} occupancyRev={manager.ConstructionOccupancyRevision}";
         constructionLine+=$" Demolition designated/working/reserved/done/failed={manager.DemolitionDesignationCount}/{manager.UnderDemolitionCount}/{manager.DemolitionReservationCount}/{manager.CompletedDemolitionCount}/{manager.FailedDemolitionCount} last={manager.LastDemolishedStructureId} worker={manager.LastDemolitionWorkerId} duration={manager.LastDemolitionDuration:0.00}s salvage={manager.LastSalvageTotalAmount} failure={manager.LastDemolitionFailureReason}";
         string haulingLine=$"Hauling active={manager.ActiveHaulingRequestCount} sourceRes={manager.ReservedSourceStackCount} carrying={manager.CarryingMercenaryCount}";
@@ -240,6 +242,7 @@ public partial class WorldV2DebugHud : Control
                 $"{mercenaryCoreLine}\n" +
                 $"{mercenaryDiagnosticsLine}\n" +
                 $"{mercenaryControlLine}\n" +
+                $"{mercenaryInspectLine}\n{mercenaryConditionLine}\n" +
                 $"{mercenaryPathLine}\n" +
                 $"{resourceLine}\n" +
                 $"{workLine}\n" +
@@ -307,6 +310,7 @@ public partial class WorldV2DebugHud : Control
             $"{mercenaryCoreLine}\n" +
             $"{mercenaryDiagnosticsLine}\n" +
             $"{mercenaryControlLine}\n" +
+            $"{mercenaryInspectLine}\n{mercenaryConditionLine}\n" +
             $"{mercenaryPathLine}\n" +
             $"{resourceLine}\n" +
             $"{workLine}\n" +

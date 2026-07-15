@@ -41,6 +41,7 @@ public sealed class MercenarySelectionStateV3
     }
 
     public int Count => _selected.Count;
+    public event Action? SelectionChanged;
     public long Revision { get; private set; }
     public string LastSelectionAction { get; private set; } = "none";
     public bool Contains(string id) => _selectedSet.Contains(id);
@@ -94,7 +95,7 @@ public sealed class MercenarySelectionStateV3
         for (int i = 0; i < other.Count; i++) if (other[i] != _selected[i]) return false;
         return true;
     }
-    private void Changed(string action) { Revision++; LastSelectionAction = action; }
+    private void Changed(string action) { Revision++; LastSelectionAction = action; SelectionChanged?.Invoke(); }
 }
 
 public enum DirectMoveCommandStatusV3 { Created, PathPending, Active, Completed, CompletedWithFailures, Failed, Cancelled, Superseded }
@@ -206,6 +207,8 @@ public sealed class DirectMoveCommandRegistryV3
     internal bool IsCurrent(MercenaryMoveOrderV3 order) => _activeOrders.TryGetValue(order.MercenaryId, out MercenaryMoveOrderV3? current) && ReferenceEquals(current, order);
     public bool SupersedeForWork(string mercenaryId,MercenaryMovementRegistryV3 movement,MercenaryControlDiagnosticsV3 diagnostics)
     {if(!_activeOrders.Remove(mercenaryId,out MercenaryMoveOrderV3? old))return false;old.Status=MercenaryMoveOrderStatusV3.Superseded;if(_commands.TryGetValue(old.CommandId,out DirectMoveCommandV3? command))command.SupersededOrderCount++;AddRecentOrder(old);diagnostics.SupersededOrderCount++;movement.RequestStopAfterCurrentSegment(mercenaryId);UpdateCommand(old.CommandId);return true;}
+    public bool CancelForMercenary(string mercenaryId,MercenaryMovementRegistryV3 movement)
+    {if(!_activeOrders.Remove(mercenaryId,out MercenaryMoveOrderV3? old))return false;old.Status=MercenaryMoveOrderStatusV3.Superseded;old.FailureReason="CancelledByPlayer";if(_commands.TryGetValue(old.CommandId,out DirectMoveCommandV3? command))command.SupersededOrderCount++;AddRecentOrder(old);movement.RequestStopAfterCurrentSegment(mercenaryId);UpdateCommand(old.CommandId);return true;}
     public IReadOnlyList<MercenaryMoveOrderV3> GetActiveOrders(){List<MercenaryMoveOrderV3> result=new(_activeOrders.Values);result.Sort((a,b)=>string.CompareOrdinal(a.MercenaryId,b.MercenaryId));return result.AsReadOnly();}
     internal void FinishOrder(MercenaryMoveOrderV3 order, bool success, string reason)
     {
@@ -290,7 +293,17 @@ public sealed class MercenaryControlSessionV3
     public bool IsCurrentOrder(MercenaryMoveOrderV3 order)=>order.SessionRevision==SessionRevision&&Commands.IsCurrent(order);
     public MercenarySessionV3 MercenarySession => _mercenary;
     public void AttachWorkSession(MercenaryWorkSessionV3 workSession){_workSession=workSession;}
-    private Action<string>? _constructionCancellation;
-    public void AttachConstructionCancellation(Action<string> cancellation)=>_constructionCancellation=cancellation;
+    private Func<string,bool>? _constructionCancellation;
+    public void AttachConstructionCancellation(Func<string,bool> cancellation)=>_constructionCancellation=cancellation;
     public bool SupersedeDirectMovementForWork(string mercenaryId)=>Commands.SupersedeForWork(mercenaryId,Movements,Diagnostics);
+    public bool CancelCurrentActivity(string mercenaryId)
+    {
+        bool changed=_workSession?.CancelForDirectMove(mercenaryId)==true;
+        changed=_constructionCancellation?.Invoke(mercenaryId)==true||changed;
+        changed=ExternalMovements.Cancel(mercenaryId,"CancelledByPlayer",Movements)||changed;
+        changed=Commands.CancelForMercenary(mercenaryId,Movements)||changed;
+        if(!Movements.TryGet(mercenaryId,out _)&&_mercenary.Registry.TryGetState(mercenaryId,out MercenaryStateV3? state)&&state!=null)
+            state.TrySetActivityState(MercenaryActivityStateV3.Idle,out _);
+        return changed;
+    }
 }

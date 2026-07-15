@@ -4,6 +4,7 @@ using System.Linq;
 using GameplayV3.Company;
 using GameplayV3.Deployment;
 using GameplayV3.Mercenary;
+using GameplayV3.Mercenary.UI;
 using GameplayV3.Movement;
 using GameplayV3.Session;
 using GameplayV3.Control;
@@ -219,6 +220,31 @@ public partial class WorldManagerV2 : Node
     public bool ConstructionUiInputBlockedByWorldMap { get; private set; }
     public string LastConstructionUiAction { get; private set; } = string.Empty;
     public void SetConstructionUiState(bool trayOpen,string activeTool,bool blockedByWorldMap,string lastAction){ConstructionTrayOpen=trayOpen;ActiveConstructionTool=activeTool;ConstructionUiInputBlockedByWorldMap=blockedByWorldMap;LastConstructionUiAction=lastAction;}
+    public Rect2 ConstructionUiGlobalRect { get; private set; }
+    public Rect2 MercenaryInspectHudGlobalRect { get; private set; }
+    public bool MercenaryInspectHudOverlapsConstructionTray => MercenaryInspectHudVisible&&ConstructionTrayOpen&&MercenaryInspectHudGlobalRect.Intersects(ConstructionUiGlobalRect);
+    public void SetConstructionUiGlobalRect(Rect2 rect)=>ConstructionUiGlobalRect=rect;
+    public bool MercenaryInspectHudVisible { get; private set; }
+    public string MercenaryInspectHudMode { get; private set; } = "None";
+    public int MercenaryInspectHudSelectedCount { get; private set; }
+    public string MercenaryInspectHudDisplayedId { get; private set; } = string.Empty;
+    public string MercenaryInspectHudWorkType { get; private set; } = string.Empty;
+    public string MercenaryInspectHudWorkPhase { get; private set; } = string.Empty;
+    public string MercenaryInspectHudCarry { get; private set; } = string.Empty;
+    public float MercenaryInspectHudProgress { get; private set; }
+    public int MercenaryInspectHudRefreshCount { get; private set; }
+    public string MercenaryInspectHudLastRefreshReason { get; private set; } = string.Empty;
+    public bool MercenaryInspectHudInputBlockedByWorldMap { get; private set; }
+    public string MercenaryInspectHudLastAction { get; private set; } = string.Empty;
+    public string MercenaryConditionDataSource { get; private set; } = "-";
+    public bool MercenaryConditionSnapshotIsPlaceholder { get; private set; }
+    public bool MercenaryConditionAffectsGameplay { get; private set; }
+    public float MercenaryInspectHealth { get; private set; }
+    public float MercenaryInspectFullness { get; private set; }
+    public float MercenaryInspectRest { get; private set; }
+    public float MercenaryInspectMorale { get; private set; }
+    public void SetMercenaryInspectHudState(bool visible,string mode,int selectedCount,string displayedId,string workType,string workPhase,string carry,float progress,int refreshCount,string refreshReason,bool blockedByWorldMap,string lastAction,Rect2 globalRect,MercenaryConditionSnapshotV3? condition)
+    {MercenaryInspectHudVisible=visible;MercenaryInspectHudMode=mode;MercenaryInspectHudSelectedCount=selectedCount;MercenaryInspectHudDisplayedId=displayedId;MercenaryInspectHudWorkType=workType;MercenaryInspectHudWorkPhase=workPhase;MercenaryInspectHudCarry=carry;MercenaryInspectHudProgress=progress;MercenaryInspectHudRefreshCount=refreshCount;MercenaryInspectHudLastRefreshReason=refreshReason;MercenaryInspectHudInputBlockedByWorldMap=blockedByWorldMap;MercenaryInspectHudLastAction=lastAction;MercenaryInspectHudGlobalRect=globalRect;if(condition.HasValue){MercenaryConditionSnapshotV3 value=condition.Value;MercenaryConditionDataSource=value.DataSourceName;MercenaryConditionSnapshotIsPlaceholder=value.IsPlaceholder;MercenaryConditionAffectsGameplay=value.AffectsGameplay;MercenaryInspectHealth=value.HealthNormalized;MercenaryInspectFullness=value.FullnessNormalized;MercenaryInspectRest=value.RestNormalized;MercenaryInspectMorale=value.MoraleNormalized;}}
     public int ReservedSourceStackCount=>_workSession?.SourceStackReservations.Count??0;public int CarryingMercenaryCount=>_workSession?.Carries.Count??0;public int ActiveHaulingRequestCount=>_workSession?.ActiveHaulingRequestCount??0;
     public int WoodAmountInStockpile=>GetStockpileAmount(ResourceTypeV3.Wood);public int StoneAmountInStockpile=>GetStockpileAmount(ResourceTypeV3.Stone);public int GroundAmountOutsideStockpile=>GetOutsideStockpileAmount();
 
@@ -1247,6 +1273,8 @@ public partial class WorldManagerV2 : Node
         GD.Print($"[ResourceCoreV3] initialized={ResourceCoreInitialized} nodes={ResourceNodeCount} trees={TreeNodeCount} stones={StoneNodeCount} depleted={DepletedResourceNodeCount} stacks={GroundStackCount} wood={WoodAmountOnGround} stone={StoneAmountOnGround} nodeViews={RuntimeResourceNodeViewCount} stackViews={RuntimeGroundStackViewCount}");
         GD.Print($"[StockpileV3] zones={StockpileZoneCount} cells={StockpileCellCount} localZones={LocalCompanyZoneCount} mode={StockpileDesignationMode} reservedCells={ReservedStockpileCellCount} outside={GroundAmountOutsideStockpile} woodStored={WoodAmountInStockpile} stoneStored={StoneAmountInStockpile}");
         GD.Print($"[ConstructionUiV3] trayOpen={ConstructionTrayOpen} activeTool={ActiveConstructionTool} stockpileMode={StockpileDesignationMode} blockedByWorldMap={ConstructionUiInputBlockedByWorldMap} lastAction={LastConstructionUiAction}");
+        GD.Print($"[MercenaryInspectHudV3] visible={MercenaryInspectHudVisible} mode={MercenaryInspectHudMode} selected={MercenaryInspectHudSelectedCount} mercenary={MercenaryInspectHudDisplayedId} work={MercenaryInspectHudWorkType} phase={MercenaryInspectHudWorkPhase} carry={MercenaryInspectHudCarry} progress={MercenaryInspectHudProgress:0.000} refresh={MercenaryInspectHudRefreshCount} reason={MercenaryInspectHudLastRefreshReason} blockedByMap={MercenaryInspectHudInputBlockedByWorldMap} panelRect={MercenaryInspectHudGlobalRect} trayRect={ConstructionUiGlobalRect} overlapsTray={MercenaryInspectHudOverlapsConstructionTray} lastAction={MercenaryInspectHudLastAction}");
+        GD.Print($"[MercenaryInspectHudV3] conditionSource={MercenaryConditionDataSource} placeholder={MercenaryConditionSnapshotIsPlaceholder} affectsGameplay={MercenaryConditionAffectsGameplay} health={MercenaryInspectHealth:0.000} fullness={MercenaryInspectFullness:0.000} rest={MercenaryInspectRest:0.000} morale={MercenaryInspectMorale:0.000}");
         GD.Print($"[ConstructionV3] blueprints={ConstructionBlueprintCount} structures={ConstructionStructureCount} blockingCells={ConstructionBlockingCellCount} reservations={ConstructionReservationCount} occupancyRevision={ConstructionOccupancyRevision}");
         if(_workSession==null){GD.Print("[WorkCoreV3] initialized=false");return;}
         MercenaryWorkDiagnosticsV3 diagnostics=_workSession.Diagnostics;

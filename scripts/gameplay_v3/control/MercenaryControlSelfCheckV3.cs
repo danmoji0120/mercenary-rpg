@@ -97,6 +97,10 @@ public static class MercenaryControlSelfCheckV3
         {
             failures.Add("movement order missing");
         }
+
+        Require(control.TryIssueDirectMove(companies.LocalPlayer.PlayerId, companyId, new[] { ids[0] }, new(new Vector2I(6, 1)), query, 7, out _, out string cancelMoveReason), cancelMoveReason, failures);
+        Require(control.CancelCurrentActivity(ids[0]), "direct move cancel reported no change", failures);
+        Require(!control.Commands.TryGetActiveOrder(ids[0], out _), "cancelled direct move order remained active", failures);
     }
 
     private static void CheckNavigation(List<string> failures)
