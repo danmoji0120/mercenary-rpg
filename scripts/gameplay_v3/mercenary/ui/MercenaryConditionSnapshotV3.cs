@@ -1,5 +1,6 @@
 using System;
 using GameplayV3.Company;
+using GameplayV3.Needs;
 using Godot;
 using WorldV2;
 
@@ -14,11 +15,12 @@ public readonly record struct MercenaryConditionSnapshotV3(
     float FatigueNormalized,
     float MoraleNormalized,
     bool IsPlaceholder,
-    string DataSourceName)
+    string DataSourceName,
+    bool FatigueAffectsGameplay = false)
 {
     public float FullnessNormalized => 1f - HungerNormalized;
     public float RestNormalized => 1f - FatigueNormalized;
-    public bool AffectsGameplay => false;
+    public bool AffectsGameplay => FatigueAffectsGameplay;
 }
 
 public interface IMercenaryConditionSnapshotProviderV3
@@ -27,6 +29,13 @@ public interface IMercenaryConditionSnapshotProviderV3
         MercenaryProfileV3 profile,
         MercenaryStateV3 state,
         out MercenaryConditionSnapshotV3 snapshot);
+}
+
+public sealed class MixedMercenaryConditionSnapshotProviderV3 : IMercenaryConditionSnapshotProviderV3
+{
+    private readonly MercenaryNeedsSessionV3 _needs;private readonly PlaceholderMercenaryConditionSnapshotProviderV3 _placeholder=new();
+    public MixedMercenaryConditionSnapshotProviderV3(MercenaryNeedsSessionV3 needs){_needs=needs;}
+    public bool TryGetSnapshot(MercenaryProfileV3 profile,MercenaryStateV3 state,out MercenaryConditionSnapshotV3 snapshot){if(!_placeholder.TryGetSnapshot(profile,state,out var value)){snapshot=default;return false;}_needs.Fatigue.GetOrCreate(profile.MercenaryId);snapshot=value with{FatigueNormalized=_needs.Fatigue.GetValue(profile.MercenaryId),IsPlaceholder=true,DataSourceName="Mixed",FatigueAffectsGameplay=true};return true;}
 }
 
 public sealed class PlaceholderMercenaryConditionSnapshotProviderV3 : IMercenaryConditionSnapshotProviderV3

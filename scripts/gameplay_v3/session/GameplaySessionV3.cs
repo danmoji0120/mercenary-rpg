@@ -5,6 +5,7 @@ using GameplayV3.Resources;
 using GameplayV3.Work;
 using GameplayV3.Stockpile;
 using GameplayV3.Construction;
+using GameplayV3.Needs;
 
 namespace GameplayV3.Session;
 
@@ -17,6 +18,7 @@ public static class GameplaySessionV3
     private static MercenaryWorkSessionV3? _currentWorkSession;
     private static StockpileSessionV3? _currentStockpileSession;
     private static ConstructionSessionV3? _currentConstructionSession;
+    private static MercenaryNeedsSessionV3? _currentNeedsSession;
     private static long _sessionRevision;
 
     public static long SessionRevision => _sessionRevision;
@@ -30,7 +32,9 @@ public static class GameplaySessionV3
         _currentResourceSession = new ResourceSessionV3();
         _currentStockpileSession = new StockpileSessionV3();
         _currentConstructionSession = new ConstructionSessionV3();
+        _currentNeedsSession = new MercenaryNeedsSessionV3(_sessionRevision);
         _currentWorkSession = new MercenaryWorkSessionV3(_sessionRevision,_currentCompanySession,_currentMercenarySession,_currentResourceSession,_currentStockpileSession,_currentControlSession);
+        AttachNeedsPolicy();
         _currentControlSession.AttachWorkSession(_currentWorkSession);
     }
 
@@ -85,11 +89,12 @@ public static class GameplaySessionV3
 
     public static bool TryGetControlSession(out MercenaryControlSessionV3? controlSession){controlSession=_currentControlSession;return controlSession!=null;}
     public static bool EnsureResourceAndWorkSessions(CompanySessionV3 company,MercenarySessionV3 mercenary,MercenaryControlSessionV3 control,out ResourceSessionV3 resources,out MercenaryWorkSessionV3 work,out string reason)
-    {if(!ReferenceEquals(company,_currentCompanySession)||!ReferenceEquals(mercenary,_currentMercenarySession)||!ReferenceEquals(control,_currentControlSession)){resources=null!;work=null!;reason="Resource/Work sessions must use the current GameplaySession bundle.";return false;}_currentResourceSession??=new();_currentStockpileSession??=new();_currentWorkSession??=new(_sessionRevision,company,mercenary,_currentResourceSession,_currentStockpileSession,control);control.AttachWorkSession(_currentWorkSession);resources=_currentResourceSession;work=_currentWorkSession;reason=string.Empty;return true;}
+    {if(!ReferenceEquals(company,_currentCompanySession)||!ReferenceEquals(mercenary,_currentMercenarySession)||!ReferenceEquals(control,_currentControlSession)){resources=null!;work=null!;reason="Resource/Work sessions must use the current GameplaySession bundle.";return false;}_currentResourceSession??=new();_currentStockpileSession??=new();_currentNeedsSession??=new(_sessionRevision);_currentWorkSession??=new(_sessionRevision,company,mercenary,_currentResourceSession,_currentStockpileSession,control);AttachNeedsPolicy();control.AttachWorkSession(_currentWorkSession);resources=_currentResourceSession;work=_currentWorkSession;reason=string.Empty;return true;}
     public static bool TryGetResourceSession(out ResourceSessionV3? resources){resources=_currentResourceSession;return resources!=null;}
     public static bool TryGetWorkSession(out MercenaryWorkSessionV3? work){work=_currentWorkSession;return work!=null;}
     public static bool TryGetStockpileSession(out StockpileSessionV3? stockpiles){stockpiles=_currentStockpileSession;return stockpiles!=null;}
     public static bool TryGetConstructionSession(out ConstructionSessionV3? construction){construction=_currentConstructionSession;return construction!=null;}
+    public static bool TryGetNeedsSession(out MercenaryNeedsSessionV3? needs){needs=_currentNeedsSession;return needs!=null;}
     public static bool IsCurrentWorkSession(MercenaryWorkSessionV3 work)=>ReferenceEquals(work,_currentWorkSession)&&work.SessionRevision==_sessionRevision;
     public static bool IsCurrentControlSession(MercenaryControlSessionV3 session)=>ReferenceEquals(session,_currentControlSession)&&session.SessionRevision==_sessionRevision;
 
@@ -103,7 +108,10 @@ public static class GameplaySessionV3
         _currentResourceSession=new ResourceSessionV3();
         _currentStockpileSession=new StockpileSessionV3();
         _currentConstructionSession=new ConstructionSessionV3();
+        _currentNeedsSession=new MercenaryNeedsSessionV3(_sessionRevision);
         _currentWorkSession=new MercenaryWorkSessionV3(_sessionRevision,_currentCompanySession,_currentMercenarySession,_currentResourceSession,_currentStockpileSession,_currentControlSession);
+        AttachNeedsPolicy();
         _currentControlSession.AttachWorkSession(_currentWorkSession);
     }
+    private static void AttachNeedsPolicy(){if(_currentWorkSession==null||_currentNeedsSession==null)return;_currentWorkSession.AttachStartPolicy((id,type)=>(_currentNeedsSession.CanStartWork(id,type,out string reason),reason));}
 }

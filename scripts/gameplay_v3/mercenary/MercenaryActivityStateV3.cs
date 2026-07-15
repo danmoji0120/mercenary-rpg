@@ -4,5 +4,6 @@ public enum MercenaryActivityStateV3
 {
     Idle,
     Moving,
-    Working
+    Working,
+    Resting
 }

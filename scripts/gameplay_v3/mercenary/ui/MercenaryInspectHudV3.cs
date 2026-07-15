@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using GameplayV3.Construction.Runtime;
 using GameplayV3.Control;
 using GameplayV3.Work;
+using GameplayV3.Needs;
+using GameplayV3.Needs.Runtime;
 using Godot;
 using WorldV2;
 
@@ -43,6 +45,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
     private readonly Button[] _selectionButtons = new Button[MaximumVisibleSelectionRows];
     private readonly string[] _selectionButtonIds = new string[MaximumVisibleSelectionRows];
     private Button? _cancelButton;
+    private Label? _bedLabel;private Button? _assignBedButton;private Button? _unassignBedButton;private Button? _restButton;private MercenaryNeedsSessionV3? _needs;private RestWorkCoordinatorV3? _restWork;
     private double _refreshAccumulator;
     private bool _worldMapBlocked;
 
@@ -56,6 +59,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
     public string DisplayedCarry { get; private set; } = string.Empty;
     public float DisplayedProgress { get; private set; }
     public bool WorldMapBlocked => _worldMapBlocked;
+    public event Action<string>? BedAssignmentRequested;
 
     public void Initialize(
         MercenaryControlSessionV3 control,
@@ -63,16 +67,18 @@ public partial class MercenaryInspectHudV3 : Godot.Control
         MercenaryWorkSessionV3 work,
         WorldManagerV2 manager,
         ConstructionWorkCoordinatorV3? construction,
-        DemolitionWorkCoordinatorV3? demolition)
+        DemolitionWorkCoordinatorV3? demolition,
+        MercenaryNeedsSessionV3? needs=null,RestWorkCoordinatorV3? restWork=null)
     {
         _control = control;
         _manager = manager;
+        _needs=needs;_restWork=restWork;
         _snapshotBuilder = new MercenaryInspectHudSnapshotBuilderV3(
             mercenaries,
             control,
             work,
             manager.LocalCompanyName,
-            new PlaceholderMercenaryConditionSnapshotProviderV3(),
+            needs==null?new PlaceholderMercenaryConditionSnapshotProviderV3():new MixedMercenaryConditionSnapshotProviderV3(needs),
             construction,
             demolition);
         BuildInterface();
@@ -227,6 +233,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
         stats.AddChild(_derivedLabel);
         columns.AddChild(stats);
         root.AddChild(columns);
+        HBoxContainer restFooter=new(){Name="RestFooter"};restFooter.AddThemeConstantOverride("separation",4);_bedLabel=MakeLabel("침대: 미배정",11,new Color(.72f,.76f,.8f));_bedLabel.SizeFlagsHorizontal=SizeFlags.ExpandFill;restFooter.AddChild(_bedLabel);_assignBedButton=new Button{Text="배정/재배정",CustomMinimumSize=new Vector2(86,24),MouseFilter=MouseFilterEnum.Stop};_assignBedButton.Pressed+=()=>{LastAction="BedAssignmentRequested";BedAssignmentRequested?.Invoke(DisplayedMercenaryId);GetViewport().SetInputAsHandled();};restFooter.AddChild(_assignBedButton);_unassignBedButton=new Button{Text="해제",CustomMinimumSize=new Vector2(42,24),MouseFilter=MouseFilterEnum.Stop};_unassignBedButton.Pressed+=OnUnassignBed;restFooter.AddChild(_unassignBedButton);_restButton=new Button{Text="휴식",CustomMinimumSize=new Vector2(48,24),MouseFilter=MouseFilterEnum.Stop};_restButton.Pressed+=OnRestPressed;restFooter.AddChild(_restButton);root.AddChild(restFooter);
         return root;
     }
 
@@ -368,6 +375,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
         _workProgress.Value = value.ProgressNormalized * 100f;
         _workProgressText.Text = value.HasProgress ? $"{value.Progress:0.0}/{value.Required:0.0}" : string.Empty;
         _cancelButton!.Disabled = string.IsNullOrEmpty(value.WorkRequestId);
+        RestAssignmentV3? bed=null;bool assigned=_needs!=null&&_needs.Assignments.TryGetByMercenary(value.MercenaryId,out bed)&&bed!=null;_bedLabel!.Text=assigned?$"침대: {ShortId(bed!.StructureId)} / 슬롯 {bed.SlotIndex}":"침대: 미배정";_unassignBedButton!.Disabled=!assigned;_restButton!.Disabled=!assigned||value.Condition.FatigueNormalized<=(_needs?.Settings.ManualRestMinimum??.2f);
 
         MercenaryConditionSnapshotV3 condition = value.Condition;
         _conditionDetail!.Text = $"{condition.HealthSummary} · {condition.InjurySummary}\n{condition.TreatmentSummary}";
@@ -462,6 +470,9 @@ public partial class MercenaryInspectHudV3 : Godot.Control
         GetViewport().SetInputAsHandled();
         Refresh("CancelPressed");
     }
+
+    private void OnUnassignBed(){if(_needs!=null&&!string.IsNullOrEmpty(DisplayedMercenaryId))_needs.Assignments.TryUnassign(DisplayedMercenaryId);LastAction="BedUnassigned";GetViewport().SetInputAsHandled();Refresh("BedUnassigned");}
+    private void OnRestPressed(){if(_restWork!=null&&!string.IsNullOrEmpty(DisplayedMercenaryId)){bool ok=_restWork.TryIssue(DisplayedMercenaryId,false,out string reason);LastAction=ok?"ManualRestIssued":reason;}GetViewport().SetInputAsHandled();Refresh("RestPressed");}
 
     private void OnSelectionRowPressed(int index)
     {

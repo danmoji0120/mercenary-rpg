@@ -12,6 +12,7 @@ using GameplayV3.Resources;
 using GameplayV3.Work;
 using GameplayV3.Stockpile;
 using GameplayV3.Construction;
+using GameplayV3.Needs;
 using Godot;
 
 namespace WorldV2;
@@ -680,6 +681,7 @@ public partial class WorldManagerV2 : Node
     }
     public bool TryGetStockpileSession(out StockpileSessionV3? stockpileSession){stockpileSession=_stockpileSession;return stockpileSession!=null;}
     public bool TryGetConstructionSession(out ConstructionSessionV3? constructionSession){constructionSession=_constructionSession;return constructionSession!=null;}
+    public bool TryGetNeedsSession(out MercenaryNeedsSessionV3? needsSession)=>GameplaySessionV3.TryGetNeedsSession(out needsSession);
 
     public bool CanPlayerControlMercenary(string playerId, string mercenaryId)
     {

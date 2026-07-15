@@ -1,0 +1,24 @@
+using System;
+using System.Collections.Generic;
+using GameplayV3.Construction;
+using GameplayV3.Control;
+using GameplayV3.Mercenary;
+using GameplayV3.Movement;
+using GameplayV3.Navigation;
+using GameplayV3.Work;
+
+namespace GameplayV3.Needs.Runtime;
+
+public sealed class RestWorkCoordinatorV3
+{
+    private readonly MercenaryNeedsSessionV3 _needs;private readonly MercenarySessionV3 _mercenaries;private readonly MercenaryControlSessionV3 _control;private readonly MercenaryWorkSessionV3 _work;private readonly ConstructionSessionV3 _construction;private readonly IMercenaryNavigationWorldQueryV3 _query;
+    public RestWorkCoordinatorV3(MercenaryNeedsSessionV3 needs,MercenarySessionV3 mercenaries,MercenaryControlSessionV3 control,MercenaryWorkSessionV3 work,ConstructionSessionV3 construction,IMercenaryNavigationWorldQueryV3 query){_needs=needs;_mercenaries=mercenaries;_control=control;_work=work;_construction=construction;_query=query;}
+    public bool TryAssign(string mercenaryId,string structureId,out string reason){if(!_mercenaries.Registry.TryGetState(mercenaryId,out var state)||state==null||!_construction.Structures.TryGet(structureId,out var structure)||structure==null||state.CompanyId!=structure.CompanyId||!_construction.Definitions.TryGetDefinition(structure.DefinitionId,out var definition)||definition?.RestFacility==null){reason="InvalidRestFacility";return false;}foreach(var slot in RestFacilitySlotResolverV3.Resolve(structure,definition))if(!_needs.Assignments.IsSlotAssigned(slot.RestSlotId)||(_needs.Assignments.TryGetByMercenary(mercenaryId,out var old)&&old?.RestSlotId==slot.RestSlotId))return _needs.Assignments.TryAssign(mercenaryId,slot,out reason);reason="NoAvailableRestSlot";return false;}
+    public bool TryIssue(string mercenaryId,bool automatic,out string reason){if(!_mercenaries.Registry.TryGetState(mercenaryId,out var state)||state==null||!_needs.Assignments.TryGetByMercenary(mercenaryId,out var assignment)||assignment==null||!TryResolve(assignment,out var slot)){reason="NoValidBedAssignment";return false;}if(!_needs.CanBeginRest(mercenaryId,slot,automatic,out reason))return false;if(automatic&&(_work.TryGetAssignment(mercenaryId,out _)||_control.Movements.TryGet(mercenaryId,out _)||_work.Carries.ContainsCarry(mercenaryId))){reason="WorkerBusy";return false;}_work.CancelForDirectMove(mercenaryId);_control.SupersedeDirectMovementForWork(mercenaryId);_needs.CancelRest(mercenaryId,"Superseded");if(!_needs.TryBeginRest(mercenaryId,slot,automatic,out var rest,out reason)||rest==null)return false;if(state.CurrentCell.Value==slot.UseCell.Value){_needs.MarkAtSlot(mercenaryId,state.CurrentCell);state.TrySetActivityState(MercenaryActivityStateV3.Resting,out _);return true;}if(!_control.ExternalMovements.TryRequest(mercenaryId,state.CurrentCell,slot.UseCell,MovementRequestSourceTypeV3.Work,rest.RestWorkId,_control.SessionRevision,rest.CreatedUtc.Ticks,_control.Movements,out _,out reason)){_needs.CancelRest(mercenaryId,reason);return false;}return true;}
+    public bool TryHandleMovementResult(MercenaryMovementResultV3 result){if(!_needs.TryGetActiveRest(result.Request.MercenaryId,out var rest)||rest==null||rest.RestWorkId!=result.Request.SourceId)return false;if(!result.Succeeded||!_mercenaries.Registry.TryGetState(rest.MercenaryId,out var state)||state==null||state.CurrentCell.Value!=rest.Slot.UseCell.Value){_needs.CancelRest(rest.MercenaryId,result.FailureReason.Length==0?"RestMovementFailed":result.FailureReason);return true;}_needs.MarkAtSlot(rest.MercenaryId,state.CurrentCell);state.TrySetActivityState(MercenaryActivityStateV3.Resting,out _);return true;}
+    public void TryAutoRest(string mercenaryId){if(_needs.TryGetActiveRest(mercenaryId,out _)||_needs.Fatigue.GetValue(mercenaryId)<_needs.Settings.AutoRestThreshold)return;TryIssue(mercenaryId,true,out _);}
+    public bool Cancel(string id,string reason){_control.ExternalMovements.Cancel(id,reason,_control.Movements);return _needs.CancelRest(id,reason);}
+    public void OnStructureDemolitionStarted(string structureId){foreach(string id in _needs.BeginStructureDemolition(structureId)){_control.ExternalMovements.Cancel(id,"StructureUnderDemolition",_control.Movements);if(_mercenaries.Registry.TryGetState(id,out var state)&&state!=null)state.TrySetActivityState(MercenaryActivityStateV3.Idle,out _);}}
+    public void OnStructureDemolitionEnded(string structureId)=>_needs.EndStructureDemolition(structureId);
+    private bool TryResolve(RestAssignmentV3 assignment,out RestFacilitySlotV3 slot){slot=default;if(!_construction.Structures.TryGet(assignment.StructureId,out var structure)||structure==null||!_construction.Definitions.TryGetDefinition(structure.DefinitionId,out var definition)||definition?.RestFacility==null)return false;foreach(var value in RestFacilitySlotResolverV3.Resolve(structure,definition))if(value.RestSlotId==assignment.RestSlotId){slot=value;return true;}return false;}
+}

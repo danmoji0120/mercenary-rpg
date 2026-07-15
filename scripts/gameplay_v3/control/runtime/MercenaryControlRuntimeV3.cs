@@ -81,6 +81,7 @@ public partial class MercenaryMovementRuntimeV3 : Node
     private MercenaryControlSessionV3? _control;private MercenaryViewRegistryV3? _views;private WorldV2GridRenderer? _grid;private IMercenaryNavigationWorldQueryV3? _query;private WorldManagerV2? _manager;
     private readonly MercenaryPathfindingSchedulerV3 _scheduler=new(new());private readonly MercenaryMovementCoordinatorV3 _movement=new(new());
     public void Initialize(MercenaryControlSessionV3 control,MercenaryViewRegistryV3 views,WorldV2GridRenderer grid,IMercenaryNavigationWorldQueryV3 query,WorldManagerV2 manager){_control=control;_views=views;_grid=grid;_query=query;_manager=manager;RestoreViews();}
+    public void AttachRuntimeSpeedMultiplier(Func<string,float>? resolver)=>_movement.AttachRuntimeSpeedMultiplier(resolver);
     public override void _PhysicsProcess(double delta)
     {
         if(_control==null||_views==null||_grid==null||_query==null||!GameplaySessionV3.IsCurrentControlSession(_control))return;

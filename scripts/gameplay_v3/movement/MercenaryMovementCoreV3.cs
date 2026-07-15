@@ -72,9 +72,11 @@ public sealed class MercenaryMovementRegistryV3
 public sealed class MercenaryMovementCoordinatorV3
 {
     private readonly MercenaryMovementSettingsV3 _settings;
+    private Func<string,float>? _runtimeSpeedMultiplier;
     private readonly List<string> _completedThisTick = new();
     private readonly List<string> _blockedThisTick = new();
     public MercenaryMovementCoordinatorV3(MercenaryMovementSettingsV3 settings){_settings=settings;}
+    public void AttachRuntimeSpeedMultiplier(Func<string,float>? resolver)=>_runtimeSpeedMultiplier=resolver;
     public IReadOnlyList<string> CompletedThisTick => _completedThisTick;
     public IReadOnlyList<string> BlockedThisTick => _blockedThisTick;
     public bool TryStart(MercenaryMoveOrderV3 order,MercenaryPathResultV3 result,MercenarySessionV3 mercenary,IMercenaryNavigationWorldQueryV3 query,MercenaryMovementRegistryV3 registry,out string reason)
@@ -110,7 +112,7 @@ public sealed class MercenaryMovementCoordinatorV3
     }
     private static bool _querySafe(IMercenaryNavigationWorldQueryV3 query,Vector2I cell)=>query.IsWalkable(cell);
     private void PrepareSegment(MercenaryMovementStateV3 state,IMercenaryNavigationWorldQueryV3 query)
-    { state.SegmentElapsed=0;state.EnteringTraversalMultiplier=query.GetTraversalMultiplier(state.ToCell.Value);float distance=MercenaryMovementCostPolicyV3.DirectionDistance(state.FromCell.Value,state.ToCell.Value);float speed=_settings.BaseMoveSpeedCellsPerSecond*state.MoveSpeedMultiplier;state.SegmentDuration=distance*state.EnteringTraversalMultiplier/Math.Max(0.001f,speed); }
+    { state.SegmentElapsed=0;state.EnteringTraversalMultiplier=query.GetTraversalMultiplier(state.ToCell.Value);float distance=MercenaryMovementCostPolicyV3.DirectionDistance(state.FromCell.Value,state.ToCell.Value);float fatigue=Math.Clamp(_runtimeSpeedMultiplier?.Invoke(state.MercenaryId)??1f,.1f,2f);float speed=_settings.BaseMoveSpeedCellsPerSecond*state.MoveSpeedMultiplier*fatigue;state.SegmentDuration=distance*state.EnteringTraversalMultiplier/Math.Max(0.001f,speed); }
 }
 
 internal static class MovementRegistryExtensionsV3
