@@ -53,6 +53,7 @@ public partial class WorldV2Root : Node2D
     private MercenaryInspectHudV3? _mercenaryInspectHud;
     private MercenaryNeedsRuntimeV3? _mercenaryNeedsRuntime;
     private RestWorkCoordinatorV3? _restWork;
+    private EatingWorkCoordinatorV3? _eatingWork;
     private RestAssignmentOverlayV3? _restAssignmentOverlay;
     private string _pendingBedAssignmentMercenaryId=string.Empty;
     private bool _cameraInputWasLocked;
@@ -525,12 +526,12 @@ public partial class WorldV2Root : Node2D
             _constructionPlacement=new ConstructionPlacementControllerV3{Name="ConstructionPlacementControllerV3"};gameplayEntities.AddChild(_constructionPlacement);_constructionPlacement.Initialize(construction,resources,stockpiles,mercenaries,navigationQuery,_gridRenderer,_worldManager,_constructionOverlay);
             _constructionWork=new ConstructionWorkCoordinatorV3(construction,resources,stockpiles,work,controlSession,mercenaries,navigationQuery,_worldManager);_constructionWork.Changed+=()=>{_constructionOverlay?.Refresh();_restAssignmentOverlay?.Refresh();};_constructionWork.ResourcesChanged+=MaterializeResources;
             if(needsSession!=null)_constructionWork.AttachWorkMultiplier(needsSession.WorkMultiplier);
-            _demolitionWork=new DemolitionWorkCoordinatorV3(construction,resources,work,controlSession,mercenaries,navigationQuery,_worldManager.LocalPlayerId,_worldManager.LocalCompanyId,_worldManager.WorldBounds,id=>{_constructionWork.CancelForDirectMove(id);},true);_demolitionWork.Changed+=()=>{_constructionOverlay?.Refresh();_restAssignmentOverlay?.Refresh();};_demolitionWork.ResourcesChanged+=MaterializeResources;
+            _demolitionWork=new DemolitionWorkCoordinatorV3(construction,resources,work,controlSession,mercenaries,navigationQuery,_worldManager.LocalPlayerId,_worldManager.LocalCompanyId,_worldManager.WorldBounds,id=>{_constructionWork.CancelForDirectMove(id);_eatingWork?.Cancel(id,"SupersededByNewWork");},true);_demolitionWork.Changed+=()=>{_constructionOverlay?.Refresh();_restAssignmentOverlay?.Refresh();};_demolitionWork.ResourcesChanged+=MaterializeResources;
             if(needsSession!=null)_demolitionWork.AttachWorkMultiplier(needsSession.WorkMultiplier);
-            if(needsSession!=null){_restWork=new RestWorkCoordinatorV3(needsSession,mercenaries,controlSession,work,construction,navigationQuery);_mercenaryNeedsRuntime?.AttachRestCoordinator(_restWork);_demolitionWork.AttachRestLifecycle(_restWork.OnStructureDemolitionStarted,_restWork.OnStructureDemolitionEnded);_restAssignmentOverlay=new RestAssignmentOverlayV3{Name="RestAssignmentOverlayV3"};gameplayEntities.AddChild(_restAssignmentOverlay);_restAssignmentOverlay.Initialize(construction,needsSession,mercenaries,_gridRenderer,_worldManager.LocalCompanyId);construction.Structures.StructureRemoved+=removed=>{if(construction.Definitions.TryGetDefinition(removed.DefinitionId,out var removedDefinition)&&removedDefinition!=null)needsSession.RemoveStructure(removed.StructureId,removedDefinition,removed);_restAssignmentOverlay?.Refresh();};controlSession.Selection.SelectionChanged+=CancelBedAssignmentMode;}
+            if(needsSession!=null){_restWork=new RestWorkCoordinatorV3(needsSession,mercenaries,controlSession,work,construction,navigationQuery);_eatingWork=new EatingWorkCoordinatorV3(needsSession,resources,mercenaries,controlSession,work,navigationQuery,_worldManager.LocalPlayerId,_worldManager.LocalCompanyId);_eatingWork.Changed+=MaterializeResources;_eatingWork.ResourcesChanged+=MaterializeResources;_restWork.AttachEatingCancellation(id=>_eatingWork.Cancel(id,"SupersededByRest"));_mercenaryNeedsRuntime?.AttachRestCoordinator(_restWork);_mercenaryNeedsRuntime?.AttachEatingCoordinator(_eatingWork);_demolitionWork.AttachRestLifecycle(_restWork.OnStructureDemolitionStarted,_restWork.OnStructureDemolitionEnded);_restAssignmentOverlay=new RestAssignmentOverlayV3{Name="RestAssignmentOverlayV3"};gameplayEntities.AddChild(_restAssignmentOverlay);_restAssignmentOverlay.Initialize(construction,needsSession,mercenaries,_gridRenderer,_worldManager.LocalCompanyId);construction.Structures.StructureRemoved+=removed=>{if(construction.Definitions.TryGetDefinition(removed.DefinitionId,out var removedDefinition)&&removedDefinition!=null)needsSession.RemoveStructure(removed.StructureId,removedDefinition,removed);_restAssignmentOverlay?.Refresh();};controlSession.Selection.SelectionChanged+=CancelBedAssignmentMode;}
             _demolitionDesignation=new DemolitionDesignationControllerV3{Name="DemolitionDesignationControllerV3"};gameplayEntities.AddChild(_demolitionDesignation);_demolitionDesignation.Initialize(construction,_gridRenderer,_worldManager,_constructionOverlay,_demolitionWork);
-            controlSession.AttachConstructionCancellation(id=>{bool changed=_constructionWork.CancelForDirectMove(id)|_demolitionWork.CancelForDirectMove(id);if(_restWork?.Cancel(id,"CancelledByDirectMove")==true)changed=true;return changed;});
-            work.AttachExternalWorkSupersede(id=>{_demolitionWork.CancelForNewWork(id);_restWork?.Cancel(id,"SupersededByNewWork");});
+            controlSession.AttachConstructionCancellation(id=>{bool changed=_constructionWork.CancelForDirectMove(id)|_demolitionWork.CancelForDirectMove(id);if(_restWork?.Cancel(id,"CancelledByDirectMove")==true)changed=true;if(_eatingWork?.Cancel(id,"CancelledByDirectMove")==true)changed=true;return changed;});
+            work.AttachExternalWorkSupersede(id=>{_demolitionWork.CancelForNewWork(id);_restWork?.Cancel(id,"SupersededByNewWork");_eatingWork?.Cancel(id,"SupersededByNewWork");});
             _constructionUi.ConstructionToolChanged+=HandleConstructionToolChanged;
             _constructionUi.DemolitionToolChanged+=active=>{if(active)_constructionPlacement?.ClearActivePlacementTool();_demolitionDesignation?.SetActive(active);};
             _constructionPlacement.ActiveChanged+=active=>{if(active||_constructionUi==null)return;if(_constructionUi.ActiveConstructionTool=="WoodenWall")_constructionUi.SetWallTool(false);else if(_constructionUi.ActiveConstructionTool=="BasicBed")_constructionUi.SetBedTool(false);};
@@ -538,9 +539,10 @@ public partial class WorldV2Root : Node2D
             _mercenaryWorkRuntime.AttachConstruction(_constructionWork);
             _mercenaryWorkRuntime.AttachDemolition(_demolitionWork);
             if(_restWork!=null)_mercenaryWorkRuntime.AttachRest(_restWork);
+            if(_eatingWork!=null){_mercenaryWorkRuntime.AttachEating(_eatingWork);_worldManager.BindEatingCoordinator(_eatingWork);}
             _mercenaryInspectHud=new MercenaryInspectHudV3{Name="MercenaryInspectHudV3"};
             canvasLayer.AddChild(_mercenaryInspectHud);
-            _mercenaryInspectHud.Initialize(controlSession,mercenaries,work,_worldManager,_constructionWork,_demolitionWork,needsSession,_restWork);
+            _mercenaryInspectHud.Initialize(controlSession,mercenaries,work,_worldManager,_constructionWork,_demolitionWork,needsSession,_restWork,_eatingWork);
             _mercenaryInspectHud.BedAssignmentRequested+=id=>{_pendingBedAssignmentMercenaryId=id;_restAssignmentOverlay?.SetAssignmentMode(true,id);_constructionPlacement?.ClearActivePlacementTool();_demolitionDesignation?.SetActive(false);_stockpileDesignation?.SetMode(StockpileDesignationModeV3.None);_worldManager.UpdateDebugHud("배정할 간이 침대를 클릭하세요.");};
         }
     }
@@ -571,7 +573,7 @@ public partial class WorldV2Root : Node2D
         if(_worldManager==null||_gridRenderer==null||_resourceNodesContainer==null||_groundResourcesContainer==null||!_worldManager.TryGetResourceSession(out ResourceSessionV3? resources)||resources==null)return;
         foreach(string stale in _groundStackViews.GetIds())if(!resources.GroundStacks.TryGet(stale,out _))_groundStackViews.TryRemove(stale);
         int created=ResourceMaterializationCoordinatorV3.MaterializeNodes(resources,_resourceNodesContainer,_gridRenderer,_resourceNodeViews);
-        foreach(string id in resources.GroundStacks.GetAllStackIds())if(resources.GroundStacks.TryGet(id,out GroundResourceStackV3? stack)&&stack!=null)ResourceMaterializationCoordinatorV3.MaterializeOrRefreshStack(stack,resources,_groundResourcesContainer,_gridRenderer,_groundStackViews);
+        foreach(string id in resources.GroundStacks.GetAllStackIds())if(resources.GroundStacks.TryGet(id,out GroundResourceStackV3? stack)&&stack!=null)ResourceMaterializationCoordinatorV3.MaterializeOrRefreshStack(stack,resources,_groundResourcesContainer,_gridRenderer,_groundStackViews)?.SetReserved(resources.AmountReservations.IsReserved(id));
         _worldManager.SetResourceRuntimeDiagnostics(_resourceNodeViews.GetIds(),_groundStackViews.GetIds());
         GD.Print($"[ResourceCoreV3] views nodes={_resourceNodeViews.Count} stacks={_groundStackViews.Count} created={created}");
     }

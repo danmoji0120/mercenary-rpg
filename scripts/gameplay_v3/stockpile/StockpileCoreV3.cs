@@ -59,7 +59,7 @@ public sealed class StockpileZoneRegistryV3
     {
         zone=null;if(string.IsNullOrWhiteSpace(companyId)){reason="InvalidCompany";return false;}if(cells==null||cells.Count==0){reason="Stockpile requires at least one cell.";return false;}
         HashSet<Vector2I> unique=new();foreach(GlobalCellCoord cell in cells){if(!bounds.HasPoint(cell.Value)){reason="Stockpile cell is outside world bounds.";return false;}if(!unique.Add(cell.Value)){reason="Duplicate stockpile cell.";return false;}if(_cellIndex.ContainsKey(cell.Value)){reason="Stockpile cell overlaps another zone.";return false;}}
-        string id=StockpileZoneIdFactoryV3.Create();zone=new(id,companyId,unique,new[]{ResourceTypeV3.Wood,ResourceTypeV3.Stone},DateTime.UtcNow);_zones.Add(id,zone);foreach(Vector2I cell in unique)_cellIndex.Add(cell,id);Revision++;reason=string.Empty;return true;
+        string id=StockpileZoneIdFactoryV3.Create();zone=new(id,companyId,unique,new[]{ResourceTypeV3.Wood,ResourceTypeV3.Stone,ResourceTypeV3.Ration},DateTime.UtcNow);_zones.Add(id,zone);foreach(Vector2I cell in unique)_cellIndex.Add(cell,id);Revision++;reason=string.Empty;return true;
     }
     public bool TryGetZone(string id,out StockpileZoneStateV3? zone)=>_zones.TryGetValue(id,out zone); public bool ContainsZone(string id)=>_zones.ContainsKey(id);
     public bool TryGetZoneAtCell(GlobalCellCoord cell,out StockpileZoneStateV3? zone){zone=null;return _cellIndex.TryGetValue(cell.Value,out string? id)&&_zones.TryGetValue(id,out zone);}

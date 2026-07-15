@@ -1,6 +1,8 @@
 using GameplayV3.Construction.Runtime;
 using GameplayV3.Control;
 using GameplayV3.Work;
+using GameplayV3.Needs.Runtime;
+using GameplayV3.Needs;
 using Godot;
 using WorldV2;
 
@@ -55,6 +57,7 @@ public static class MercenaryHudTextFormatterV3
         WorkTypeV3.Hauling => "운반",
         WorkTypeV3.Construction => "건설",
         WorkTypeV3.Demolition => "철거",
+        WorkTypeV3.Eating => "식사",
         _ => "확인 필요"
     };
 
@@ -62,6 +65,7 @@ public static class MercenaryHudTextFormatterV3
     {
         "Wood" => "목재",
         "Stone" => "석재",
+        "Ration" => "비상식량",
         _ => "자원"
     };
 
@@ -107,6 +111,7 @@ public sealed class MercenaryInspectHudSnapshotBuilderV3
     private readonly MercenaryWorkSessionV3 _work;
     private readonly ConstructionWorkCoordinatorV3? _construction;
     private readonly DemolitionWorkCoordinatorV3? _demolition;
+    private readonly EatingWorkCoordinatorV3? _eating;
     private readonly IMercenaryConditionSnapshotProviderV3 _conditions;
     private readonly string _companyName;
 
@@ -117,7 +122,8 @@ public sealed class MercenaryInspectHudSnapshotBuilderV3
         string companyName,
         IMercenaryConditionSnapshotProviderV3 conditions,
         ConstructionWorkCoordinatorV3? construction,
-        DemolitionWorkCoordinatorV3? demolition)
+        DemolitionWorkCoordinatorV3? demolition,
+        EatingWorkCoordinatorV3? eating=null)
     {
         _mercenaries = mercenaries;
         _control = control;
@@ -126,6 +132,7 @@ public sealed class MercenaryInspectHudSnapshotBuilderV3
         _conditions = conditions;
         _construction = construction;
         _demolition = demolition;
+        _eating=eating;
     }
 
     public bool TryBuild(string mercenaryId, out MercenaryInspectHudSnapshotV3? snapshot)
@@ -161,6 +168,8 @@ public sealed class MercenaryInspectHudSnapshotBuilderV3
         {
             value.Carry = $"{MercenaryHudTextFormatterV3.Resource(carry.ResourceType)} {carry.Amount} / {value.MaxCarryUnits}";
         }
+
+        if(_eating?.TryGet(mercenaryId,out var eating)==true&&eating!=null){value.WorkRequestId=eating.WorkRequestId;value.WorkType="식사";value.Status=eating.Phase==EatingWorkPhaseV3.MovingToFood?"비상식량으로 이동 중":"식사 중";value.CommandSource=eating.CommandSource==EatingCommandSourceV3.DirectOrder?"직접 명령":"필요 행동";value.Phase=eating.Phase==EatingWorkPhaseV3.MovingToFood?"식량으로 이동":"식사 중";value.Target="비상식량";value.Destination=eating.InteractionCell;value.Progress=eating.EatingProgressSeconds;value.Required=eating.EatingDurationSeconds;value.HasProgress=eating.Phase==EatingWorkPhaseV3.Eating;snapshot=value;return true;}
 
         if (_construction?.TryGetHudSnapshot(mercenaryId, out ConstructionWorkHudSnapshotV3 construction) == true)
         {

@@ -13,6 +13,7 @@ using GameplayV3.Work;
 using GameplayV3.Stockpile;
 using GameplayV3.Construction;
 using GameplayV3.Needs;
+using GameplayV3.Needs.Runtime;
 using Godot;
 
 namespace WorldV2;
@@ -246,6 +247,7 @@ public partial class WorldManagerV2 : Node
     public float MercenaryInspectMorale { get; private set; }
     public void SetMercenaryInspectHudState(bool visible,string mode,int selectedCount,string displayedId,string workType,string workPhase,string carry,float progress,int refreshCount,string refreshReason,bool blockedByWorldMap,string lastAction,Rect2 globalRect,MercenaryConditionSnapshotV3? condition)
     {MercenaryInspectHudVisible=visible;MercenaryInspectHudMode=mode;MercenaryInspectHudSelectedCount=selectedCount;MercenaryInspectHudDisplayedId=displayedId;MercenaryInspectHudWorkType=workType;MercenaryInspectHudWorkPhase=workPhase;MercenaryInspectHudCarry=carry;MercenaryInspectHudProgress=progress;MercenaryInspectHudRefreshCount=refreshCount;MercenaryInspectHudLastRefreshReason=refreshReason;MercenaryInspectHudInputBlockedByWorldMap=blockedByWorldMap;MercenaryInspectHudLastAction=lastAction;MercenaryInspectHudGlobalRect=globalRect;if(condition.HasValue){MercenaryConditionSnapshotV3 value=condition.Value;MercenaryConditionDataSource=value.DataSourceName;MercenaryConditionSnapshotIsPlaceholder=value.IsPlaceholder;MercenaryConditionAffectsGameplay=value.AffectsGameplay;MercenaryInspectHealth=value.HealthNormalized;MercenaryInspectFullness=value.FullnessNormalized;MercenaryInspectRest=value.RestNormalized;MercenaryInspectMorale=value.MoraleNormalized;}}
+    public void BindEatingCoordinator(EatingWorkCoordinatorV3? coordinator)=>_eatingWorkCoordinator=coordinator;
     public int ReservedSourceStackCount=>_workSession?.SourceStackReservations.Count??0;public int CarryingMercenaryCount=>_workSession?.Carries.Count??0;public int ActiveHaulingRequestCount=>_workSession?.ActiveHaulingRequestCount??0;
     public int WoodAmountInStockpile=>GetStockpileAmount(ResourceTypeV3.Wood);public int StoneAmountInStockpile=>GetStockpileAmount(ResourceTypeV3.Stone);public int GroundAmountOutsideStockpile=>GetOutsideStockpileAmount();
 
@@ -264,6 +266,7 @@ public partial class WorldManagerV2 : Node
     private MercenaryWorkSessionV3? _workSession;
     private StockpileSessionV3? _stockpileSession;
     private ConstructionSessionV3? _constructionSession;
+    private EatingWorkCoordinatorV3? _eatingWorkCoordinator;
     private readonly StartingDeploymentCoordinatorV3 _startingDeploymentCoordinator = new();
     private readonly HashSet<string> _materializedMercenaryIds = new(StringComparer.Ordinal);
     private readonly HashSet<string> _materializedResourceNodeIds=new(StringComparer.Ordinal);
@@ -1113,6 +1116,7 @@ public partial class WorldManagerV2 : Node
         _resourceSession=resources;_workSession=work;_stockpileSession=work.Stockpiles;GameplaySessionV3.TryGetConstructionSession(out _constructionSession);
         InitialGatheringPatchResultV3 result=InitialGatheringPatchPlacementServiceV3.Place(resources,deployment,placement,WorldBounds,SampleV3PlanCellForNavigation);
         if(!result.Succeeded){GD.PushError($"[ResourceCoreV3] Initial patch failed: {result.FailureReason}");return;}
+        if(!InitialRationPlacementServiceV3.TryPlace(resources,deployment,WorldBounds,cell=>SampleV3PlanCellForNavigation(cell).IsWalkable,out GroundResourceStackV3? ration,out string rationReason)){GD.PushError($"[HungerV3] Initial ration placement failed: {rationReason}");return;}if(ration!=null)GD.Print($"[HungerV3] Initial ration stack={ration.ResourceStackId} cell={ration.Cell} amount={ration.Amount}");
         if(!result.ReusedExisting)
         {
             GD.Print($"[ResourceCoreV3] Initial gathering patch created nodes={result.NodeIds.Count} candidates={result.CandidatesChecked}");
@@ -1129,6 +1133,9 @@ public partial class WorldManagerV2 : Node
         if(constructionRuntimeCheck.Passed)GD.Print($"[ConstructionV3] Runtime self-check {constructionRuntimeCheck.Summary} singleTrips={constructionRuntimeCheck.SingleStackTrips} splitTrips={constructionRuntimeCheck.SplitStackTrips}");else GD.PushError($"[ConstructionV3] Runtime self-check {constructionRuntimeCheck.Summary}");
         DemolitionSelfCheckResultV3 demolitionCheck=DemolitionSelfCheckV3.Run();
         if(demolitionCheck.Passed)GD.Print($"[DemolitionV3] Self-check {demolitionCheck.Summary} scores={demolitionCheck.RecruitAScore:0.00}/{demolitionCheck.RecruitBScore:0.00}/{demolitionCheck.RecruitCScore:0.00} salvage={demolitionCheck.SalvagedWood}");else GD.PushError($"[DemolitionV3] Self-check {demolitionCheck.Summary}");
+        if(HungerEatingSelfCheckV3.TryValidate(out string hungerReason))GD.Print("[HungerV3] Self-check PASS");else GD.PushError($"[HungerV3] Self-check FAIL: {hungerReason}");
+        if(EatingRuntimeSelfCheckV3.TryValidate(out string eatingReason))GD.Print("[EatingV3] Runtime self-check PASS");else GD.PushError($"[EatingV3] Runtime self-check FAIL: {eatingReason}");
+        if(EatingArrivalTransitionSelfCheckV3.TryValidate(out string eatingArrivalReason))GD.Print("[EatingV3] Arrival transition self-check PASS");else GD.PushError($"[EatingV3] Arrival transition self-check FAIL: {eatingArrivalReason}");
 #endif
         UpdateDebugHud();
     }
@@ -1270,6 +1277,17 @@ public partial class WorldManagerV2 : Node
         }
     }
 
+    private void PrintEatingArrivalDiagnostics()
+    {
+        if(_eatingWorkCoordinator==null)return;string id=MercenaryInspectHudDisplayedId;EatingDiagnosticsV3 diagnostics=_eatingWorkCoordinator.Diagnostics;
+        if(!string.IsNullOrEmpty(id)&&_eatingWorkCoordinator.TryGet(id,out EatingWorkStateV3? eating)&&eating!=null)
+        {
+            MercenaryMovementRequestV3? movement=null;MercenaryStateV3? worker=null;_controlSession?.ExternalMovements.TryGetActive(id,out movement);_mercenarySession?.Registry.TryGetState(id,out worker);bool reservationValid=_resourceSession?.AmountReservations.TryGet(eating.ReservationId,out ResourceAmountReservationV3? reservation)==true&&reservation?.WorkRequestId==eating.WorkRequestId;bool stackValid=_resourceSession?.GroundStacks.TryGet(eating.GroundStackId,out GroundResourceStackV3? stack)==true&&stack?.ResourceType==ResourceTypeV3.Ration;bool arrivalMatched=worker?.CurrentCell.Value==eating.InteractionCell.Value;
+            GD.Print($"[EatingV3] EatingWorkRequestId={eating.WorkRequestId} EatingPhase={eating.Phase} MovementRequestId={movement?.MovementRequestId??"-"} ExpectedMovementRequestId={eating.MovementRequestId} MovementStatus={movement?.Status.ToString()??diagnostics.LastMovementStatus} MovementCompletionReason={diagnostics.LastMovementCompletionReason} FoodStackId={eating.GroundStackId} FoodStackCell={eating.FoodStackCell} InteractionCell={eating.InteractionCell} MovementDestinationCell={eating.MovementDestinationCell?.ToString()??"-"} WorkerCurrentCell={worker?.CurrentCell.ToString()??"-"} ArrivalMatched={arrivalMatched} ReservationValid={reservationValid} StackValid={stackValid} LastEatingTransition={diagnostics.LastEatingTransition} LastEatingTransitionFailure={diagnostics.LastEatingTransitionFailure}");
+        }
+        else GD.Print($"[EatingV3] EatingWorkRequestId=- EatingPhase=- MovementRequestId={diagnostics.LastMovementRequestId} ExpectedMovementRequestId={diagnostics.LastExpectedMovementRequestId} MovementStatus={diagnostics.LastMovementStatus} MovementCompletionReason={diagnostics.LastMovementCompletionReason} MovementDestinationCell={diagnostics.LastMovementDestinationCell?.ToString()??"-"} WorkerCurrentCell={diagnostics.LastWorkerCurrentCell?.ToString()??"-"} ArrivalMatched={diagnostics.LastArrivalMatched} ReservationValid={diagnostics.LastReservationValid} StackValid={diagnostics.LastStackValid} LastEatingTransition={diagnostics.LastEatingTransition} LastEatingTransitionFailure={diagnostics.LastEatingTransitionFailure}");
+    }
+
     private void PrintResourceWorkSummary(bool detailed)
     {
         GD.Print($"[ResourceCoreV3] initialized={ResourceCoreInitialized} nodes={ResourceNodeCount} trees={TreeNodeCount} stones={StoneNodeCount} depleted={DepletedResourceNodeCount} stacks={GroundStackCount} wood={WoodAmountOnGround} stone={StoneAmountOnGround} nodeViews={RuntimeResourceNodeViewCount} stackViews={RuntimeGroundStackViewCount}");
@@ -1277,6 +1295,7 @@ public partial class WorldManagerV2 : Node
         GD.Print($"[ConstructionUiV3] trayOpen={ConstructionTrayOpen} activeTool={ActiveConstructionTool} stockpileMode={StockpileDesignationMode} blockedByWorldMap={ConstructionUiInputBlockedByWorldMap} lastAction={LastConstructionUiAction}");
         GD.Print($"[MercenaryInspectHudV3] visible={MercenaryInspectHudVisible} mode={MercenaryInspectHudMode} selected={MercenaryInspectHudSelectedCount} mercenary={MercenaryInspectHudDisplayedId} work={MercenaryInspectHudWorkType} phase={MercenaryInspectHudWorkPhase} carry={MercenaryInspectHudCarry} progress={MercenaryInspectHudProgress:0.000} refresh={MercenaryInspectHudRefreshCount} reason={MercenaryInspectHudLastRefreshReason} blockedByMap={MercenaryInspectHudInputBlockedByWorldMap} panelRect={MercenaryInspectHudGlobalRect} trayRect={ConstructionUiGlobalRect} overlapsTray={MercenaryInspectHudOverlapsConstructionTray} lastAction={MercenaryInspectHudLastAction}");
         GD.Print($"[MercenaryInspectHudV3] conditionSource={MercenaryConditionDataSource} placeholder={MercenaryConditionSnapshotIsPlaceholder} affectsGameplay={MercenaryConditionAffectsGameplay} health={MercenaryInspectHealth:0.000} fullness={MercenaryInspectFullness:0.000} rest={MercenaryInspectRest:0.000} morale={MercenaryInspectMorale:0.000}");
+        if(GameplaySessionV3.TryGetNeedsSession(out var needs)&&needs!=null){string selected=MercenaryInspectHudDisplayedId;float hunger=string.IsNullOrEmpty(selected)?0:needs.Hunger.GetHunger(selected);GD.Print($"[HungerV3] states={needs.Hunger.Count} selected={selected} hunger={hunger:0.000} fullness={1-hunger:0.000} stage={HungerPolicyV3.Stage(hunger)} hungerMultiplier={needs.HungerWorkMultiplier(selected)} combinedMultiplier={needs.WorkMultiplier(selected)} ticks={needs.HungerTickCount}");}if(_resourceSession!=null)GD.Print($"[EatingV3] rationGround={_resourceSession.GroundStacks.GetTotalAmount(ResourceTypeV3.Ration)} reserved={_resourceSession.AmountReservations.GetReservedAmount(_resourceSession.InitialRationStackId)} consumed={_resourceSession.ConsumptionLedger.GetConsumedAmount(ResourceTypeV3.Ration)}");PrintEatingArrivalDiagnostics();
         GD.Print($"[ConstructionV3] blueprints={ConstructionBlueprintCount} structures={ConstructionStructureCount} blockingCells={ConstructionBlockingCellCount} reservations={ConstructionReservationCount} occupancyRevision={ConstructionOccupancyRevision}");
         if(_workSession==null){GD.Print("[WorkCoreV3] initialized=false");return;}
         MercenaryWorkDiagnosticsV3 diagnostics=_workSession.Diagnostics;

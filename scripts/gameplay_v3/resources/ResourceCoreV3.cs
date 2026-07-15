@@ -36,7 +36,7 @@ public static class GroundResourceStackIdFactoryV3
     public static bool IsValid(string? value) => ResourceIdValidationV3.IsCanonical(value, Prefix);
 }
 
-public enum ResourceTypeV3 { Wood, Stone }
+public enum ResourceTypeV3 { Wood, Stone, Ration }
 public enum ResourceNodeTypeV3 { Tree, StoneOutcrop }
 
 public sealed class ResourceNodeStateV3
@@ -99,6 +99,31 @@ public sealed class GroundResourceStackRegistryV3
     public void Clear(){_byId.Clear();_mergeIndex.Clear();_byCell.Clear();}
 }
 
+public enum ResourceAmountReservationPurposeV3 { HaulingPickup, ConstructionSupply, FoodConsumption }
+public sealed record ResourceAmountReservationV3(string ReservationId,string GroundStackId,string MercenaryId,string WorkRequestId,ResourceTypeV3 ResourceType,int Amount,ResourceAmountReservationPurposeV3 Purpose,DateTime CreatedUtc);
+public static class ResourceAmountReservationIdFactoryV3
+{
+    private const string Prefix="rsv_";public static string Create()=>Prefix+Guid.NewGuid().ToString("N");public static bool IsValid(string? value)=>ResourceIdValidationV3.IsCanonical(value,Prefix);
+}
+public sealed class ResourceAmountReservationRegistryV3
+{
+    private readonly GroundResourceStackRegistryV3 _stacks;private readonly Dictionary<string,ResourceAmountReservationV3> _byId=new(StringComparer.Ordinal);private readonly Dictionary<string,HashSet<string>> _byStack=new(StringComparer.Ordinal);private readonly Dictionary<string,string> _byWork=new(StringComparer.Ordinal);private readonly Dictionary<string,string> _consumptionByMercenary=new(StringComparer.Ordinal);
+    public ResourceAmountReservationRegistryV3(GroundResourceStackRegistryV3 stacks){_stacks=stacks;}public int Count=>_byId.Count;public long Revision{get;private set;}public event Action? Changed;
+    public int GetReservedAmount(string stackId,ResourceAmountReservationPurposeV3? purpose=null){int total=0;if(_byStack.TryGetValue(stackId,out var ids))foreach(string id in ids)if(_byId.TryGetValue(id,out var value)&&(purpose==null||value.Purpose==purpose.Value))total+=value.Amount;return total;}
+    public int GetAvailableAmount(string stackId){return _stacks.TryGet(stackId,out var stack)&&stack!=null?Math.Max(0,stack.Amount-GetReservedAmount(stackId)):0;}
+    public bool TryReserve(string stackId,string mercenaryId,string workId,ResourceTypeV3 type,int amount,ResourceAmountReservationPurposeV3 purpose,out ResourceAmountReservationV3? reservation,out string reason)
+    {reservation=null;if(_byWork.TryGetValue(workId,out string? existing)&&_byId.TryGetValue(existing,out reservation)){reason=reservation.GroundStackId==stackId&&reservation.MercenaryId==mercenaryId&&reservation.Amount==amount&&reservation.Purpose==purpose?string.Empty:"ReservationMismatch";return reason.Length==0;}if(!_stacks.TryGet(stackId,out var stack)||stack==null){reason="InvalidFoodStack";return false;}if(stack.ResourceType!=type||amount<1){reason="ReservationMismatch";return false;}if(purpose==ResourceAmountReservationPurposeV3.FoodConsumption&&_consumptionByMercenary.ContainsKey(mercenaryId)){reason="FoodAlreadyReserved";return false;}if(GetAvailableAmount(stackId)<amount){reason="InsufficientAvailableAmount";return false;}reservation=new(ResourceAmountReservationIdFactoryV3.Create(),stackId,mercenaryId,workId,type,amount,purpose,DateTime.UtcNow);_byId.Add(reservation.ReservationId,reservation);_byWork.Add(workId,reservation.ReservationId);if(!_byStack.TryGetValue(stackId,out var ids)){ids=new(StringComparer.Ordinal);_byStack.Add(stackId,ids);}ids.Add(reservation.ReservationId);if(purpose==ResourceAmountReservationPurposeV3.FoodConsumption)_consumptionByMercenary[mercenaryId]=reservation.ReservationId;Revision++;Changed?.Invoke();reason=string.Empty;return true;}
+    public bool TryGet(string reservationId,out ResourceAmountReservationV3? value)=>_byId.TryGetValue(reservationId,out value);public bool TryGetByWork(string workId,out ResourceAmountReservationV3? value){value=null;return _byWork.TryGetValue(workId,out string? id)&&_byId.TryGetValue(id,out value);}public bool IsReserved(string stackId)=>GetReservedAmount(stackId)>0;public bool IsReservedBy(string stackId,string workId)=>TryGetByWork(workId,out var value)&&value?.GroundStackId==stackId;
+    public bool TryConsume(string reservationId,string mercenaryId,string workId,out GroundResourceStackV3? changed,out bool removed,out string reason){changed=null;removed=false;if(!_byId.TryGetValue(reservationId,out var value)){reason="ReservationLost";return false;}if(value.MercenaryId!=mercenaryId||value.WorkRequestId!=workId||value.Purpose!=ResourceAmountReservationPurposeV3.FoodConsumption){reason="ReservationMismatch";return false;}if(!_stacks.TryGet(value.GroundStackId,out var stack)||stack==null){reason="FoodStackMissing";return false;}if(stack.ResourceType!=value.ResourceType){reason="FoodTypeChanged";return false;}if(stack.Amount<value.Amount){reason="FoodAmountInsufficient";return false;}if(!_stacks.TryTakeAmount(value.GroundStackId,value.Amount,out int taken,out changed,out removed,out reason)||taken!=value.Amount){reason="ConsumptionFailed";return false;}Release(reservationId);reason=string.Empty;return true;}
+    public bool TryReduceByWork(string workId,int amount){if(amount<1||!_byWork.TryGetValue(workId,out string? id)||!_byId.TryGetValue(id,out var value)||amount>value.Amount)return false;if(amount==value.Amount)return Release(id);_byId[id]=value with{Amount=value.Amount-amount};Revision++;Changed?.Invoke();return true;}
+    public bool Release(string reservationId){if(!_byId.Remove(reservationId,out var value))return false;_byWork.Remove(value.WorkRequestId);if(_byStack.TryGetValue(value.GroundStackId,out var ids)){ids.Remove(reservationId);if(ids.Count==0)_byStack.Remove(value.GroundStackId);}if(value.Purpose==ResourceAmountReservationPurposeV3.FoodConsumption)_consumptionByMercenary.Remove(value.MercenaryId);Revision++;Changed?.Invoke();return true;}public int ReleaseByWorkRequest(string work){return _byWork.TryGetValue(work,out string? id)&&Release(id)?1:0;}public int ReleaseByMercenary(string mercenary){var ids=_byId.Values.Where(x=>x.MercenaryId==mercenary).Select(x=>x.ReservationId).ToList();foreach(string id in ids)Release(id);return ids.Count;}public int ReleaseByGroundStack(string stack){var ids=_byStack.TryGetValue(stack,out var set)?set.ToList():new List<string>();foreach(string id in ids)Release(id);return ids.Count;}public void Clear(){if(_byId.Count==0)return;_byId.Clear();_byStack.Clear();_byWork.Clear();_consumptionByMercenary.Clear();Revision++;Changed?.Invoke();}
+}
+public sealed record ResourceConsumptionEntryV3(ResourceTypeV3 ResourceType,int Amount,string Reason,string MercenaryId,string WorkRequestId,DateTime TimestampUtc);
+public sealed class ResourceConsumptionLedgerV3
+{
+    private readonly List<ResourceConsumptionEntryV3> _entries=new();private readonly HashSet<string> _workIds=new(StringComparer.Ordinal);public int Count=>_entries.Count;public bool TryRecord(ResourceTypeV3 type,int amount,string reason,string mercenaryId,string workId){if(amount<1||string.IsNullOrWhiteSpace(workId)||!_workIds.Add(workId))return false;_entries.Add(new(type,amount,reason,mercenaryId,workId,DateTime.UtcNow));return true;}public int GetConsumedAmount(ResourceTypeV3 type)=>_entries.Where(x=>x.ResourceType==type).Sum(x=>x.Amount);public IReadOnlyList<ResourceConsumptionEntryV3> GetEntries()=>_entries.AsReadOnly();public void Clear(){_entries.Clear();_workIds.Clear();}
+}
+
 public sealed class InitialGatheringPatchResultV3
 {
     public InitialGatheringPatchResultV3(bool success,bool reused,IReadOnlyList<string> ids,int candidates,string reason){Succeeded=success;ReusedExisting=reused;NodeIds=new ReadOnlyCollection<string>(new List<string>(ids));CandidatesChecked=candidates;FailureReason=reason;}
@@ -107,7 +132,7 @@ public sealed class InitialGatheringPatchResultV3
 
 public sealed class ResourceSessionV3
 {
-    public ResourceNodeRegistryV3 Nodes{get;}=new();public GroundResourceStackRegistryV3 GroundStacks{get;}=new();public InitialGatheringPatchResultV3? InitialPatchResult{get;internal set;}
+    public ResourceSessionV3(){AmountReservations=new(GroundStacks);}public ResourceNodeRegistryV3 Nodes{get;}=new();public GroundResourceStackRegistryV3 GroundStacks{get;}=new();public ResourceAmountReservationRegistryV3 AmountReservations{get;}public ResourceConsumptionLedgerV3 ConsumptionLedger{get;}=new();public InitialGatheringPatchResultV3? InitialPatchResult{get;internal set;}public bool InitialRationPlacementInitialized{get;internal set;}public string InitialRationStackId{get;internal set;}=string.Empty;
 }
 
 public sealed class InitialGatheringPatchPlacementSettingsV3

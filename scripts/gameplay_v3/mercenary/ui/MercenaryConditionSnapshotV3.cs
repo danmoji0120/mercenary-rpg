@@ -16,11 +16,12 @@ public readonly record struct MercenaryConditionSnapshotV3(
     float MoraleNormalized,
     bool IsPlaceholder,
     string DataSourceName,
-    bool FatigueAffectsGameplay = false)
+    bool FatigueAffectsGameplay = false,
+    bool HungerAffectsGameplay = false)
 {
     public float FullnessNormalized => 1f - HungerNormalized;
     public float RestNormalized => 1f - FatigueNormalized;
-    public bool AffectsGameplay => FatigueAffectsGameplay;
+    public bool AffectsGameplay => FatigueAffectsGameplay||HungerAffectsGameplay;
 }
 
 public interface IMercenaryConditionSnapshotProviderV3
@@ -35,7 +36,7 @@ public sealed class MixedMercenaryConditionSnapshotProviderV3 : IMercenaryCondit
 {
     private readonly MercenaryNeedsSessionV3 _needs;private readonly PlaceholderMercenaryConditionSnapshotProviderV3 _placeholder=new();
     public MixedMercenaryConditionSnapshotProviderV3(MercenaryNeedsSessionV3 needs){_needs=needs;}
-    public bool TryGetSnapshot(MercenaryProfileV3 profile,MercenaryStateV3 state,out MercenaryConditionSnapshotV3 snapshot){if(!_placeholder.TryGetSnapshot(profile,state,out var value)){snapshot=default;return false;}_needs.Fatigue.GetOrCreate(profile.MercenaryId);snapshot=value with{FatigueNormalized=_needs.Fatigue.GetValue(profile.MercenaryId),IsPlaceholder=true,DataSourceName="Mixed",FatigueAffectsGameplay=true};return true;}
+    public bool TryGetSnapshot(MercenaryProfileV3 profile,MercenaryStateV3 state,out MercenaryConditionSnapshotV3 snapshot){if(!_placeholder.TryGetSnapshot(profile,state,out var value)){snapshot=default;return false;}_needs.Fatigue.GetOrCreate(profile.MercenaryId);_needs.Hunger.EnsureForMercenary(profile.MercenaryId);snapshot=value with{HungerNormalized=_needs.Hunger.GetHunger(profile.MercenaryId),FatigueNormalized=_needs.Fatigue.GetValue(profile.MercenaryId),IsPlaceholder=true,DataSourceName="Mixed",FatigueAffectsGameplay=true,HungerAffectsGameplay=true};return true;}
 }
 
 public sealed class PlaceholderMercenaryConditionSnapshotProviderV3 : IMercenaryConditionSnapshotProviderV3
