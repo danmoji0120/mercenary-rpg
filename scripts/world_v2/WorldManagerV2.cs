@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using GameplayV3.Company;
 using GameplayV3.Deployment;
 using GameplayV3.Mercenary;
@@ -212,6 +213,7 @@ public partial class WorldManagerV2 : Node
     public int WorkingMercenaryCount { get { int count=0;if(_workSession!=null)foreach(MercenaryWorkExecutionStateV3 execution in _workSession.GetActiveExecutions())if(execution.Phase==WorkExecutionPhaseV3.Working)count++;return count; } }
     public int StockpileZoneCount=>_stockpileSession?.Zones.Count??0;public int StockpileCellCount=>_stockpileSession?.Zones.CellCount??0;public int LocalCompanyZoneCount=>_stockpileSession?.Zones.GetZonesByCompany(LocalCompanyId).Count??0;public string StockpileDesignationMode=>_stockpileSession?.Diagnostics.DesignationMode.ToString()??"None";public int ReservedStockpileCellCount=>_stockpileSession?.CellReservations.Count??0;
     public int ConstructionBlueprintCount=>_constructionSession?.Blueprints.Count??0;public int ConstructionStructureCount=>_constructionSession?.Structures.Count??0;public int ConstructionBlockingCellCount=>_constructionSession?.Structures.MovementBlockingCellCount??0;public int ConstructionReservationCount=>_constructionSession?.Reservations.Count??0;public long ConstructionOccupancyRevision=>_constructionSession?.Structures.OccupancyRevision??0;
+    public int DemolitionDesignationCount=>_constructionSession?.Demolitions.Count??0;public int UnderDemolitionCount=>_constructionSession?.Demolitions.GetAllStructureIds().Count(id=>_constructionSession.Demolitions.TryGet(id,out var state)&&state?.Status==StructureDemolitionStatusV3.UnderDemolition)??0;public int DemolitionReservationCount=>_constructionSession?.DemolitionReservations.Count??0;public int CompletedDemolitionCount=>_constructionSession?.DemolitionDiagnostics.CompletedCount??0;public int FailedDemolitionCount=>_constructionSession?.DemolitionDiagnostics.FailedCount??0;public string LastDemolitionFailureReason=>_constructionSession?.DemolitionDiagnostics.LastFailureReason??string.Empty;public string LastDemolishedStructureId=>_constructionSession?.DemolitionDiagnostics.LastDemolishedStructureId??string.Empty;public string LastDemolitionWorkerId=>_constructionSession?.DemolitionDiagnostics.LastWorkerId??string.Empty;public float LastDemolitionDuration=>_constructionSession?.DemolitionDiagnostics.LastDuration??0;public int LastSalvageTotalAmount=>_constructionSession?.DemolitionDiagnostics.LastSalvageTotalAmount??0;
     public bool ConstructionTrayOpen { get; private set; }
     public string ActiveConstructionTool { get; private set; } = "-";
     public bool ConstructionUiInputBlockedByWorldMap { get; private set; }
@@ -1097,6 +1099,8 @@ public partial class WorldManagerV2 : Node
         if(constructionCheck.Succeeded)GD.Print($"[ConstructionV3] Self-check {constructionCheck.Summary}");else GD.PushError($"[ConstructionV3] Self-check {constructionCheck.Summary}");
         ConstructionRuntimeSelfCheckResultV3 constructionRuntimeCheck=ConstructionRuntimeSelfCheckV3.Run();
         if(constructionRuntimeCheck.Passed)GD.Print($"[ConstructionV3] Runtime self-check {constructionRuntimeCheck.Summary} singleTrips={constructionRuntimeCheck.SingleStackTrips} splitTrips={constructionRuntimeCheck.SplitStackTrips}");else GD.PushError($"[ConstructionV3] Runtime self-check {constructionRuntimeCheck.Summary}");
+        DemolitionSelfCheckResultV3 demolitionCheck=DemolitionSelfCheckV3.Run();
+        if(demolitionCheck.Passed)GD.Print($"[DemolitionV3] Self-check {demolitionCheck.Summary} scores={demolitionCheck.RecruitAScore:0.00}/{demolitionCheck.RecruitBScore:0.00}/{demolitionCheck.RecruitCScore:0.00} salvage={demolitionCheck.SalvagedWood}");else GD.PushError($"[DemolitionV3] Self-check {demolitionCheck.Summary}");
 #endif
         UpdateDebugHud();
     }

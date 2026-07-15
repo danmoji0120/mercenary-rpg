@@ -44,6 +44,8 @@ public partial class WorldV2Root : Node2D
     private ConstructionWorldOverlayV3? _constructionOverlay;
     private ConstructionPlacementControllerV3? _constructionPlacement;
     private ConstructionWorkCoordinatorV3? _constructionWork;
+    private DemolitionDesignationControllerV3? _demolitionDesignation;
+    private DemolitionWorkCoordinatorV3? _demolitionWork;
     private bool _cameraInputWasLocked;
 
     public override void _Ready()
@@ -127,6 +129,13 @@ public partial class WorldV2Root : Node2D
             }
 
             if (_worldManager?.PlanVersion == WorldPlanVersionV2.V3
+                && _demolitionDesignation?.TryHandleInput(@event) == true)
+            {
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
+            if (_worldManager?.PlanVersion == WorldPlanVersionV2.V3
                 && _mercenaryInputController?.TryHandleUnhandledInput(@event) == true)
             {
                 GetViewport().SetInputAsHandled();
@@ -142,7 +151,9 @@ public partial class WorldV2Root : Node2D
             && !IsWorldInputLocked()
             && !IsWorldMapOverlayOpen()
             && ((_constructionPlacement?.TryHandleInput(@event) == true)
-                || (_constructionPlacement?.TryHandleBlueprintAction(@event,_constructionWork!,_worldManager.TryGetMercenaryControlSession(out MercenaryControlSessionV3? constructionControl)&&constructionControl!=null?constructionControl.Selection.GetSelectedIds():Array.Empty<string>()) == true)))
+                || (_demolitionDesignation?.TryHandleInput(@event) == true)
+                || (_constructionPlacement?.TryHandleBlueprintAction(@event,_constructionWork!,_worldManager.TryGetMercenaryControlSession(out MercenaryControlSessionV3? constructionControl)&&constructionControl!=null?constructionControl.Selection.GetSelectedIds():Array.Empty<string>()) == true)
+                || (_demolitionDesignation?.TryHandleStructureAction(@event,_worldManager.TryGetMercenaryControlSession(out MercenaryControlSessionV3? demolitionControl)&&demolitionControl!=null?demolitionControl.Selection.GetSelectedIds():Array.Empty<string>()) == true)))
         {
             GetViewport().SetInputAsHandled();
             return;
@@ -484,10 +495,16 @@ public partial class WorldV2Root : Node2D
             _constructionOverlay=new ConstructionWorldOverlayV3{Name="ConstructionWorldOverlayV3"};gameplayEntities.AddChild(_constructionOverlay);_constructionOverlay.Initialize(construction,_gridRenderer);
             _constructionPlacement=new ConstructionPlacementControllerV3{Name="ConstructionPlacementControllerV3"};gameplayEntities.AddChild(_constructionPlacement);_constructionPlacement.Initialize(construction,resources,stockpiles,mercenaries,navigationQuery,_gridRenderer,_worldManager,_constructionOverlay);
             _constructionWork=new ConstructionWorkCoordinatorV3(construction,resources,stockpiles,work,controlSession,mercenaries,navigationQuery,_worldManager);_constructionWork.Changed+=()=>_constructionOverlay?.Refresh();_constructionWork.ResourcesChanged+=MaterializeResources;
-            controlSession.AttachConstructionCancellation(_constructionWork.CancelForDirectMove);
+            _demolitionWork=new DemolitionWorkCoordinatorV3(construction,resources,work,controlSession,mercenaries,navigationQuery,_worldManager.LocalPlayerId,_worldManager.LocalCompanyId,_worldManager.WorldBounds,_constructionWork.CancelForDirectMove,true);_demolitionWork.Changed+=()=>_constructionOverlay?.Refresh();_demolitionWork.ResourcesChanged+=MaterializeResources;
+            _demolitionDesignation=new DemolitionDesignationControllerV3{Name="DemolitionDesignationControllerV3"};gameplayEntities.AddChild(_demolitionDesignation);_demolitionDesignation.Initialize(construction,_gridRenderer,_worldManager,_constructionOverlay,_demolitionWork);
+            controlSession.AttachConstructionCancellation(id=>{_constructionWork.CancelForDirectMove(id);_demolitionWork.CancelForDirectMove(id);});
+            work.AttachExternalWorkSupersede(id=>_demolitionWork.CancelForNewWork(id));
             _constructionUi.WoodenWallToolChanged+=active=>_constructionPlacement?.SetActive(active);
+            _constructionUi.DemolitionToolChanged+=active=>_demolitionDesignation?.SetActive(active);
             _constructionPlacement.ActiveChanged+=active=>{if(!active&&_constructionUi?.ActiveConstructionTool=="WoodenWall")_constructionUi.SetWallTool(false);};
+            _demolitionDesignation.ActiveChanged+=active=>{if(!active&&_constructionUi?.ActiveConstructionTool=="Demolition")_constructionUi.SetDemolitionTool(false);};
             _mercenaryWorkRuntime.AttachConstruction(_constructionWork);
+            _mercenaryWorkRuntime.AttachDemolition(_demolitionWork);
         }
     }
 

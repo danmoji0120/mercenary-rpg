@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using GameplayV3.Deployment;
 using Godot;
 using WorldV2;
@@ -88,6 +89,8 @@ public sealed class GroundResourceStackRegistryV3
     public bool TryTakeAmount(string id,int requested,out int taken,out GroundResourceStackV3? changed,out bool removed,out string reason)
     {taken=0;changed=null;removed=false;if(!_byId.TryGetValue(id,out GroundResourceStackV3? stack)){reason="InvalidSourceStack";return false;}if(!stack.TryTake(requested,out taken,out reason))return false;changed=stack;if(stack.Amount==0){TryRemove(id,out changed);removed=true;}return true;}
     public bool TryAddOrMerge(ResourceTypeV3 type,int amount,GlobalCellCoord cell,out GroundResourceStackV3? stack,out bool merged,out string reason)=>TryAddStack(type,amount,cell,out stack,out merged,out reason);
+    public bool TryAddBatchAtomic(IReadOnlyList<(ResourceTypeV3 Type,int Amount,GlobalCellCoord Cell)> entries,out IReadOnlyList<string> affectedStackIds,out string reason)
+    {List<(string Id,int Amount)> committed=new();List<string> affected=new();foreach(var entry in entries){if(!Enum.IsDefined(entry.Type)||entry.Amount<1){reason="InvalidSalvageAmount";Rollback();affectedStackIds=Array.Empty<string>();return false;}if(_mergeIndex.TryGetValue((entry.Cell.Value,entry.Type),out string? existingId)&&_byId.TryGetValue(existingId,out GroundResourceStackV3? existing)&&existing.Amount>int.MaxValue-entry.Amount){reason="SalvageAmountOverflow";Rollback();affectedStackIds=Array.Empty<string>();return false;}if(!TryAddStack(entry.Type,entry.Amount,entry.Cell,out GroundResourceStackV3? stack,out _,out reason)||stack==null){Rollback();affectedStackIds=Array.Empty<string>();return false;}committed.Add((stack.ResourceStackId,entry.Amount));affected.Add(stack.ResourceStackId);}affectedStackIds=affected.Distinct(StringComparer.Ordinal).ToList().AsReadOnly();reason=string.Empty;return true;void Rollback(){for(int i=committed.Count-1;i>=0;i--){var c=committed[i];if(!_byId.TryGetValue(c.Id,out GroundResourceStackV3? stack)||stack==null)continue;stack.TryTake(c.Amount,out _,out _);if(stack.Amount==0)TryRemove(c.Id,out _);}}}
     public bool TryGetSingleStackAtCellAndType(GlobalCellCoord cell,ResourceTypeV3 type,out GroundResourceStackV3? stack){stack=null;return _mergeIndex.TryGetValue((cell.Value,type),out string? id)&&_byId.TryGetValue(id,out stack);}
     public IReadOnlyList<string> GetAllStackIds(){List<string> ids=new(_byId.Keys);ids.Sort(StringComparer.Ordinal);return ids.AsReadOnly();}
     public IReadOnlyList<GroundResourceStackV3> GetStacksAtCell(GlobalCellCoord cell){List<GroundResourceStackV3> result=new();if(_byCell.TryGetValue(cell.Value,out HashSet<string>? ids))foreach(string id in ids)result.Add(_byId[id]);result.Sort((a,b)=>a.ResourceType.CompareTo(b.ResourceType));return result.AsReadOnly();}
