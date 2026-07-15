@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using GameplayV3.Control;
 using GameplayV3.Control.Runtime;
@@ -10,6 +11,8 @@ using GameplayV3.Work;
 using GameplayV3.Work.Runtime;
 using GameplayV3.Stockpile;
 using GameplayV3.Stockpile.Runtime;
+using GameplayV3.Construction;
+using GameplayV3.Construction.Runtime;
 
 namespace WorldV2;
 
@@ -38,6 +41,9 @@ public partial class WorldV2Root : Node2D
     private StockpileOverlayV3? _stockpileOverlay;
     private StockpileDesignationControllerV3? _stockpileDesignation;
     private ConstructionUiV3? _constructionUi;
+    private ConstructionWorldOverlayV3? _constructionOverlay;
+    private ConstructionPlacementControllerV3? _constructionPlacement;
+    private ConstructionWorkCoordinatorV3? _constructionWork;
     private bool _cameraInputWasLocked;
 
     public override void _Ready()
@@ -114,6 +120,13 @@ public partial class WorldV2Root : Node2D
             }
 
             if (_worldManager?.PlanVersion == WorldPlanVersionV2.V3
+                && _constructionPlacement?.TryHandleInput(@event) == true)
+            {
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
+            if (_worldManager?.PlanVersion == WorldPlanVersionV2.V3
                 && _mercenaryInputController?.TryHandleUnhandledInput(@event) == true)
             {
                 GetViewport().SetInputAsHandled();
@@ -121,6 +134,16 @@ public partial class WorldV2Root : Node2D
             }
 
             HandleKey(keyEvent);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (_worldManager?.PlanVersion == WorldPlanVersionV2.V3
+            && !IsWorldInputLocked()
+            && !IsWorldMapOverlayOpen()
+            && ((_constructionPlacement?.TryHandleInput(@event) == true)
+                || (_constructionPlacement?.TryHandleBlueprintAction(@event,_constructionWork!,_worldManager.TryGetMercenaryControlSession(out MercenaryControlSessionV3? constructionControl)&&constructionControl!=null?constructionControl.Selection.GetSelectedIds():Array.Empty<string>()) == true)))
+        {
             GetViewport().SetInputAsHandled();
             return;
         }
@@ -216,10 +239,12 @@ public partial class WorldV2Root : Node2D
             case Key.F11:
                 _worldManager.RegenerateVisibleChunks(clearRuntimeStructures: false);
                 _stockpileOverlay?.Refresh();
+                _constructionOverlay?.Refresh();
                 break;
             case Key.F12:
                 _worldManager.RegenerateVisibleChunks(clearRuntimeStructures: true);
                 _stockpileOverlay?.Refresh();
+                _constructionOverlay?.Refresh();
                 break;
             case Key.Home:
                 CenterCameraOnPlayerStart();
@@ -412,6 +437,8 @@ public partial class WorldV2Root : Node2D
         IMercenaryNavigationWorldQueryV3 navigationQuery = new MercenaryNavigationWorldQueryV3(
             _worldManager.WorldBounds,
             _worldManager.SampleV3PlanCellForNavigation);
+        if(_worldManager.TryGetConstructionSession(out ConstructionSessionV3? navigationConstruction)&&navigationConstruction!=null)
+            navigationQuery=new DynamicStructureNavigationQueryV3(navigationQuery,navigationConstruction.Structures);
 
         _mercenaryDragOverlay = new MercenaryDragSelectionOverlayV3 { Name = "MercenaryDragSelectionOverlayV3" };
         canvasLayer.AddChild(_mercenaryDragOverlay);
@@ -443,6 +470,7 @@ public partial class WorldV2Root : Node2D
             && _worldManager.TryGetMercenaryWorkSession(out MercenaryWorkSessionV3? work) && work != null
             && _worldManager.TryGetStockpileSession(out StockpileSessionV3? stockpiles) && stockpiles != null
             && _worldManager.TryGetMercenarySession(out MercenarySessionV3? mercenaries) && mercenaries != null
+            && _worldManager.TryGetConstructionSession(out ConstructionSessionV3? construction) && construction != null
             && _groundResourcesContainer != null && _stockpileContainer != null)
         {
             _mercenaryInputController.AttachGathering(resources,_resourceNodeViews,work);
@@ -453,12 +481,20 @@ public partial class WorldV2Root : Node2D
             _mercenaryWorkRuntime=new MercenaryWorkRuntimeV3{Name="MercenaryWorkRuntimeV3"};
             gameplayEntities.AddChild(_mercenaryWorkRuntime);
             _mercenaryWorkRuntime.Initialize(work,controlSession,resources,mercenaries,navigationQuery,_resourceNodeViews,_groundStackViews,_mercenaryViewRegistry,_groundResourcesContainer,_gridRenderer,_worldManager);
+            _constructionOverlay=new ConstructionWorldOverlayV3{Name="ConstructionWorldOverlayV3"};gameplayEntities.AddChild(_constructionOverlay);_constructionOverlay.Initialize(construction,_gridRenderer);
+            _constructionPlacement=new ConstructionPlacementControllerV3{Name="ConstructionPlacementControllerV3"};gameplayEntities.AddChild(_constructionPlacement);_constructionPlacement.Initialize(construction,resources,stockpiles,mercenaries,navigationQuery,_gridRenderer,_worldManager,_constructionOverlay);
+            _constructionWork=new ConstructionWorkCoordinatorV3(construction,resources,stockpiles,work,controlSession,mercenaries,navigationQuery,_worldManager);_constructionWork.Changed+=()=>_constructionOverlay?.Refresh();_constructionWork.ResourcesChanged+=MaterializeResources;
+            controlSession.AttachConstructionCancellation(_constructionWork.CancelForDirectMove);
+            _constructionUi.WoodenWallToolChanged+=active=>_constructionPlacement?.SetActive(active);
+            _constructionPlacement.ActiveChanged+=active=>{if(!active&&_constructionUi?.ActiveConstructionTool=="WoodenWall")_constructionUi.SetWallTool(false);};
+            _mercenaryWorkRuntime.AttachConstruction(_constructionWork);
         }
     }
 
     private void MaterializeResources()
     {
         if(_worldManager==null||_gridRenderer==null||_resourceNodesContainer==null||_groundResourcesContainer==null||!_worldManager.TryGetResourceSession(out ResourceSessionV3? resources)||resources==null)return;
+        foreach(string stale in _groundStackViews.GetIds())if(!resources.GroundStacks.TryGet(stale,out _))_groundStackViews.TryRemove(stale);
         int created=ResourceMaterializationCoordinatorV3.MaterializeNodes(resources,_resourceNodesContainer,_gridRenderer,_resourceNodeViews);
         foreach(string id in resources.GroundStacks.GetAllStackIds())if(resources.GroundStacks.TryGet(id,out GroundResourceStackV3? stack)&&stack!=null)ResourceMaterializationCoordinatorV3.MaterializeOrRefreshStack(stack,resources,_groundResourcesContainer,_gridRenderer,_groundStackViews);
         _worldManager.SetResourceRuntimeDiagnostics(_resourceNodeViews.GetIds(),_groundStackViews.GetIds());

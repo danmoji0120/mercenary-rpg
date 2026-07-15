@@ -4,6 +4,7 @@ using GameplayV3.Control;
 using GameplayV3.Resources;
 using GameplayV3.Work;
 using GameplayV3.Stockpile;
+using GameplayV3.Construction;
 
 namespace GameplayV3.Session;
 
@@ -15,6 +16,7 @@ public static class GameplaySessionV3
     private static ResourceSessionV3? _currentResourceSession;
     private static MercenaryWorkSessionV3? _currentWorkSession;
     private static StockpileSessionV3? _currentStockpileSession;
+    private static ConstructionSessionV3? _currentConstructionSession;
     private static long _sessionRevision;
 
     public static long SessionRevision => _sessionRevision;
@@ -27,6 +29,7 @@ public static class GameplaySessionV3
         _currentControlSession = new MercenaryControlSessionV3(_sessionRevision, _currentCompanySession, _currentMercenarySession);
         _currentResourceSession = new ResourceSessionV3();
         _currentStockpileSession = new StockpileSessionV3();
+        _currentConstructionSession = new ConstructionSessionV3();
         _currentWorkSession = new MercenaryWorkSessionV3(_sessionRevision,_currentCompanySession,_currentMercenarySession,_currentResourceSession,_currentStockpileSession,_currentControlSession);
         _currentControlSession.AttachWorkSession(_currentWorkSession);
     }
@@ -86,6 +89,7 @@ public static class GameplaySessionV3
     public static bool TryGetResourceSession(out ResourceSessionV3? resources){resources=_currentResourceSession;return resources!=null;}
     public static bool TryGetWorkSession(out MercenaryWorkSessionV3? work){work=_currentWorkSession;return work!=null;}
     public static bool TryGetStockpileSession(out StockpileSessionV3? stockpiles){stockpiles=_currentStockpileSession;return stockpiles!=null;}
+    public static bool TryGetConstructionSession(out ConstructionSessionV3? construction){construction=_currentConstructionSession;return construction!=null;}
     public static bool IsCurrentWorkSession(MercenaryWorkSessionV3 work)=>ReferenceEquals(work,_currentWorkSession)&&work.SessionRevision==_sessionRevision;
     public static bool IsCurrentControlSession(MercenaryControlSessionV3 session)=>ReferenceEquals(session,_currentControlSession)&&session.SessionRevision==_sessionRevision;
 
@@ -98,6 +102,7 @@ public static class GameplaySessionV3
         _currentControlSession=new MercenaryControlSessionV3(_sessionRevision,_currentCompanySession,_currentMercenarySession);
         _currentResourceSession=new ResourceSessionV3();
         _currentStockpileSession=new StockpileSessionV3();
+        _currentConstructionSession=new ConstructionSessionV3();
         _currentWorkSession=new MercenaryWorkSessionV3(_sessionRevision,_currentCompanySession,_currentMercenarySession,_currentResourceSession,_currentStockpileSession,_currentControlSession);
         _currentControlSession.AttachWorkSession(_currentWorkSession);
     }

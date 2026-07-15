@@ -1,0 +1,122 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using GameplayV3.Mercenary;
+using GameplayV3.Navigation;
+using GameplayV3.Resources;
+using Godot;
+using WorldV2;
+
+namespace GameplayV3.Construction;
+
+public enum StructureOrientationV3 { Deg0, Deg90, Deg180, Deg270 }
+public enum StructurePlacementModeV3 { Single, Linear }
+public readonly record struct StructureFootprintOffsetV3(int X,int Y);
+public readonly record struct StructureMaterialRequirementV3(ResourceTypeV3 ResourceType,int RequiredAmount);
+
+public sealed class StructureDefinitionV3
+{
+    private readonly ReadOnlyCollection<StructureFootprintOffsetV3> _offsets;
+    private readonly ReadOnlyCollection<StructureOrientationV3> _orientations;
+    private readonly ReadOnlyCollection<StructureMaterialRequirementV3> _materials;
+    public StructureDefinitionV3(string id,string name,IEnumerable<StructureFootprintOffsetV3> offsets,IEnumerable<StructureOrientationV3> orientations,IEnumerable<StructureMaterialRequirementV3> materials,float seconds,bool blocks,StructurePlacementModeV3 mode)
+    {
+        if(string.IsNullOrWhiteSpace(id)||string.IsNullOrWhiteSpace(name))throw new ArgumentException("Definition id and name are required.");
+        List<StructureFootprintOffsetV3> footprint=offsets?.ToList()??new();if(footprint.Count==0||footprint.Distinct().Count()!=footprint.Count)throw new ArgumentException("Footprint must contain unique cells.");
+        List<StructureOrientationV3> allowed=orientations?.Distinct().OrderBy(x=>x).ToList()??new();if(allowed.Count==0)throw new ArgumentException("At least one orientation is required.");
+        List<StructureMaterialRequirementV3> required=materials?.ToList()??new();if(required.Count==0||required.Any(x=>x.RequiredAmount<1)||required.Select(x=>x.ResourceType).Distinct().Count()!=required.Count)throw new ArgumentException("Material requirements are invalid.");
+        if(seconds<=0)throw new ArgumentOutOfRangeException(nameof(seconds));DefinitionId=id;DisplayName=name;_offsets=footprint.AsReadOnly();_orientations=allowed.AsReadOnly();_materials=required.AsReadOnly();BaseConstructionDurationSeconds=seconds;BlocksMovement=blocks;PlacementMode=mode;
+    }
+    public string DefinitionId{get;}public string DisplayName{get;}public IReadOnlyList<StructureFootprintOffsetV3> BaseFootprintOffsets=>_offsets;public IReadOnlyList<StructureOrientationV3> AllowedOrientations=>_orientations;public IReadOnlyList<StructureMaterialRequirementV3> RequiredMaterials=>_materials;public float BaseConstructionDurationSeconds{get;}public bool BlocksMovement{get;}public StructurePlacementModeV3 PlacementMode{get;}
+}
+
+public sealed class StructureDefinitionCatalogV3
+{
+    public const string WoodenWallId="wooden_wall";private readonly Dictionary<string,StructureDefinitionV3> _definitions;
+    public StructureDefinitionCatalogV3(){StructureDefinitionV3 wall=new(WoodenWallId,"나무 벽",new[]{new StructureFootprintOffsetV3(0,0)},Enum.GetValues<StructureOrientationV3>(),new[]{new StructureMaterialRequirementV3(ResourceTypeV3.Wood,5)},6f,true,StructurePlacementModeV3.Linear);_definitions=new(StringComparer.Ordinal){{wall.DefinitionId,wall}};}
+    public int Count=>_definitions.Count;public bool TryGetDefinition(string id,out StructureDefinitionV3? definition)=>_definitions.TryGetValue(id,out definition);public bool ContainsDefinition(string id)=>_definitions.ContainsKey(id);public IReadOnlyList<string> GetAllDefinitionIds()=>_definitions.Keys.OrderBy(x=>x,StringComparer.Ordinal).ToList().AsReadOnly();
+}
+
+public sealed class ResolvedStructureFootprintV3
+{
+    internal ResolvedStructureFootprintV3(List<GlobalCellCoord> cells,Rect2I bounds){Cells=cells.AsReadOnly();Bounds=bounds;}public IReadOnlyList<GlobalCellCoord> Cells{get;}public Rect2I Bounds{get;}public int Width=>Bounds.Size.X;public int Height=>Bounds.Size.Y;
+}
+public static class StructureFootprintResolverV3
+{
+    public static ResolvedStructureFootprintV3 Resolve(StructureDefinitionV3 definition,GlobalCellCoord anchor,StructureOrientationV3 orientation)
+    {if(!definition.AllowedOrientations.Contains(orientation))throw new ArgumentException("Orientation is not allowed.");List<Vector2I> rotated=new();foreach(var p in definition.BaseFootprintOffsets)rotated.Add(orientation switch{StructureOrientationV3.Deg0=>new(p.X,p.Y),StructureOrientationV3.Deg90=>new(-p.Y,p.X),StructureOrientationV3.Deg180=>new(-p.X,-p.Y),_=>new(p.Y,-p.X)});int minX=rotated.Min(x=>x.X),minY=rotated.Min(x=>x.Y);List<GlobalCellCoord> cells=rotated.Select(x=>new GlobalCellCoord(anchor.Value+new Vector2I(x.X-minX,x.Y-minY))).Distinct().OrderBy(x=>x.Value.Y).ThenBy(x=>x.Value.X).ToList();int maxX=cells.Max(x=>x.Value.X),maxY=cells.Max(x=>x.Value.Y);return new(cells,new(anchor.Value,new Vector2I(maxX-anchor.Value.X+1,maxY-anchor.Value.Y+1)));}
+}
+
+public static class ConstructionBlueprintIdFactoryV3{const string Prefix="bp_";public static string Create()=>Prefix+Guid.NewGuid().ToString("N");public static bool IsValid(string? id)=>ResourceIdValidationV3.IsCanonical(id,Prefix);}
+public static class StructureIdFactoryV3{const string Prefix="str_";public static string Create()=>Prefix+Guid.NewGuid().ToString("N");public static bool IsValid(string? id)=>ResourceIdValidationV3.IsCanonical(id,Prefix);}
+
+public sealed class ConstructionMaterialBufferV3
+{
+    private readonly Dictionary<ResourceTypeV3,int> _required=new(),_delivered=new();
+    public ConstructionMaterialBufferV3(IEnumerable<StructureMaterialRequirementV3> requirements){foreach(var r in requirements){if(r.RequiredAmount<1||_required.ContainsKey(r.ResourceType))throw new ArgumentException("Invalid material requirement.");_required.Add(r.ResourceType,r.RequiredAmount);_delivered.Add(r.ResourceType,0);}if(_required.Count==0)throw new ArgumentException("Materials are required.");}
+    public int GetRequiredAmount(ResourceTypeV3 type)=>_required.GetValueOrDefault(type);public int GetDeliveredAmount(ResourceTypeV3 type)=>_delivered.GetValueOrDefault(type);public int GetMissingAmount(ResourceTypeV3 type)=>Math.Max(0,GetRequiredAmount(type)-GetDeliveredAmount(type));public int GetTotalMissingAmount()=>_required.Keys.Sum(GetMissingAmount);public bool CanAccept(ResourceTypeV3 type,int amount)=>amount>0&&_required.ContainsKey(type)&&amount<=GetMissingAmount(type);
+    public bool TryDeliver(ResourceTypeV3 type,int amount,out string reason){if(!CanAccept(type,amount)){reason="Material amount or type is not accepted.";return false;}_delivered[type]=checked(_delivered[type]+amount);reason=string.Empty;return true;}
+    public bool TryWithdrawAll(out IReadOnlyList<StructureMaterialRequirementV3> snapshot){snapshot=GetDeliveredMaterialsSnapshot();foreach(ResourceTypeV3 type in _delivered.Keys.ToList())_delivered[type]=0;return true;}
+    public IReadOnlyList<StructureMaterialRequirementV3> GetDeliveredMaterialsSnapshot()=>_delivered.Where(x=>x.Value>0).OrderBy(x=>x.Key).Select(x=>new StructureMaterialRequirementV3(x.Key,x.Value)).ToList().AsReadOnly();public bool IsComplete=>GetTotalMissingAmount()==0;
+}
+
+public enum ConstructionBlueprintStatusV3{AwaitingMaterials,ReadyToBuild,UnderConstruction,WaitingForFootprintClear,Completed,Cancelled,Failed}
+public sealed class ConstructionBlueprintStateV3
+{
+    private readonly ReadOnlyCollection<GlobalCellCoord> _cells;
+    public ConstructionBlueprintStateV3(string id,string company,string definition,GlobalCellCoord anchor,StructureOrientationV3 orientation,IEnumerable<GlobalCellCoord> cells,ConstructionMaterialBufferV3 buffer,DateTime created){if(!ConstructionBlueprintIdFactoryV3.IsValid(id)||string.IsNullOrWhiteSpace(company)||string.IsNullOrWhiteSpace(definition))throw new ArgumentException("Invalid blueprint identity.");List<GlobalCellCoord> list=cells.Distinct().OrderBy(x=>x.Value.Y).ThenBy(x=>x.Value.X).ToList();if(list.Count==0)throw new ArgumentException("Blueprint footprint is empty.");BlueprintId=id;CompanyId=company;DefinitionId=definition;AnchorCell=anchor;Orientation=orientation;_cells=list.AsReadOnly();MaterialBuffer=buffer;CreatedUtc=created.ToUniversalTime();}
+    public string BlueprintId{get;}public string CompanyId{get;}public string DefinitionId{get;}public GlobalCellCoord AnchorCell{get;}public StructureOrientationV3 Orientation{get;}public IReadOnlyList<GlobalCellCoord> OccupiedCells=>_cells;public ConstructionMaterialBufferV3 MaterialBuffer{get;}public ConstructionBlueprintStatusV3 Status{get;private set;}=ConstructionBlueprintStatusV3.AwaitingMaterials;public float ConstructionProgressSeconds{get;private set;}public DateTime CreatedUtc{get;}public int Revision{get;private set;}
+    public void RefreshMaterialStatus(){if(Status is ConstructionBlueprintStatusV3.Cancelled or ConstructionBlueprintStatusV3.Completed)return;Status=MaterialBuffer.IsComplete?ConstructionBlueprintStatusV3.ReadyToBuild:ConstructionBlueprintStatusV3.AwaitingMaterials;Revision++;}
+    public bool TryBeginConstruction(out string reason){if(!MaterialBuffer.IsComplete){reason="MaterialsMissing";return false;}Status=ConstructionBlueprintStatusV3.UnderConstruction;Revision++;reason=string.Empty;return true;}
+    public void AddProgress(float seconds){if(Status==ConstructionBlueprintStatusV3.UnderConstruction&&seconds>0){ConstructionProgressSeconds+=seconds;Revision++;}}
+    public void SetWaitingForClear(){Status=ConstructionBlueprintStatusV3.WaitingForFootprintClear;Revision++;}public void MarkCompleted(){Status=ConstructionBlueprintStatusV3.Completed;Revision++;}public void MarkCancelled(){Status=ConstructionBlueprintStatusV3.Cancelled;Revision++;}
+}
+
+public sealed class StructureStateV3
+{
+    private readonly ReadOnlyCollection<GlobalCellCoord> _cells;private readonly ReadOnlyCollection<StructureMaterialRequirementV3> _materials;
+    public StructureStateV3(string id,string company,string definition,GlobalCellCoord anchor,StructureOrientationV3 orientation,IEnumerable<GlobalCellCoord> cells,IEnumerable<StructureMaterialRequirementV3> materials,bool blocks,DateTime completed){if(!StructureIdFactoryV3.IsValid(id))throw new ArgumentException("Invalid structure id.");List<GlobalCellCoord> list=cells.Distinct().OrderBy(x=>x.Value.Y).ThenBy(x=>x.Value.X).ToList();if(list.Count==0)throw new ArgumentException("Empty structure footprint.");StructureId=id;CompanyId=company;DefinitionId=definition;AnchorCell=anchor;Orientation=orientation;_cells=list.AsReadOnly();_materials=materials.ToList().AsReadOnly();BlocksMovement=blocks;CompletedUtc=completed.ToUniversalTime();}
+    public string StructureId{get;}public string CompanyId{get;}public string DefinitionId{get;}public GlobalCellCoord AnchorCell{get;}public StructureOrientationV3 Orientation{get;}public IReadOnlyList<GlobalCellCoord> OccupiedCells=>_cells;public IReadOnlyList<StructureMaterialRequirementV3> EmbeddedMaterials=>_materials;public bool BlocksMovement{get;}public DateTime CompletedUtc{get;}
+}
+
+public sealed class ConstructionBlueprintRegistryV3
+{
+    private readonly Dictionary<string,ConstructionBlueprintStateV3> _byId=new(StringComparer.Ordinal);private readonly Dictionary<Vector2I,string> _byCell=new();public int Count=>_byId.Count;public long Revision{get;private set;}
+    public bool TryRegister(ConstructionBlueprintStateV3 state,StructureRegistryV3 structures,Rect2I bounds,out string reason){if(_byId.ContainsKey(state.BlueprintId)){reason="DuplicateBlueprintId";return false;}foreach(var c in state.OccupiedCells)if(!bounds.HasPoint(c.Value)||_byCell.ContainsKey(c.Value)||structures.IsStructureCell(c)){reason="BlueprintFootprintOccupied";return false;}_byId.Add(state.BlueprintId,state);foreach(var c in state.OccupiedCells)_byCell.Add(c.Value,state.BlueprintId);Revision++;reason=string.Empty;return true;}
+    public bool TryRegisterBatch(IReadOnlyList<ConstructionBlueprintStateV3> states,StructureRegistryV3 structures,Rect2I bounds,out string reason){HashSet<Vector2I> cells=new();HashSet<string> ids=new(StringComparer.Ordinal);foreach(var state in states){if(!ids.Add(state.BlueprintId)||_byId.ContainsKey(state.BlueprintId)){reason="DuplicateBlueprintId";return false;}foreach(var c in state.OccupiedCells)if(!cells.Add(c.Value)||!bounds.HasPoint(c.Value)||_byCell.ContainsKey(c.Value)||structures.IsStructureCell(c)){reason="BlueprintBatchOverlap";return false;}}foreach(var state in states){_byId.Add(state.BlueprintId,state);foreach(var c in state.OccupiedCells)_byCell.Add(c.Value,state.BlueprintId);}if(states.Count>0)Revision++;reason=string.Empty;return true;}
+    public bool TryGet(string id,out ConstructionBlueprintStateV3? state)=>_byId.TryGetValue(id,out state);public bool Contains(string id)=>_byId.ContainsKey(id);public bool TryGetBlueprintAtCell(GlobalCellCoord cell,out ConstructionBlueprintStateV3? state){state=null;return _byCell.TryGetValue(cell.Value,out string? id)&&_byId.TryGetValue(id,out state);}public bool IsBlueprintCell(GlobalCellCoord cell)=>_byCell.ContainsKey(cell.Value);
+    public IReadOnlyList<ConstructionBlueprintStateV3> GetBlueprintsByCompany(string company)=>_byId.Values.Where(x=>x.CompanyId==company).OrderBy(x=>x.BlueprintId,StringComparer.Ordinal).ToList().AsReadOnly();public IReadOnlyList<string> GetAllBlueprintIds()=>_byId.Keys.OrderBy(x=>x,StringComparer.Ordinal).ToList().AsReadOnly();
+    public bool TryRemove(string id,out ConstructionBlueprintStateV3? state){if(!_byId.Remove(id,out state)||state==null)return false;foreach(var c in state.OccupiedCells)_byCell.Remove(c.Value);Revision++;return true;}public void Clear(){_byId.Clear();_byCell.Clear();Revision++;}
+}
+
+public sealed class StructureRegistryV3
+{
+    private readonly Dictionary<string,StructureStateV3> _byId=new(StringComparer.Ordinal);private readonly Dictionary<Vector2I,string> _byCell=new();public int Count=>_byId.Count;public long OccupancyRevision{get;private set;}public int MovementBlockingCellCount=>_byCell.Keys.Count(c=>IsMovementBlocked(new(c)));
+    public bool CanRegister(StructureStateV3 state,ConstructionBlueprintRegistryV3 blueprints,string? completingBlueprintId,Rect2I bounds,out string reason){if(_byId.ContainsKey(state.StructureId)){reason="DuplicateStructureId";return false;}foreach(var c in state.OccupiedCells){if(!bounds.HasPoint(c.Value)||_byCell.ContainsKey(c.Value)){reason="StructureOverlap";return false;}if(blueprints.TryGetBlueprintAtCell(c,out var bp)&&bp?.BlueprintId!=completingBlueprintId){reason="BlueprintOverlap";return false;}}reason=string.Empty;return true;}
+    public bool TryRegister(StructureStateV3 state,ConstructionBlueprintRegistryV3 blueprints,Rect2I bounds,out string reason,string? completingBlueprintId=null){if(!CanRegister(state,blueprints,completingBlueprintId,bounds,out reason))return false;_byId.Add(state.StructureId,state);foreach(var c in state.OccupiedCells)_byCell.Add(c.Value,state.StructureId);OccupancyRevision++;return true;}
+    public bool TryGet(string id,out StructureStateV3? state)=>_byId.TryGetValue(id,out state);public bool TryGetStructureAtCell(GlobalCellCoord cell,out StructureStateV3? state){state=null;return _byCell.TryGetValue(cell.Value,out string? id)&&_byId.TryGetValue(id,out state);}public bool IsStructureCell(GlobalCellCoord cell)=>_byCell.ContainsKey(cell.Value);public bool IsMovementBlocked(GlobalCellCoord cell)=>TryGetStructureAtCell(cell,out var state)&&state?.BlocksMovement==true;public IReadOnlyList<string> GetAllStructureIds()=>_byId.Keys.OrderBy(x=>x,StringComparer.Ordinal).ToList().AsReadOnly();public IReadOnlyList<StructureStateV3> GetStructuresByCompany(string c)=>_byId.Values.Where(x=>x.CompanyId==c).ToList().AsReadOnly();public bool TryRemove(string id,out StructureStateV3? state){if(!_byId.Remove(id,out state)||state==null)return false;foreach(var c in state.OccupiedCells)_byCell.Remove(c.Value);OccupancyRevision++;return true;}public void Clear(){_byId.Clear();_byCell.Clear();OccupancyRevision++;}
+}
+
+public enum ConstructionReservationPurposeV3{MaterialDelivery,Construction}
+public sealed record ConstructionBlueprintReservationV3(string BlueprintId,string WorkRequestId,string MercenaryId,string CompanyId,ConstructionReservationPurposeV3 Purpose,DateTime CreatedUtc,long Revision);
+public sealed class ConstructionBlueprintReservationRegistryV3
+{
+    private readonly Dictionary<string,ConstructionBlueprintReservationV3> _byBlueprint=new(StringComparer.Ordinal);public int Count=>_byBlueprint.Count;public bool TryReserve(ConstructionBlueprintReservationV3 value,out string reason){if(_byBlueprint.TryGetValue(value.BlueprintId,out var old)){if(old.WorkRequestId==value.WorkRequestId){reason=string.Empty;return true;}reason="BlueprintReserved";return false;}_byBlueprint.Add(value.BlueprintId,value);reason=string.Empty;return true;}public bool TryGetReservation(string id,out ConstructionBlueprintReservationV3? value)=>_byBlueprint.TryGetValue(id,out value);public bool IsReserved(string id)=>_byBlueprint.ContainsKey(id);public bool IsReservedBy(string id,string work)=>_byBlueprint.TryGetValue(id,out var r)&&r.WorkRequestId==work;public bool TryRelease(string id,string work)=>_byBlueprint.TryGetValue(id,out var r)&&r.WorkRequestId==work&&_byBlueprint.Remove(id);public int ReleaseByWorkRequest(string work){var ids=_byBlueprint.Where(x=>x.Value.WorkRequestId==work).Select(x=>x.Key).ToList();foreach(var id in ids)_byBlueprint.Remove(id);return ids.Count;}public void Clear()=>_byBlueprint.Clear();
+}
+
+public sealed class ConstructionDiagnosticsV3{public int PlacedBlueprintCount{get;internal set;}public int CompletedStructureCount{get;internal set;}public int CancelledBlueprintCount{get;internal set;}public int ResourceConservationMismatchCount{get;internal set;}public string LastFailureReason{get;internal set;}=string.Empty;}
+public sealed class ConstructionSessionV3
+{public StructureDefinitionCatalogV3 Definitions{get;}=new();public ConstructionBlueprintRegistryV3 Blueprints{get;}=new();public StructureRegistryV3 Structures{get;}=new();public ConstructionBlueprintReservationRegistryV3 Reservations{get;}=new();public ConstructionDiagnosticsV3 Diagnostics{get;}=new();}
+
+public sealed class DynamicStructureNavigationQueryV3:IMercenaryNavigationWorldQueryV3,INavigationOccupancyRevisionV3
+{
+    private readonly IMercenaryNavigationWorldQueryV3 _base;private readonly StructureRegistryV3 _structures;public DynamicStructureNavigationQueryV3(IMercenaryNavigationWorldQueryV3 baseQuery,StructureRegistryV3 structures){_base=baseQuery;_structures=structures;}public long OccupancyRevision=>_structures.OccupancyRevision;public bool IsInsideWorld(Vector2I c)=>_base.IsInsideWorld(c);public MercenaryNavigationCellInfoV3 GetCellInfo(Vector2I c){var i=_base.GetCellInfo(c);return new(i.IsInsideWorld,i.IsWalkable&&!_structures.IsMovementBlocked(new(c)),i.TraversalMultiplier,i.TileType,i.BiomeKind);}public bool IsWalkable(Vector2I c)=>_base.IsWalkable(c)&&!_structures.IsMovementBlocked(new(c));public float GetTraversalMultiplier(Vector2I c)=>_base.GetTraversalMultiplier(c);
+}
+
+public static class ConstructionApproachCellServiceV3
+{private static readonly Vector2I[] D={Vector2I.Up,Vector2I.Right,Vector2I.Down,Vector2I.Left,new(1,-1),new(1,1),new(-1,1),new(-1,-1)};public static IReadOnlyList<GlobalCellCoord> GetCandidates(IReadOnlyList<GlobalCellCoord> footprint,GlobalCellCoord worker,IMercenaryNavigationWorldQueryV3 query){HashSet<Vector2I> occupied=new(footprint.Select(x=>x.Value)),seen=new();List<(Vector2I Cell,int Diagonal,float Distance)> result=new();foreach(var f in occupied)for(int i=0;i<D.Length;i++){Vector2I c=f+D[i];if(occupied.Contains(c)||!seen.Add(c)||!query.IsInsideWorld(c)||!query.IsWalkable(c))continue;result.Add((c,i>=4?1:0,MercenaryMovementCostPolicyV3.Octile(worker.Value,c)));}return result.OrderBy(x=>x.Diagonal).ThenBy(x=>x.Distance).ThenBy(x=>x.Cell.Y).ThenBy(x=>x.Cell.X).Select(x=>new GlobalCellCoord(x.Cell)).Take(128).ToList().AsReadOnly();}}
+
+public readonly record struct ConstructionWorkCalculationV3(float ConstructionScore,float ConstructionSkillMultiplier,float EffectiveConstructionSpeed,float RequiredConstructionSeconds);
+public static class ConstructionWorkCalculatorV3
+{public static ConstructionWorkCalculationV3 Calculate(MercenaryProfileV3 p,float baseSeconds){float score=p.WorkSkills.Construction*.8f+p.Attributes.Agility*.1f+p.Attributes.Intelligence*.1f;float skill=.75f+score*.025f;float speed=MercenaryDerivedStatsCalculatorV3.Calculate(p).WorkSpeedMultiplier*skill;return new(score,skill,speed,baseSeconds/Math.Max(.01f,speed));}}

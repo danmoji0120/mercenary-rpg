@@ -9,6 +9,7 @@ using GameplayV3.Control;
 using GameplayV3.Resources;
 using GameplayV3.Work;
 using GameplayV3.Stockpile;
+using GameplayV3.Construction;
 using Godot;
 
 namespace WorldV2;
@@ -210,6 +211,7 @@ public partial class WorldManagerV2 : Node
     public int MovingToWorkCount { get { int count=0;if(_workSession!=null)foreach(MercenaryWorkExecutionStateV3 execution in _workSession.GetActiveExecutions())if(execution.Phase is WorkExecutionPhaseV3.WaitingForPath or WorkExecutionPhaseV3.MovingToApproach)count++;return count; } }
     public int WorkingMercenaryCount { get { int count=0;if(_workSession!=null)foreach(MercenaryWorkExecutionStateV3 execution in _workSession.GetActiveExecutions())if(execution.Phase==WorkExecutionPhaseV3.Working)count++;return count; } }
     public int StockpileZoneCount=>_stockpileSession?.Zones.Count??0;public int StockpileCellCount=>_stockpileSession?.Zones.CellCount??0;public int LocalCompanyZoneCount=>_stockpileSession?.Zones.GetZonesByCompany(LocalCompanyId).Count??0;public string StockpileDesignationMode=>_stockpileSession?.Diagnostics.DesignationMode.ToString()??"None";public int ReservedStockpileCellCount=>_stockpileSession?.CellReservations.Count??0;
+    public int ConstructionBlueprintCount=>_constructionSession?.Blueprints.Count??0;public int ConstructionStructureCount=>_constructionSession?.Structures.Count??0;public int ConstructionBlockingCellCount=>_constructionSession?.Structures.MovementBlockingCellCount??0;public int ConstructionReservationCount=>_constructionSession?.Reservations.Count??0;public long ConstructionOccupancyRevision=>_constructionSession?.Structures.OccupancyRevision??0;
     public bool ConstructionTrayOpen { get; private set; }
     public string ActiveConstructionTool { get; private set; } = "-";
     public bool ConstructionUiInputBlockedByWorldMap { get; private set; }
@@ -232,6 +234,7 @@ public partial class WorldManagerV2 : Node
     private ResourceSessionV3? _resourceSession;
     private MercenaryWorkSessionV3? _workSession;
     private StockpileSessionV3? _stockpileSession;
+    private ConstructionSessionV3? _constructionSession;
     private readonly StartingDeploymentCoordinatorV3 _startingDeploymentCoordinator = new();
     private readonly HashSet<string> _materializedMercenaryIds = new(StringComparer.Ordinal);
     private readonly HashSet<string> _materializedResourceNodeIds=new(StringComparer.Ordinal);
@@ -648,6 +651,7 @@ public partial class WorldManagerV2 : Node
         return workSession != null;
     }
     public bool TryGetStockpileSession(out StockpileSessionV3? stockpileSession){stockpileSession=_stockpileSession;return stockpileSession!=null;}
+    public bool TryGetConstructionSession(out ConstructionSessionV3? constructionSession){constructionSession=_constructionSession;return constructionSession!=null;}
 
     public bool CanPlayerControlMercenary(string playerId, string mercenaryId)
     {
@@ -1076,7 +1080,7 @@ public partial class WorldManagerV2 : Node
             return;
         }
 
-        _resourceSession=resources;_workSession=work;_stockpileSession=work.Stockpiles;
+        _resourceSession=resources;_workSession=work;_stockpileSession=work.Stockpiles;GameplaySessionV3.TryGetConstructionSession(out _constructionSession);
         InitialGatheringPatchResultV3 result=InitialGatheringPatchPlacementServiceV3.Place(resources,deployment,placement,WorldBounds,SampleV3PlanCellForNavigation);
         if(!result.Succeeded){GD.PushError($"[ResourceCoreV3] Initial patch failed: {result.FailureReason}");return;}
         if(!result.ReusedExisting)
@@ -1089,6 +1093,10 @@ public partial class WorldManagerV2 : Node
         if(selfCheck.Passed)GD.Print($"[WorkCoreV3] Self-check {selfCheck.Summary}");else GD.PushError($"[WorkCoreV3] Self-check {selfCheck.Summary}");
         StockpileHaulingSelfCheckResultV3 stockpileCheck=StockpileHaulingSelfCheckV3.Run();
         if(stockpileCheck.Passed)GD.Print($"[StockpileV3] Self-check {stockpileCheck.Summary}");else GD.PushError($"[StockpileV3] Self-check {stockpileCheck.Summary}");
+        ConstructionSelfCheckResultV3 constructionCheck=ConstructionSelfCheckV3.Run();
+        if(constructionCheck.Succeeded)GD.Print($"[ConstructionV3] Self-check {constructionCheck.Summary}");else GD.PushError($"[ConstructionV3] Self-check {constructionCheck.Summary}");
+        ConstructionRuntimeSelfCheckResultV3 constructionRuntimeCheck=ConstructionRuntimeSelfCheckV3.Run();
+        if(constructionRuntimeCheck.Passed)GD.Print($"[ConstructionV3] Runtime self-check {constructionRuntimeCheck.Summary} singleTrips={constructionRuntimeCheck.SingleStackTrips} splitTrips={constructionRuntimeCheck.SplitStackTrips}");else GD.PushError($"[ConstructionV3] Runtime self-check {constructionRuntimeCheck.Summary}");
 #endif
         UpdateDebugHud();
     }
@@ -1235,6 +1243,7 @@ public partial class WorldManagerV2 : Node
         GD.Print($"[ResourceCoreV3] initialized={ResourceCoreInitialized} nodes={ResourceNodeCount} trees={TreeNodeCount} stones={StoneNodeCount} depleted={DepletedResourceNodeCount} stacks={GroundStackCount} wood={WoodAmountOnGround} stone={StoneAmountOnGround} nodeViews={RuntimeResourceNodeViewCount} stackViews={RuntimeGroundStackViewCount}");
         GD.Print($"[StockpileV3] zones={StockpileZoneCount} cells={StockpileCellCount} localZones={LocalCompanyZoneCount} mode={StockpileDesignationMode} reservedCells={ReservedStockpileCellCount} outside={GroundAmountOutsideStockpile} woodStored={WoodAmountInStockpile} stoneStored={StoneAmountInStockpile}");
         GD.Print($"[ConstructionUiV3] trayOpen={ConstructionTrayOpen} activeTool={ActiveConstructionTool} stockpileMode={StockpileDesignationMode} blockedByWorldMap={ConstructionUiInputBlockedByWorldMap} lastAction={LastConstructionUiAction}");
+        GD.Print($"[ConstructionV3] blueprints={ConstructionBlueprintCount} structures={ConstructionStructureCount} blockingCells={ConstructionBlockingCellCount} reservations={ConstructionReservationCount} occupancyRevision={ConstructionOccupancyRevision}");
         if(_workSession==null){GD.Print("[WorkCoreV3] initialized=false");return;}
         MercenaryWorkDiagnosticsV3 diagnostics=_workSession.Diagnostics;
         GD.Print($"[WorkCoreV3] initialized=true requests={ActiveWorkRequestCount} assignments={ActiveWorkAssignmentCount} reservations={ActiveWorkReservationCount} movingToWork={MovingToWorkCount} working={WorkingMercenaryCount} completed={diagnostics.CompletedWorkCount} failed={diagnostics.FailedWorkCount} cancelled={diagnostics.CancelledWorkCount} superseded={diagnostics.SupersededWorkCount} cycles={diagnostics.CompletedCycleCount} lastFailure={diagnostics.LastFailureReason}");

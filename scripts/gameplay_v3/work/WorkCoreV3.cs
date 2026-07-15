@@ -15,8 +15,8 @@ namespace GameplayV3.Work;
 
 public static class WorkRequestIdFactoryV3{private const string Prefix="work_";public static string Create()=>Prefix+Guid.NewGuid().ToString("N");public static bool IsValid(string? value)=>ResourceIdValidationV3.IsCanonical(value,Prefix);}
 public static class WorkAssignmentIdFactoryV3{private const string Prefix="assign_";public static string Create()=>Prefix+Guid.NewGuid().ToString("N");public static bool IsValid(string? value)=>ResourceIdValidationV3.IsCanonical(value,Prefix);}
-public enum WorkTypeV3{Gathering,Hauling}
-public enum WorkTargetKindV3{ResourceNode,GroundResourceStack}
+public enum WorkTypeV3{Gathering,Hauling,Construction}
+public enum WorkTargetKindV3{ResourceNode,GroundResourceStack,ConstructionBlueprint}
 public enum WorkRequestStatusV3{Created,Assigned,MovingToTarget,Working,Completed,Failed,Cancelled,Superseded}
 public enum WorkExecutionPhaseV3{SelectingApproach,WaitingForPath,MovingToApproach,Working,Completed,Failed,Cancelled}
 

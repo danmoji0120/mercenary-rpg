@@ -280,7 +280,7 @@ public sealed class MercenaryControlSessionV3
         { if(!unique.Add(id)){reason="Duplicate requested mercenary.";return false;} if(!_mercenary.Registry.TryGetState(id,out MercenaryStateV3? state)||state==null||state.CompanyId!=companyId||!_mercenary.CanPlayerControlMercenary(issuer,id)){reason="Requested mercenary ownership is invalid.";return false;} }
         if(!query.IsInsideWorld(target.Value)){reason="Target is outside world bounds.";return false;}
         if(!MercenaryDestinationAssignmentServiceV3.TryAssign(ids,target,query,out IReadOnlyDictionary<string,GlobalCellCoord> destinations,out reason))return false;
-        foreach(string id in ids){_workSession?.CancelForDirectMove(id);ExternalMovements.Cancel(id,"CancelledByDirectMove",Movements);Movements.RequestStopAfterCurrentSegment(id);}
+        foreach(string id in ids){_workSession?.CancelForDirectMove(id);_constructionCancellation?.Invoke(id);ExternalMovements.Cancel(id,"CancelledByDirectMove",Movements);Movements.RequestStopAfterCurrentSegment(id);}
         DateTime now=DateTime.UtcNow; string commandId=CommandIdFactoryV3.CreateCommandId(); long revision=++_commandRevision;
         DirectMoveCommandV3 created=new(commandId,SessionRevision,revision,issuer,companyId,ids,target,destinations,now); List<MercenaryMoveOrderV3> orders=new();
         foreach(string id in ids)
@@ -290,5 +290,7 @@ public sealed class MercenaryControlSessionV3
     public bool IsCurrentOrder(MercenaryMoveOrderV3 order)=>order.SessionRevision==SessionRevision&&Commands.IsCurrent(order);
     public MercenarySessionV3 MercenarySession => _mercenary;
     public void AttachWorkSession(MercenaryWorkSessionV3 workSession){_workSession=workSession;}
+    private Action<string>? _constructionCancellation;
+    public void AttachConstructionCancellation(Action<string> cancellation)=>_constructionCancellation=cancellation;
     public bool SupersedeDirectMovementForWork(string mercenaryId)=>Commands.SupersedeForWork(mercenaryId,Movements,Diagnostics);
 }

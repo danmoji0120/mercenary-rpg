@@ -98,6 +98,7 @@ public partial class WorldV2DebugHud : Control
         if(manager.TryGetMercenaryWorkSession(out MercenaryWorkSessionV3? workDiagnosticsSession)&&workDiagnosticsSession!=null){MercenaryWorkDiagnosticsV3 diagnostics=workDiagnosticsSession.Diagnostics;workLine+=$" completed/failed/cancelled/superseded={diagnostics.CompletedWorkCount}/{diagnostics.FailedWorkCount}/{diagnostics.CancelledWorkCount}/{diagnostics.SupersededWorkCount} cycles={diagnostics.CompletedCycleCount} lastFailure={diagnostics.LastFailureReason}";}
         string stockpileLine=$"Stockpile zones/cells/local={manager.StockpileZoneCount}/{manager.StockpileCellCount}/{manager.LocalCompanyZoneCount} mode={manager.StockpileDesignationMode} reserved={manager.ReservedStockpileCellCount} outside={manager.GroundAmountOutsideStockpile} stored W/S={manager.WoodAmountInStockpile}/{manager.StoneAmountInStockpile}";
         string constructionUiLine=$"ConstructionTrayOpen={manager.ConstructionTrayOpen} ActiveConstructionTool={manager.ActiveConstructionTool} StockpileDesignationMode={manager.StockpileDesignationMode} ConstructionUiInputBlockedByWorldMap={manager.ConstructionUiInputBlockedByWorldMap} LastConstructionUiAction={manager.LastConstructionUiAction}";
+        string constructionLine=$"Construction Blueprint/Structure/Blocked={manager.ConstructionBlueprintCount}/{manager.ConstructionStructureCount}/{manager.ConstructionBlockingCellCount} reservations={manager.ConstructionReservationCount} occupancyRev={manager.ConstructionOccupancyRevision}";
         string haulingLine=$"Hauling active={manager.ActiveHaulingRequestCount} sourceRes={manager.ReservedSourceStackCount} carrying={manager.CarryingMercenaryCount}";
         string mercenaryControlLine = "MercenaryControlInitialized=false";
         string mercenaryPathLine = "selection=- commands=0 orders=0 movement=0";
@@ -243,6 +244,7 @@ public partial class WorldV2DebugHud : Control
                 $"{workLine}\n" +
                 $"{stockpileLine}\n" +
                 $"{constructionUiLine}\n" +
+                $"{constructionLine}\n" +
                 $"{haulingLine}\n" +
                 $"{mercenarySummaryLines}" +
                 $"rivers: count={settings.RiverCount} width={settings.RiverWidth:0.0} bank={settings.RiverBankWidth:0.0} meander={settings.RiverMeanderStrength:0}\n" +
@@ -309,6 +311,7 @@ public partial class WorldV2DebugHud : Control
             $"{workLine}\n" +
             $"{stockpileLine}\n" +
             $"{constructionUiLine}\n" +
+            $"{constructionLine}\n" +
             $"{haulingLine}\n" +
             $"{mercenarySummaryLines}" +
             $"{worldConfigLine}\n" +

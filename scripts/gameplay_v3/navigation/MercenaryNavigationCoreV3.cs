@@ -25,6 +25,8 @@ public interface IMercenaryNavigationWorldQueryV3
     bool IsWalkable(Vector2I cell);
     float GetTraversalMultiplier(Vector2I cell);
 }
+public interface INavigationOccupancyRevisionV3{long OccupancyRevision{get;}}
+public static class MercenaryNavigationRevisionPolicyV3{public static long GetRevision(IMercenaryNavigationWorldQueryV3 query)=>query is INavigationOccupancyRevisionV3 dynamicQuery?dynamicQuery.OccupancyRevision:0;public static bool IsCurrent(MercenaryPathRequestV3 request,IMercenaryNavigationWorldQueryV3 query)=>request.NavigationOccupancyRevision==GetRevision(query);}
 
 public sealed class MercenaryNavigationWorldQueryV3 : IMercenaryNavigationWorldQueryV3
 {
@@ -72,7 +74,7 @@ public sealed class MercenaryPathRequestV3
 {
     public MercenaryPathRequestV3(string requestId,string mercenaryId,GlobalCellCoord start,GlobalCellCoord destination,long sessionRevision,long orderRevision)
     { PathRequestId=requestId;MercenaryId=mercenaryId;StartCell=start;DestinationCell=destination;SessionRevision=sessionRevision;OrderRevision=orderRevision; }
-    public string PathRequestId{get;} public string MercenaryId{get;} public GlobalCellCoord StartCell{get;} public GlobalCellCoord DestinationCell{get;} public long SessionRevision{get;} public long OrderRevision{get;}
+    public string PathRequestId{get;} public string MercenaryId{get;} public GlobalCellCoord StartCell{get;} public GlobalCellCoord DestinationCell{get;} public long SessionRevision{get;} public long OrderRevision{get;} public long NavigationOccupancyRevision{get;internal set;}
 }
 
 public enum MercenaryPathFailureV3 { None, InvalidStart, InvalidDestination, StartBlocked, DestinationBlocked, NoPath, SearchLimitExceeded, Superseded }
@@ -140,6 +142,7 @@ public sealed class MercenaryPathfindingSchedulerV3
     private int _roundRobinCursor;
     public MercenaryPathfindingSchedulerV3(MercenaryNavigationSettingsV3 settings){_settings=settings;}
     public int PendingCount=>_queued.Count; public int ActiveCount=>_active.Count;
+    public bool IsKnown(string pathRequestId)=>_known.Contains(pathRequestId);
     public void Enqueue(MercenaryPathRequestV3 request){if(_known.Add(request.PathRequestId))_queued.Enqueue(request);}
     public IReadOnlyList<MercenaryPathResultV3> Tick(IMercenaryNavigationWorldQueryV3 query,Func<MercenaryPathRequestV3,bool> isCurrent,out int peakDiscovered)
     {
