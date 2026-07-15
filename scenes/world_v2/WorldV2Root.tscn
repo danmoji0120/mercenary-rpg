@@ -18,6 +18,16 @@ script = ExtResource("2_grid")
 [node name="BuildingLayer" type="Node2D" parent="." unique_id=589874698]
 script = ExtResource("3_build")
 
+[node name="GameplayEntitiesV3" type="Node2D" parent="." unique_id=315873818]
+
+[node name="MercenariesV3" type="Node2D" parent="GameplayEntitiesV3" unique_id=319052139]
+
+[node name="StockpileZonesV3" type="Node2D" parent="GameplayEntitiesV3" unique_id=1503646301]
+
+[node name="ResourceNodesV3" type="Node2D" parent="GameplayEntitiesV3" unique_id=120551456]
+
+[node name="GroundResourcesV3" type="Node2D" parent="GameplayEntitiesV3" unique_id=2057470674]
+
 [node name="WorldStreamManagerV2" type="Node" parent="." unique_id=365929260]
 script = ExtResource("6_stream")
 MaxRenderedChunkCountHardLimit = 4096

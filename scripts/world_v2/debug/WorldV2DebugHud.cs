@@ -1,3 +1,8 @@
+using System.Collections.Generic;
+using System.Text;
+using GameplayV3.Control;
+using GameplayV3.Mercenary;
+using GameplayV3.Work;
 using Godot;
 
 namespace WorldV2;
@@ -59,6 +64,58 @@ public partial class WorldV2DebugHud : Control
         string worldConfigLine = $"map: {manager.MapSizePreset} {manager.WorldMapSize.WidthCells}x{manager.WorldMapSize.HeightCells} cells chunks={manager.WorldMapSize.ChunkWidth}x{manager.WorldMapSize.ChunkHeight} plan={manager.PlanVersion} generated={manager.GeneratedPlanType}";
         string worldBoundsLine = $"bounds: cells={manager.WorldBounds.Position}..{manager.WorldBounds.End - Vector2I.One}";
         string worldMapLine = $"world map: visible={manager.WorldMapOverlayVisible} texture={manager.WorldMapTextureSize.X}x{manager.WorldMapTextureSize.Y} build={manager.WorldMapBuildMs:0.0}ms cached={manager.WorldMapCached} reason={manager.WorldMapLastBuildReason}";
+        string companyCoreLine =
+            $"CompanyCoreInitialized={manager.CompanyCoreInitialized} " +
+            $"LocalPlayerId={ShortId(manager.LocalPlayerId)} LocalCompanyId={ShortId(manager.LocalCompanyId)} " +
+            $"LocalCompanyName={manager.LocalCompanyName} RegisteredCompanyCount={manager.RegisteredCompanyCount}";
+        string companyOwnershipLine = $"LocalCompanyOwnershipValid={manager.LocalCompanyOwnershipValid}";
+        bool hasLocalDeployment = manager.TryGetLocalDeployment(out GameplayV3.Deployment.CompanyDeploymentStateV3? localDeployment)
+            && localDeployment != null;
+        string deploymentLine = manager.TryGetStartingDeploymentResult(out GameplayV3.Deployment.StartingDeploymentPlacementResultV3? deploymentResult)
+            && deploymentResult != null
+            ? $"StartingDeploymentInitialized={deploymentResult.IsInitialized} StartingSettlementId={deploymentResult.StartingSettlementId} SettlementArrivalAnchorCell={FormatCell(deploymentResult.ArrivalAnchorCell)} RegisteredDeploymentCount={manager.RegisteredDeploymentCount} AssignedCompanyCount={deploymentResult.AssignedCompanyCount} UnassignedCompanyCount={deploymentResult.UnassignedCompanyCount}"
+            : "StartingDeploymentInitialized=false";
+        string localDeploymentLine = hasLocalDeployment
+            ? $"LocalCompanyHasDeployment=true LocalCompanyDeploymentSlot={localDeployment!.DeploymentSlotIndex} LocalCompanyDeploymentAnchorCell={localDeployment.DeploymentAnchorCell} LocalCompanyFormationCells={FormatFormation(localDeployment)}"
+            : "LocalCompanyHasDeployment=false";
+        string deploymentStatsLine = deploymentResult == null
+            ? "DeploymentPlacementAttempts=0 DeploymentRejectedBounds=0 DeploymentRejectedFeature=0 DeploymentRejectedFormation=0"
+            : $"DeploymentPlacementAttempts={deploymentResult.PlacementAttempts} DeploymentRejectedBounds={deploymentResult.RejectedBounds} DeploymentRejectedFeature={deploymentResult.RejectedFeature} DeploymentRejectedFormation={deploymentResult.RejectedFormation} DeploymentFailureReason={deploymentResult.FailureReason}";
+        string deploymentDistanceLine = hasLocalDeployment
+            ? $"DistanceFromDeploymentToSettlementCenter={localDeployment!.DistanceToSettlementCenter:0.0} DistanceFromDeploymentToNearestRoad={localDeployment.DistanceToNearestRoad:0.0} DistanceFromDeploymentToNearestUnsafeFeatureCore={localDeployment.DistanceToNearestUnsafeFeatureCore:0.0}"
+            : "DistanceFromDeploymentToSettlementCenter=- DistanceFromDeploymentToNearestRoad=- DistanceFromDeploymentToNearestUnsafeFeatureCore=-";
+        string mercenaryCoreLine =
+            $"MercenaryCoreInitialized={manager.MercenaryCoreInitialized} RegisteredMercenaryCount={manager.RegisteredMercenaryCount} " +
+            $"LocalCompanyMercenaryCount={manager.LocalCompanyMercenaryCount} RuntimeMercenaryViewCount={manager.RuntimeMercenaryViewCount} " +
+            $"InitialSquadCreationSucceeded={manager.InitialSquadCreationSucceeded} InitialSquadCreationReusedExisting={manager.InitialSquadCreationReusedExisting}";
+        string mercenaryDiagnosticsLine =
+            $"InitialSquadCreationFailureReason={manager.InitialSquadCreationFailureReason} InitialSquadRollbackCount={manager.InitialSquadRollbackCount} " +
+            $"DuplicateMercenaryRejectedCount={manager.DuplicateMercenaryRejectedCount} DuplicateViewRejectedCount={manager.DuplicateViewRejectedCount} " +
+            $"MercenaryDeploymentMismatchCount={manager.MercenaryDeploymentMismatchCount}";
+        string mercenarySummaryLines = BuildMercenarySummaryLines(manager);
+        string resourceLine=$"ResourceCoreInitialized={manager.ResourceCoreInitialized} nodes/tree/stone/depleted={manager.ResourceNodeCount}/{manager.TreeNodeCount}/{manager.StoneNodeCount}/{manager.DepletedResourceNodeCount} views={manager.RuntimeResourceNodeViewCount} stacks/views={manager.GroundStackCount}/{manager.RuntimeGroundStackViewCount} wood/stone={manager.WoodAmountOnGround}/{manager.StoneAmountOnGround}";
+        string workLine=$"WorkCoreInitialized={manager.WorkCoreInitialized} requests={manager.ActiveWorkRequestCount} assignments={manager.ActiveWorkAssignmentCount} reservations={manager.ActiveWorkReservationCount} movingToWork={manager.MovingToWorkCount} working={manager.WorkingMercenaryCount}";
+        if(manager.TryGetMercenaryWorkSession(out MercenaryWorkSessionV3? workDiagnosticsSession)&&workDiagnosticsSession!=null){MercenaryWorkDiagnosticsV3 diagnostics=workDiagnosticsSession.Diagnostics;workLine+=$" completed/failed/cancelled/superseded={diagnostics.CompletedWorkCount}/{diagnostics.FailedWorkCount}/{diagnostics.CancelledWorkCount}/{diagnostics.SupersededWorkCount} cycles={diagnostics.CompletedCycleCount} lastFailure={diagnostics.LastFailureReason}";}
+        string stockpileLine=$"Stockpile zones/cells/local={manager.StockpileZoneCount}/{manager.StockpileCellCount}/{manager.LocalCompanyZoneCount} mode={manager.StockpileDesignationMode} reserved={manager.ReservedStockpileCellCount} outside={manager.GroundAmountOutsideStockpile} stored W/S={manager.WoodAmountInStockpile}/{manager.StoneAmountInStockpile}";
+        string constructionUiLine=$"ConstructionTrayOpen={manager.ConstructionTrayOpen} ActiveConstructionTool={manager.ActiveConstructionTool} StockpileDesignationMode={manager.StockpileDesignationMode} ConstructionUiInputBlockedByWorldMap={manager.ConstructionUiInputBlockedByWorldMap} LastConstructionUiAction={manager.LastConstructionUiAction}";
+        string haulingLine=$"Hauling active={manager.ActiveHaulingRequestCount} sourceRes={manager.ReservedSourceStackCount} carrying={manager.CarryingMercenaryCount}";
+        string mercenaryControlLine = "MercenaryControlInitialized=false";
+        string mercenaryPathLine = "selection=- commands=0 orders=0 movement=0";
+        if (manager.TryGetMercenaryControlSession(out MercenaryControlSessionV3? controlSession) && controlSession != null)
+        {
+            MercenaryControlDiagnosticsV3 controlDiagnostics = controlSession.Diagnostics;
+            mercenaryControlLine =
+                $"MercenaryControlInitialized=true SelectedMercenaryCount={controlSession.Selection.Count} " +
+                $"SelectionRevision={controlSession.Selection.Revision} LastSelectionAction={controlSession.Selection.LastSelectionAction} " +
+                $"SelectedIds={FormatIds(controlSession.Selection.GetSelectedIds())}";
+            mercenaryPathLine =
+                $"commands={controlSession.Commands.ActiveCommandCount} orders={controlSession.Commands.ActiveMoveOrderCount} " +
+                $"moving={controlSession.Movements.Count} pathDone/failed={controlDiagnostics.CompletedPathCount}/{controlDiagnostics.FailedPathCount} " +
+                $"moveDone/failed={controlDiagnostics.CompletedMovementCount}/{controlDiagnostics.FailedMovementCount} " +
+                $"avgMoveMul={GetAverageMoveMultiplier(manager):0.00} " +
+                $"lastPath=len:{controlDiagnostics.LastPathLength} cost:{controlDiagnostics.LastPathCost:0.0} expanded:{controlDiagnostics.LastExpandedNodeCount} cpu:{controlDiagnostics.LastSearchDurationMs:0.00}ms " +
+                $"stale/limit/peak={controlDiagnostics.StalePathResultDiscardCount}/{controlDiagnostics.SearchLimitExceededCount}/{controlDiagnostics.PeakDiscoveredCellCount}";
+        }
         string v3VillageLine = manager.PlanVersion == WorldPlanVersionV2.V3
             ? $"v3 settlements: count={manager.V3VillageCount} ham/v/lg/town/city={manager.V3HamletCount}/{manager.V3VillageTierCount}/{manager.V3LargeVillageCount}/{manager.V3TownCount}/{manager.V3CityCandidateCount} startId={manager.V3StartingVillageId} tier={manager.V3StartingSettlementTier} role={manager.V3StartingSettlementRole} center={manager.V3StartingVillageCenter} spawn={manager.V3PlayerSpawnCell} roles={manager.V3SettlementRoleDistribution}"
             : "v3 villages: inactive";
@@ -172,6 +229,22 @@ public partial class WorldV2DebugHud : Control
             _label.Text =
                 $"WorldV2 flatland settings  page 2/2\n" +
                 $"world: {manager.WorldId}  seed: {manager.WorldSeed}\n" +
+                $"{companyCoreLine}\n" +
+                $"{companyOwnershipLine}\n" +
+                $"{deploymentLine}\n" +
+                $"{localDeploymentLine}\n" +
+                $"{deploymentStatsLine}\n" +
+                $"{deploymentDistanceLine}\n" +
+                $"{mercenaryCoreLine}\n" +
+                $"{mercenaryDiagnosticsLine}\n" +
+                $"{mercenaryControlLine}\n" +
+                $"{mercenaryPathLine}\n" +
+                $"{resourceLine}\n" +
+                $"{workLine}\n" +
+                $"{stockpileLine}\n" +
+                $"{constructionUiLine}\n" +
+                $"{haulingLine}\n" +
+                $"{mercenarySummaryLines}" +
                 $"rivers: count={settings.RiverCount} width={settings.RiverWidth:0.0} bank={settings.RiverBankWidth:0.0} meander={settings.RiverMeanderStrength:0}\n" +
                 $"forest: clusters={settings.ForestClusterCount} length={settings.ForestClusterMinLength:0}-{settings.ForestClusterMaxLength:0} width={settings.ForestClusterMinWidth:0}-{settings.ForestClusterMaxWidth:0}\n" +
                 $"v3 biome regions: small={settings.V3SmallMajorBiomeMinCount}-{settings.V3SmallMajorBiomeMaxCount}/{settings.V3SmallMinorBiomeMinCount}-{settings.V3SmallMinorBiomeMaxCount} medium={settings.V3MediumMajorBiomeMinCount}-{settings.V3MediumMajorBiomeMaxCount}/{settings.V3MediumMinorBiomeMinCount}-{settings.V3MediumMinorBiomeMaxCount} large={settings.V3LargeMajorBiomeMinCount}-{settings.V3LargeMajorBiomeMaxCount}/{settings.V3LargeMinorBiomeMinCount}-{settings.V3LargeMinorBiomeMaxCount} huge={settings.V3HugeMajorBiomeMinCount}-{settings.V3HugeMajorBiomeMaxCount}/{settings.V3HugeMinorBiomeMinCount}-{settings.V3HugeMinorBiomeMaxCount}\n" +
@@ -222,6 +295,22 @@ public partial class WorldV2DebugHud : Control
             $"WorldV2  page 1/2\n" +
             $"world: {manager.WorldId}\n" +
             $"seed: {manager.WorldSeed}\n" +
+            $"{companyCoreLine}\n" +
+            $"{companyOwnershipLine}\n" +
+            $"{deploymentLine}\n" +
+            $"{localDeploymentLine}\n" +
+            $"{deploymentStatsLine}\n" +
+            $"{deploymentDistanceLine}\n" +
+            $"{mercenaryCoreLine}\n" +
+            $"{mercenaryDiagnosticsLine}\n" +
+            $"{mercenaryControlLine}\n" +
+            $"{mercenaryPathLine}\n" +
+            $"{resourceLine}\n" +
+            $"{workLine}\n" +
+            $"{stockpileLine}\n" +
+            $"{constructionUiLine}\n" +
+            $"{haulingLine}\n" +
+            $"{mercenarySummaryLines}" +
             $"{worldConfigLine}\n" +
             $"{worldBoundsLine}\n" +
             $"{worldMapLine}\n" +
@@ -257,7 +346,7 @@ public partial class WorldV2DebugHud : Control
             $"{siteLine}\n" +
             $"{runtimeLine}\n" +
             $"{buildLine}\n" +
-            $"keys: 1 floor, 2 wall, LMB place, RMB remove\n" +
+            $"keys: {(manager.PlanVersion == WorldPlanVersionV2.V3 ? "LMB select/drag, Shift add, RMB move" : "1 floor, 2 wall, LMB place, RMB remove")}\n" +
             $"camera: WASD/arrows move, Shift sprint, wheel zoom\n" +
             $"debug: F1 help, F2 page, F3 overlay, F4 grid, F6 sectors, F7 stream, F8 cache, F9 plan, F10 perf, Ctrl+1-4 raster, Ctrl+5-8 context, Ctrl+Shift+1-9 layers\n" +
             $"regen: F11 renderer rebuild, F12 full reset, Home center\n" +
@@ -267,5 +356,120 @@ public partial class WorldV2DebugHud : Control
     public void TogglePage()
     {
         _page = (_page + 1) % 2;
+    }
+
+    private static string ShortId(string id)
+    {
+        const int visibleLength = 12;
+        return string.IsNullOrEmpty(id) || id.Length <= visibleLength
+            ? id
+            : id[..visibleLength];
+    }
+
+    private static string FormatCell(GlobalCellCoord? cell)
+    {
+        return cell?.ToString() ?? "-";
+    }
+
+    private static string FormatFormation(GameplayV3.Deployment.CompanyDeploymentStateV3 deployment)
+    {
+        return deployment.FormationCells.Count == 3
+            ? $"{deployment.FormationCells[0]}/{deployment.FormationCells[1]}/{deployment.FormationCells[2]}"
+            : "invalid";
+    }
+
+    private static string FormatIds(IReadOnlyList<string> ids)
+    {
+        if (ids.Count == 0)
+        {
+            return "-";
+        }
+
+        StringBuilder builder = new();
+        for (int index = 0; index < ids.Count; index++)
+        {
+            if (index > 0) builder.Append(',');
+            builder.Append(ShortId(ids[index]));
+        }
+        return builder.ToString();
+    }
+
+    private static string BuildMercenarySummaryLines(WorldManagerV2 manager)
+    {
+        if (!manager.TryGetMercenarySession(out MercenarySessionV3? session) || session == null)
+        {
+            return string.Empty;
+        }
+
+        StringBuilder builder = new();
+        IReadOnlyList<string> mercenaryIds = session.Registry.GetMercenariesByCompany(manager.LocalCompanyId);
+        foreach (string mercenaryId in mercenaryIds)
+        {
+            if (!session.Registry.TryGetMercenary(mercenaryId, out MercenaryProfileV3? profile, out MercenaryStateV3? state)
+                || profile == null || state == null)
+            {
+                continue;
+            }
+
+            IReadOnlyList<MercenaryWorkSkillValueV3> topSkills = profile.WorkSkills.GetTopSkills(2);
+            MercenaryDerivedStatsV3 derived = MercenaryDerivedStatsCalculatorV3.Calculate(profile);
+            string initialSlot = profile.InitialSquadSlotIndex?.ToString() ?? "-";
+            string movement = string.Empty;
+            if (manager.TryGetMercenaryControlSession(out MercenaryControlSessionV3? control)
+                && control != null
+                && control.Commands.TryGetActiveOrder(mercenaryId, out MercenaryMoveOrderV3? order)
+                && order != null)
+            {
+                movement = $" dest={order.DestinationCell} status={order.Status}";
+                if (control.Movements.TryGet(mercenaryId, out GameplayV3.Movement.MercenaryMovementStateV3? active) && active != null)
+                {
+                    movement += $" remaining={active.RemainingPathCells}";
+                }
+            }
+            string work = string.Empty;
+            if (manager.TryGetMercenaryWorkSession(out MercenaryWorkSessionV3? workSession) && workSession != null)
+            {
+                GatheringWorkCalculationV3 calculation=GatheringWorkCalculatorV3.Calculate(profile);
+                work=$" gather={calculation.GatheringScore:0.0}/{calculation.RequiredWorkSeconds:0.00}s";
+                if(workSession.TryGetAssignment(mercenaryId,out MercenaryWorkAssignmentV3? assignment)&&assignment!=null&&workSession.TryGetExecution(assignment.WorkRequestId,out MercenaryWorkExecutionStateV3? execution)&&execution!=null)work+=$" work={ShortId(assignment.WorkRequestId)}:{execution.Phase}";
+            }
+            builder.Append("merc ")
+                .Append(ShortId(mercenaryId)).Append(' ')
+                .Append(profile.DisplayName)
+                .Append(" initialSlot=").Append(initialSlot)
+                .Append(" cell=").Append(state.CurrentCell)
+                .Append(' ').Append(state.ActivityState)
+                .Append(" top=").Append(topSkills[0]).Append('/').Append(topSkills[1])
+                .Append(" moveMul=").Append(derived.MoveSpeedMultiplier.ToString("0.00"))
+                .Append(" carry=").Append(derived.CarryCapacity.ToString("0.0"))
+                .Append(" view=").Append(manager.IsMercenaryViewMaterialized(mercenaryId))
+                .Append(movement)
+                .Append(work)
+                .Append('\n');
+        }
+
+        return builder.ToString();
+    }
+
+    private static float GetAverageMoveMultiplier(WorldManagerV2 manager)
+    {
+        if (!manager.TryGetMercenarySession(out MercenarySessionV3? session) || session == null)
+        {
+            return 0.0f;
+        }
+
+        IReadOnlyList<string> ids = session.Registry.GetMercenariesByCompany(manager.LocalCompanyId);
+        if (ids.Count == 0) return 0.0f;
+        float total = 0.0f;
+        int count = 0;
+        foreach (string id in ids)
+        {
+            if (session.Registry.TryGetProfile(id, out MercenaryProfileV3? profile) && profile != null)
+            {
+                total += MercenaryDerivedStatsCalculatorV3.Calculate(profile).MoveSpeedMultiplier;
+                count++;
+            }
+        }
+        return count == 0 ? 0.0f : total / count;
     }
 }

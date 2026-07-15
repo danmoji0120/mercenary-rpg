@@ -1,4 +1,5 @@
 using Godot;
+using GameplayV3.Session;
 
 namespace WorldV2;
 
@@ -121,6 +122,11 @@ public partial class WorldSetupV2 : Control
         WorldPlanVersionV2 planVersion = _planOptions?.Selected == 1 ? WorldPlanVersionV2.V2 : WorldPlanVersionV2.V3;
         Vector2I? startCell = planVersion == WorldPlanVersionV2.V2 ? new Vector2I(64, 64) : null;
         WorldGenerationRequestV2 request = new(sizePreset, seed, planVersion, startCell);
+        if (planVersion == WorldPlanVersionV2.V3)
+        {
+            GameplaySessionV3.BeginNewSession();
+        }
+
         WorldGenerationSessionV2.SetPendingRequest(request);
         GetTree().ChangeSceneToFile(LoadingScenePath);
     }

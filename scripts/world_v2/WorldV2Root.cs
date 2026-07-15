@@ -1,4 +1,15 @@
 using Godot;
+using GameplayV3.Control;
+using GameplayV3.Control.Runtime;
+using GameplayV3.Mercenary;
+using GameplayV3.Mercenary.Runtime;
+using GameplayV3.Navigation;
+using GameplayV3.Resources;
+using GameplayV3.Resources.Runtime;
+using GameplayV3.Work;
+using GameplayV3.Work.Runtime;
+using GameplayV3.Stockpile;
+using GameplayV3.Stockpile.Runtime;
 
 namespace WorldV2;
 
@@ -11,6 +22,22 @@ public partial class WorldV2Root : Node2D
     private WorldStreamManagerV2? _streamManager;
     private WorldV2LoadingOverlay? _loadingOverlay;
     private WorldMapOverlayV2? _worldMapOverlay;
+    private Node2D? _mercenariesContainer;
+    private Node2D? _resourceNodesContainer;
+    private Node2D? _groundResourcesContainer;
+    private Node2D? _stockpileContainer;
+    private readonly MercenaryViewRegistryV3 _mercenaryViewRegistry = new();
+    private readonly MercenaryMaterializationCoordinatorV3 _mercenaryMaterializationCoordinator = new();
+    private MercenaryInputControllerV3? _mercenaryInputController;
+    private MercenaryMovementRuntimeV3? _mercenaryMovementRuntime;
+    private MercenaryDragSelectionOverlayV3? _mercenaryDragOverlay;
+    private MercenaryCommandMarkerV3? _mercenaryCommandMarker;
+    private MercenaryWorkRuntimeV3? _mercenaryWorkRuntime;
+    private readonly ResourceNodeViewRegistryV3 _resourceNodeViews=new();
+    private readonly GroundResourceStackViewRegistryV3 _groundStackViews=new();
+    private StockpileOverlayV3? _stockpileOverlay;
+    private StockpileDesignationControllerV3? _stockpileDesignation;
+    private ConstructionUiV3? _constructionUi;
     private bool _cameraInputWasLocked;
 
     public override void _Ready()
@@ -20,12 +47,22 @@ public partial class WorldV2Root : Node2D
         _buildManager = GetNodeOrNull<WorldV2BuildManager>("BuildingLayer");
         _camera = GetNodeOrNull<WorldV2CameraController>("Camera2D");
         _streamManager = GetNodeOrNull<WorldStreamManagerV2>("WorldStreamManagerV2");
+        _mercenariesContainer = GetNodeOrNull<Node2D>("GameplayEntitiesV3/MercenariesV3");
+        _resourceNodesContainer = GetNodeOrNull<Node2D>("GameplayEntitiesV3/ResourceNodesV3");
+        _groundResourcesContainer = GetNodeOrNull<Node2D>("GameplayEntitiesV3/GroundResourcesV3");
+        _stockpileContainer = GetNodeOrNull<Node2D>("GameplayEntitiesV3/StockpileZonesV3");
+        if(_mercenariesContainer!=null)_mercenariesContainer.ZIndex=2;
+        if(_resourceNodesContainer!=null)_resourceNodesContainer.ZIndex=2;
+        if(_groundResourcesContainer!=null)_groundResourcesContainer.ZIndex=2;
         CreateLoadingOverlay();
         CreateWorldMapOverlay();
+        MaterializeLocalMercenaries();
+        MaterializeResources();
+        InitializeMercenaryControlRuntime();
 
         if (_camera != null)
         {
-            CenterCameraOnPlayerStart();
+            CenterCameraOnInitialDeploymentOrPlayerStart();
         }
     }
 
@@ -34,6 +71,13 @@ public partial class WorldV2Root : Node2D
         bool loading = _streamManager != null && !_streamManager.IsInitialLoadingComplete;
         SetCameraInputLocked(loading || IsWorldMapOverlayOpen());
         _loadingOverlay?.Refresh(_streamManager);
+    }
+
+    public override void _ExitTree()
+    {
+        _mercenaryViewRegistry.Clear();
+        _resourceNodeViews.Clear();
+        _groundStackViews.Clear();
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -45,6 +89,8 @@ public partial class WorldV2Root : Node2D
                 if (keyEvent.Keycode is Key.M or Key.Escape)
                 {
                     _worldMapOverlay?.HideMap();
+                    _constructionUi?.SetWorldMapBlocked(false);
+                    GetViewport().SetInputAsHandled();
                 }
 
                 return;
@@ -53,7 +99,13 @@ public partial class WorldV2Root : Node2D
             if (keyEvent.Keycode == Key.M && !IsWorldInputLocked())
             {
                 ToggleWorldMapOverlay();
+                GetViewport().SetInputAsHandled();
                 return;
+            }
+
+            if (keyEvent.Keycode == Key.Escape)
+            {
+                _constructionUi?.HandleEscape();
             }
 
             if (IsWorldInputLocked() && !IsDebugKeyAllowedWhileLoading(keyEvent.Keycode))
@@ -61,7 +113,24 @@ public partial class WorldV2Root : Node2D
                 return;
             }
 
+            if (_worldManager?.PlanVersion == WorldPlanVersionV2.V3
+                && _mercenaryInputController?.TryHandleUnhandledInput(@event) == true)
+            {
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
             HandleKey(keyEvent);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (_worldManager?.PlanVersion == WorldPlanVersionV2.V3
+            && !IsWorldInputLocked()
+            && !IsWorldMapOverlayOpen()
+            && _mercenaryInputController?.TryHandleUnhandledInput(@event) == true)
+        {
+            GetViewport().SetInputAsHandled();
             return;
         }
 
@@ -77,7 +146,10 @@ public partial class WorldV2Root : Node2D
                 return;
             }
 
-            HandleMouseButton(mouseButton);
+            if (_worldManager?.PlanVersion != WorldPlanVersionV2.V3)
+            {
+                HandleMouseButton(mouseButton);
+            }
         }
     }
 
@@ -143,9 +215,11 @@ public partial class WorldV2Root : Node2D
                 break;
             case Key.F11:
                 _worldManager.RegenerateVisibleChunks(clearRuntimeStructures: false);
+                _stockpileOverlay?.Refresh();
                 break;
             case Key.F12:
                 _worldManager.RegenerateVisibleChunks(clearRuntimeStructures: true);
+                _stockpileOverlay?.Refresh();
                 break;
             case Key.Home:
                 CenterCameraOnPlayerStart();
@@ -258,6 +332,156 @@ public partial class WorldV2Root : Node2D
         _camera.CenterOnGlobalCell(_worldManager.PlayerStartGlobalCell);
     }
 
+    private void MaterializeLocalMercenaries()
+    {
+        if (_worldManager == null
+            || _gridRenderer == null
+            || _mercenariesContainer == null
+            || !_worldManager.TryGetMercenarySession(out MercenarySessionV3? mercenarySession)
+            || mercenarySession == null
+            || !_worldManager.TryGetLocalDeployment(out GameplayV3.Deployment.CompanyDeploymentStateV3? deployment)
+            || deployment == null)
+        {
+            return;
+        }
+
+        MercenaryMaterializationResultV3 result = _mercenaryMaterializationCoordinator.MaterializeCompany(
+            _worldManager.LocalCompanyId,
+            deployment,
+            mercenarySession,
+            _mercenariesContainer,
+            _gridRenderer,
+            _mercenaryViewRegistry);
+        _worldManager.SetMercenaryRuntimeDiagnostics(
+            _mercenaryViewRegistry.GetAllViewIds(),
+            _mercenaryViewRegistry.Count,
+            _mercenaryViewRegistry.DuplicateViewRejectedCount,
+            result.DeploymentMismatchCount);
+
+        foreach (string mercenaryId in result.CreatedMercenaryIds)
+        {
+            if (_mercenaryViewRegistry.TryGetView(mercenaryId, out MercenaryEntityV3? view) && view != null)
+            {
+                GD.Print($"[MercenaryCoreV3]\nMercenary materialized:\nMercenaryId={mercenaryId}\nWorldPosition={view.Position}");
+            }
+        }
+
+        if (!result.Succeeded)
+        {
+            GD.PushWarning($"[MercenaryCoreV3] Materialization failed: {result.FailureReason}");
+            return;
+        }
+
+#if DEBUG
+        if (!MercenaryRuntimeSelfCheckV3.TryValidate(
+                _worldManager.LocalPlayerId,
+                _worldManager.LocalCompanyId,
+                deployment,
+                mercenarySession,
+                _mercenaryViewRegistry,
+                _gridRenderer,
+                out string runtimeReason))
+        {
+            GD.PushError($"[MercenaryCoreV3] Runtime self-check FAIL: {runtimeReason}");
+        }
+        else
+        {
+            GD.Print("[MercenaryCoreV3] Runtime self-check PASS");
+        }
+#endif
+    }
+
+    private void InitializeMercenaryControlRuntime()
+    {
+        if (_worldManager?.PlanVersion != WorldPlanVersionV2.V3
+            || _gridRenderer == null
+            || _mercenariesContainer == null
+            || !_worldManager.TryGetMercenaryControlSession(out MercenaryControlSessionV3? controlSession)
+            || controlSession == null)
+        {
+            return;
+        }
+
+        CanvasLayer? canvasLayer = GetNodeOrNull<CanvasLayer>("CanvasLayer");
+        Node2D? gameplayEntities = GetNodeOrNull<Node2D>("GameplayEntitiesV3");
+        if (canvasLayer == null || gameplayEntities == null)
+        {
+            return;
+        }
+
+        IMercenaryNavigationWorldQueryV3 navigationQuery = new MercenaryNavigationWorldQueryV3(
+            _worldManager.WorldBounds,
+            _worldManager.SampleV3PlanCellForNavigation);
+
+        _mercenaryDragOverlay = new MercenaryDragSelectionOverlayV3 { Name = "MercenaryDragSelectionOverlayV3" };
+        canvasLayer.AddChild(_mercenaryDragOverlay);
+
+        _mercenaryCommandMarker = new MercenaryCommandMarkerV3 { Name = "MercenaryCommandMarkerV3", Visible = false };
+        gameplayEntities.AddChild(_mercenaryCommandMarker);
+
+        _mercenaryInputController = new MercenaryInputControllerV3 { Name = "MercenaryInputControllerV3" };
+        gameplayEntities.AddChild(_mercenaryInputController);
+        _mercenaryInputController.Initialize(
+            controlSession,
+            _mercenaryViewRegistry,
+            _gridRenderer,
+            _worldManager,
+            navigationQuery,
+            _mercenaryDragOverlay,
+            _mercenaryCommandMarker);
+
+        _mercenaryMovementRuntime = new MercenaryMovementRuntimeV3 { Name = "MercenaryMovementRuntimeV3" };
+        gameplayEntities.AddChild(_mercenaryMovementRuntime);
+        _mercenaryMovementRuntime.Initialize(
+            controlSession,
+            _mercenaryViewRegistry,
+            _gridRenderer,
+            navigationQuery,
+            _worldManager);
+
+        if (_worldManager.TryGetResourceSession(out ResourceSessionV3? resources) && resources != null
+            && _worldManager.TryGetMercenaryWorkSession(out MercenaryWorkSessionV3? work) && work != null
+            && _worldManager.TryGetStockpileSession(out StockpileSessionV3? stockpiles) && stockpiles != null
+            && _worldManager.TryGetMercenarySession(out MercenarySessionV3? mercenaries) && mercenaries != null
+            && _groundResourcesContainer != null && _stockpileContainer != null)
+        {
+            _mercenaryInputController.AttachGathering(resources,_resourceNodeViews,work);
+            _stockpileOverlay=new StockpileOverlayV3{Name="StockpileOverlayV3"};_stockpileContainer.AddChild(_stockpileOverlay);_stockpileOverlay.Initialize(stockpiles,_gridRenderer,_worldManager.LocalCompanyId);
+            _stockpileDesignation=new StockpileDesignationControllerV3{Name="StockpileDesignationControllerV3"};gameplayEntities.AddChild(_stockpileDesignation);_stockpileDesignation.Initialize(stockpiles,resources,navigationQuery,_gridRenderer,_worldManager,_stockpileOverlay,canvasLayer);
+            _constructionUi=new ConstructionUiV3{Name="ConstructionUiV3"};canvasLayer.AddChild(_constructionUi);_constructionUi.Initialize(_stockpileDesignation,_worldManager);
+            _mercenaryInputController.AttachStockpileAndHauling(_groundStackViews,_stockpileDesignation);
+            _mercenaryWorkRuntime=new MercenaryWorkRuntimeV3{Name="MercenaryWorkRuntimeV3"};
+            gameplayEntities.AddChild(_mercenaryWorkRuntime);
+            _mercenaryWorkRuntime.Initialize(work,controlSession,resources,mercenaries,navigationQuery,_resourceNodeViews,_groundStackViews,_mercenaryViewRegistry,_groundResourcesContainer,_gridRenderer,_worldManager);
+        }
+    }
+
+    private void MaterializeResources()
+    {
+        if(_worldManager==null||_gridRenderer==null||_resourceNodesContainer==null||_groundResourcesContainer==null||!_worldManager.TryGetResourceSession(out ResourceSessionV3? resources)||resources==null)return;
+        int created=ResourceMaterializationCoordinatorV3.MaterializeNodes(resources,_resourceNodesContainer,_gridRenderer,_resourceNodeViews);
+        foreach(string id in resources.GroundStacks.GetAllStackIds())if(resources.GroundStacks.TryGet(id,out GroundResourceStackV3? stack)&&stack!=null)ResourceMaterializationCoordinatorV3.MaterializeOrRefreshStack(stack,resources,_groundResourcesContainer,_gridRenderer,_groundStackViews);
+        _worldManager.SetResourceRuntimeDiagnostics(_resourceNodeViews.GetIds(),_groundStackViews.GetIds());
+        GD.Print($"[ResourceCoreV3] views nodes={_resourceNodeViews.Count} stacks={_groundStackViews.Count} created={created}");
+    }
+
+    private void CenterCameraOnInitialDeploymentOrPlayerStart()
+    {
+        if (_camera == null || _worldManager == null)
+        {
+            return;
+        }
+
+        if (_worldManager.TryGetLocalDeployment(out GameplayV3.Deployment.CompanyDeploymentStateV3? deployment)
+            && deployment != null)
+        {
+            _camera.CenterOnGlobalCell(deployment.DeploymentAnchorCell.Value);
+            return;
+        }
+
+        CenterCameraOnPlayerStart();
+    }
+
     private void CreateLoadingOverlay()
     {
         CanvasLayer? canvasLayer = GetNodeOrNull<CanvasLayer>("CanvasLayer");
@@ -296,6 +520,7 @@ public partial class WorldV2Root : Node2D
         }
 
         _worldMapOverlay.Toggle(_worldManager);
+        _constructionUi?.SetWorldMapBlocked(_worldMapOverlay.IsOpen);
     }
 
     private bool IsWorldMapOverlayOpen()

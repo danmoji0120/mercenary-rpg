@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 
 namespace WorldV2;
@@ -12,6 +13,8 @@ public partial class WorldMapOverlayV2 : Control
     private Label? _titleLabel;
     private Label? _hintLabel;
     private Rect2 _mapRect;
+    private readonly List<DeploymentMapMarker> _deploymentMarkers = new();
+    private Vector2I? _arrivalAnchorCell;
 
     public bool IsOpen => Visible;
 
@@ -67,12 +70,14 @@ public partial class WorldMapOverlayV2 : Control
         DrawTextureRect(_texture, _mapRect, tile: false);
 
         DrawCurrentPositionMarker();
+        DrawStartingDeploymentMarkers();
     }
 
     public void ShowMap(WorldManagerV2 manager)
     {
         _manager = manager;
         _texture = manager.GetOrBuildWorldMapTexture("opened overlay");
+        CacheStartingDeploymentMarkers();
         Visible = true;
         manager.SetWorldMapOverlayVisible(true);
         UpdateLabelLayout();
@@ -114,6 +119,51 @@ public partial class WorldMapOverlayV2 : Control
             Vector2 startPosition = CellToMapPosition(_manager.V3StartingVillageCenter);
             DrawCircle(startPosition, 5.0f, new Color(1.0f, 0.88f, 0.30f, 0.82f));
         }
+    }
+
+    private void DrawStartingDeploymentMarkers()
+    {
+        if (_arrivalAnchorCell.HasValue)
+        {
+            DrawCross(CellToMapPosition(_arrivalAnchorCell.Value), 5.0f, new Color(0.72f, 1.0f, 0.98f, 0.96f));
+        }
+
+        foreach (DeploymentMapMarker marker in _deploymentMarkers)
+        {
+            Color color = marker.IsLocalCompany
+                ? new Color(0.15f, 1.0f, 0.96f, 1.0f)
+                : new Color(0.50f, 0.82f, 0.95f, 0.78f);
+            DrawCross(CellToMapPosition(marker.Cell), marker.IsLocalCompany ? 6.0f : 4.0f, color);
+        }
+    }
+
+    private void CacheStartingDeploymentMarkers()
+    {
+        _arrivalAnchorCell = null;
+        _deploymentMarkers.Clear();
+        if (_manager == null)
+        {
+            return;
+        }
+
+        if (_manager.TryGetStartingDeploymentResult(out GameplayV3.Deployment.StartingDeploymentPlacementResultV3? result)
+            && result?.ArrivalAnchorCell is GlobalCellCoord arrivalAnchor)
+        {
+            _arrivalAnchorCell = arrivalAnchor.Value;
+        }
+
+        foreach (GameplayV3.Deployment.CompanyDeploymentStateV3 deployment in _manager.GetStartingDeployments())
+        {
+            _deploymentMarkers.Add(new DeploymentMapMarker(
+                deployment.DeploymentAnchorCell.Value,
+                deployment.CompanyId == _manager.LocalCompanyId));
+        }
+    }
+
+    private void DrawCross(Vector2 position, float radius, Color color)
+    {
+        DrawLine(position + new Vector2(-radius, 0.0f), position + new Vector2(radius, 0.0f), color, 2.0f);
+        DrawLine(position + new Vector2(0.0f, -radius), position + new Vector2(0.0f, radius), color, 2.0f);
     }
 
     private Vector2 CellToMapPosition(Vector2I cell)
@@ -182,5 +232,17 @@ public partial class WorldMapOverlayV2 : Control
         }
 
         return new Vector2(Mathf.Max(1.0f, Size.X), Mathf.Max(1.0f, Size.Y));
+    }
+
+    private readonly struct DeploymentMapMarker
+    {
+        public DeploymentMapMarker(Vector2I cell, bool isLocalCompany)
+        {
+            Cell = cell;
+            IsLocalCompany = isLocalCompany;
+        }
+
+        public Vector2I Cell { get; }
+        public bool IsLocalCompany { get; }
     }
 }
