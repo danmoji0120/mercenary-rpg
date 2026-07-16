@@ -20,6 +20,8 @@ using GameplayV3.Needs.Runtime;
 using GameplayV3.Session;
 using GameplayV3.Farming;
 using GameplayV3.Farming.Runtime;
+using GameplayV3.Jobs;
+using GameplayV3.Jobs.Runtime;
 
 namespace WorldV2;
 
@@ -62,6 +64,8 @@ public partial class WorldV2Root : Node2D
     private FarmDesignationControllerV3? _farmDesignation;
     private FarmGrowthRuntimeV3? _farmGrowthRuntime;
     private FarmingWorkCoordinatorV3? _farmingWork;
+    private JobManagerRuntimeV3? _jobManagerRuntime;
+    private MercenaryWorkPriorityPanelV3? _workPriorityPanel;
     private string _pendingBedAssignmentMercenaryId=string.Empty;
     private bool _cameraInputWasLocked;
 
@@ -116,6 +120,7 @@ public partial class WorldV2Root : Node2D
                     _worldMapOverlay?.HideMap();
                     _constructionUi?.SetWorldMapBlocked(false);
                     _mercenaryInspectHud?.SetWorldMapBlocked(false);
+                    _workPriorityPanel?.SetWorldMapBlocked(false);
                     GetViewport().SetInputAsHandled();
                 }
 
@@ -132,6 +137,7 @@ public partial class WorldV2Root : Node2D
             if (keyEvent.Keycode == Key.Escape)
             {
                 _constructionUi?.HandleEscape();
+                _workPriorityPanel?.Close("Escape");
             }
 
             if (IsWorldInputLocked() && !IsDebugKeyAllowedWhileLoading(keyEvent.Keycode))
@@ -578,9 +584,20 @@ public partial class WorldV2Root : Node2D
             if(_restWork!=null)_mercenaryWorkRuntime.AttachRest(_restWork);
             if(_eatingWork!=null){_mercenaryWorkRuntime.AttachEating(_eatingWork);_worldManager.BindEatingCoordinator(_eatingWork);}
             if(_farmingWork!=null)_mercenaryWorkRuntime.AttachFarming(_farmingWork);
+            if(_farmingWork!=null&&GameplaySessionV3.TryGetFarmSession(out FarmSessionV3? jobFarm)&&jobFarm!=null&&GameplaySessionV3.TryGetJobManager(out JobManagerV3? jobManager)&&jobManager!=null)
+            {
+                _jobManagerRuntime=new JobManagerRuntimeV3{Name="JobManagerRuntimeV3"};gameplayEntities.AddChild(_jobManagerRuntime);
+                _jobManagerRuntime.Initialize(jobManager,resources,stockpiles,construction,jobFarm,mercenaries,controlSession,work,needsSession,_constructionWork,_demolitionWork,_farmingWork,navigationQuery,_worldManager);
+                if(JobManagerSelfCheckV3.TryValidate(out string jobReason))GD.Print($"[JobManagerV3] self-check PASS 100x1000={JobManagerSelfCheckV3.Last100WorkerCandidateEvaluations} candidates/{JobManagerSelfCheckV3.Last100WorkerMilliseconds:0.00}ms 300x5000={JobManagerSelfCheckV3.Last300WorkerCandidateEvaluations} candidates/{JobManagerSelfCheckV3.Last300WorkerMilliseconds:0.00}ms mainThreadChunkGenerationCount={_streamManager?.MainThreadChunkGenerationCount??0}");else GD.PushError($"[JobManagerV3] self-check FAIL: {jobReason}");
+            }
             _mercenaryInspectHud=new MercenaryInspectHudV3{Name="MercenaryInspectHudV3"};
             canvasLayer.AddChild(_mercenaryInspectHud);
             _mercenaryInspectHud.Initialize(controlSession,mercenaries,work,_worldManager,_constructionWork,_demolitionWork,needsSession,_restWork,_eatingWork,_farmingWork);
+            if(GameplaySessionV3.TryGetJobManager(out JobManagerV3? priorityJobs)&&priorityJobs!=null)
+            {
+                _workPriorityPanel=new MercenaryWorkPriorityPanelV3{Name="MercenaryWorkPriorityPanelV3"};canvasLayer.AddChild(_workPriorityPanel);_workPriorityPanel.Initialize(priorityJobs,controlSession);
+                _mercenaryInspectHud.WorkPriorityRequested+=id=>_workPriorityPanel.Toggle(id);
+            }
             _mercenaryInspectHud.BedAssignmentRequested+=id=>{_pendingBedAssignmentMercenaryId=id;_restAssignmentOverlay?.SetAssignmentMode(true,id);_constructionPlacement?.ClearActivePlacementTool();_demolitionDesignation?.SetActive(false);_stockpileDesignation?.SetMode(StockpileDesignationModeV3.None);_worldManager.UpdateDebugHud("배정할 간이 침대를 클릭하세요.");};
         }
     }
@@ -688,6 +705,7 @@ public partial class WorldV2Root : Node2D
         if(_worldMapOverlay.IsOpen){CancelBedAssignmentMode();_constructionPlacement?.ClearActivePlacementTool();_farmDesignation?.SetActive(false);}
         _constructionUi?.SetWorldMapBlocked(_worldMapOverlay.IsOpen);
         _mercenaryInspectHud?.SetWorldMapBlocked(_worldMapOverlay.IsOpen);
+        _workPriorityPanel?.SetWorldMapBlocked(_worldMapOverlay.IsOpen);
     }
 
     private bool IsWorldMapOverlayOpen()

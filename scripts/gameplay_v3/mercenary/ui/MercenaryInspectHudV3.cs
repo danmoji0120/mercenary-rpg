@@ -46,7 +46,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
     private readonly Button[] _selectionButtons = new Button[MaximumVisibleSelectionRows];
     private readonly string[] _selectionButtonIds = new string[MaximumVisibleSelectionRows];
     private Button? _cancelButton;
-    private Label? _bedLabel;private Button? _assignBedButton;private Button? _unassignBedButton;private Button? _restButton;private Label? _foodLabel;private Button? _eatButton;private MercenaryNeedsSessionV3? _needs;private RestWorkCoordinatorV3? _restWork;private EatingWorkCoordinatorV3? _eatingWork;
+    private Label? _bedLabel;private Button? _assignBedButton;private Button? _unassignBedButton;private Button? _restButton;private Label? _foodLabel;private Button? _eatButton;private Button? _workPriorityButton;private MercenaryNeedsSessionV3? _needs;private RestWorkCoordinatorV3? _restWork;private EatingWorkCoordinatorV3? _eatingWork;
     private double _refreshAccumulator;
     private bool _worldMapBlocked;
 
@@ -61,6 +61,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
     public float DisplayedProgress { get; private set; }
     public bool WorldMapBlocked => _worldMapBlocked;
     public event Action<string>? BedAssignmentRequested;
+    public event Action<string>? WorkPriorityRequested;
 
     public void Initialize(
         MercenaryControlSessionV3 control,
@@ -236,7 +237,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
         stats.AddChild(_derivedLabel);
         columns.AddChild(stats);
         root.AddChild(columns);
-        HBoxContainer restFooter=new(){Name="RestFooter"};restFooter.AddThemeConstantOverride("separation",4);_bedLabel=MakeLabel("침대: 미배정",11,new Color(.72f,.76f,.8f));_bedLabel.SizeFlagsHorizontal=SizeFlags.ExpandFill;restFooter.AddChild(_bedLabel);_assignBedButton=new Button{Text="배정/재배정",CustomMinimumSize=new Vector2(86,24),MouseFilter=MouseFilterEnum.Stop};_assignBedButton.Pressed+=()=>{LastAction="BedAssignmentRequested";BedAssignmentRequested?.Invoke(DisplayedMercenaryId);GetViewport().SetInputAsHandled();};restFooter.AddChild(_assignBedButton);_unassignBedButton=new Button{Text="해제",CustomMinimumSize=new Vector2(42,24),MouseFilter=MouseFilterEnum.Stop};_unassignBedButton.Pressed+=OnUnassignBed;restFooter.AddChild(_unassignBedButton);_restButton=new Button{Text="휴식",CustomMinimumSize=new Vector2(48,24),MouseFilter=MouseFilterEnum.Stop};_restButton.Pressed+=OnRestPressed;restFooter.AddChild(_restButton);root.AddChild(restFooter);HBoxContainer foodFooter=new(){Name="FoodFooter"};foodFooter.AddThemeConstantOverride("separation",4);_foodLabel=MakeLabel("식량: 비상식량 없음",11,new Color(.82f,.72f,.48f));_foodLabel.SizeFlagsHorizontal=SizeFlags.ExpandFill;foodFooter.AddChild(_foodLabel);_eatButton=new Button{Text="식사",CustomMinimumSize=new Vector2(48,24),MouseFilter=MouseFilterEnum.Stop};_eatButton.Pressed+=OnEatPressed;foodFooter.AddChild(_eatButton);root.AddChild(foodFooter);
+        HBoxContainer restFooter=new(){Name="RestFooter"};restFooter.AddThemeConstantOverride("separation",4);_bedLabel=MakeLabel("침대: 미배정",11,new Color(.72f,.76f,.8f));_bedLabel.SizeFlagsHorizontal=SizeFlags.ExpandFill;restFooter.AddChild(_bedLabel);_assignBedButton=new Button{Text="배정/재배정",CustomMinimumSize=new Vector2(86,24),MouseFilter=MouseFilterEnum.Stop};_assignBedButton.Pressed+=()=>{LastAction="BedAssignmentRequested";BedAssignmentRequested?.Invoke(DisplayedMercenaryId);GetViewport().SetInputAsHandled();};restFooter.AddChild(_assignBedButton);_unassignBedButton=new Button{Text="해제",CustomMinimumSize=new Vector2(42,24),MouseFilter=MouseFilterEnum.Stop};_unassignBedButton.Pressed+=OnUnassignBed;restFooter.AddChild(_unassignBedButton);_restButton=new Button{Text="휴식",CustomMinimumSize=new Vector2(48,24),MouseFilter=MouseFilterEnum.Stop};_restButton.Pressed+=OnRestPressed;restFooter.AddChild(_restButton);root.AddChild(restFooter);HBoxContainer foodFooter=new(){Name="FoodFooter"};foodFooter.AddThemeConstantOverride("separation",4);_foodLabel=MakeLabel("식량: 비상식량 없음",11,new Color(.82f,.72f,.48f));_foodLabel.SizeFlagsHorizontal=SizeFlags.ExpandFill;foodFooter.AddChild(_foodLabel);_eatButton=new Button{Text="식사",CustomMinimumSize=new Vector2(48,24),MouseFilter=MouseFilterEnum.Stop};_eatButton.Pressed+=OnEatPressed;foodFooter.AddChild(_eatButton);_workPriorityButton=new Button{Text="작업 우선순위",CustomMinimumSize=new Vector2(92,24),MouseFilter=MouseFilterEnum.Stop};_workPriorityButton.Pressed+=()=>{LastAction="WorkPriorityRequested";WorkPriorityRequested?.Invoke(DisplayedMercenaryId);GetViewport().SetInputAsHandled();};foodFooter.AddChild(_workPriorityButton);root.AddChild(foodFooter);
         return root;
     }
 
