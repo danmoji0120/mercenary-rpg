@@ -72,9 +72,10 @@ public partial class MercenaryEntityV3 : Node2D
         }
         if(_carrying)
         {
-            Color carryColor=_carryType==ResourceTypeV3.Wood?new Color(0.72f,0.40f,0.16f):new Color(0.72f,0.76f,0.82f);
+            Color carryColor=_carryType switch{ResourceTypeV3.Wood=>new Color(0.72f,0.40f,0.16f),ResourceTypeV3.Potato=>new Color(.72f,.50f,.24f),ResourceTypeV3.Ration=>new Color(.82f,.66f,.30f),_=>new Color(0.72f,0.76f,0.82f)};
             DrawCircle(new Vector2(9.0f,7.0f),5.5f,new Color(0.04f,0.06f,0.07f,0.95f));
-            DrawString(ThemeDB.FallbackFont,new Vector2(5.5f,10.0f),$"{(_carryType==ResourceTypeV3.Wood?'W':'S')}{_carryAmount}",HorizontalAlignment.Left,-1,7,carryColor);
+            char carryCode=_carryType switch{ResourceTypeV3.Wood=>'W',ResourceTypeV3.Stone=>'S',ResourceTypeV3.Ration=>'R',ResourceTypeV3.Potato=>'P',_=>'?'};
+            DrawString(ThemeDB.FallbackFont,new Vector2(5.5f,10.0f),$"{carryCode}{_carryAmount}",HorizontalAlignment.Left,-1,7,carryColor);
         }
     }
 

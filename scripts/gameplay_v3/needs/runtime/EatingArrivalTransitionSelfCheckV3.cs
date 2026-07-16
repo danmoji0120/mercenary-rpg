@@ -36,7 +36,7 @@ public static class EatingArrivalTransitionSelfCheckV3
         control.AttachWorkSession(work);
         MercenaryNeedsSessionV3 needs = new(1);
         needs.EnsureMercenaries(mercenaries.Registry);
-        needs.Hunger.EnsureForMercenary(mercenaryId).TrySetHunger(.70f, out _);
+        needs.Hunger.EnsureForMercenary(mercenaryId).TrySetHunger(.65f, out _);
         GlobalCellCoord foodCell = new(new Vector2I(7, 4));
         resources.GroundStacks.TryAddStack(ResourceTypeV3.Ration, 18, foodCell, out var food, out _, out _);
         EatingWorkCoordinatorV3 coordinator = new(needs, resources, mercenaries, control, work, new TestQuery(bounds), playerId, companyId);
@@ -52,14 +52,14 @@ public static class EatingArrivalTransitionSelfCheckV3
         if (!coordinator.Diagnostics.LastArrivalMatched || coordinator.Diagnostics.LastEatingTransition != "MovingToFood->Eating")
         { reason = "Eating arrival diagnostics did not record a matched transition."; return false; }
         coordinator.Tick(2.99f);
-        if (resources.GroundStacks.GetTotalAmount(ResourceTypeV3.Ration) != 18 || Math.Abs(needs.Hunger.GetHunger(mercenaryId) - .70f) > .001f)
+        if (resources.GroundStacks.GetTotalAmount(ResourceTypeV3.Ration) != 18 || Math.Abs(needs.Hunger.GetHunger(mercenaryId) - .65f) > .001f)
         { reason = "Eating consumed before three seconds."; return false; }
         coordinator.Tick(.01f);
-        if (resources.GroundStacks.GetTotalAmount(ResourceTypeV3.Ration) != 17 || Math.Abs(needs.Hunger.GetHunger(mercenaryId) - .25f) > .001f || resources.AmountReservations.Count != 0 || resources.ConsumptionLedger.GetConsumedAmount(ResourceTypeV3.Ration) != 1 || worker.ActivityState != MercenaryActivityStateV3.Idle)
+        if (resources.GroundStacks.GetTotalAmount(ResourceTypeV3.Ration) != 17 || Math.Abs(needs.Hunger.GetHunger(mercenaryId) - .20f) > .001f || resources.AmountReservations.Count != 0 || resources.ConsumptionLedger.GetConsumedAmount(ResourceTypeV3.Ration) != 1 || worker.ActivityState != MercenaryActivityStateV3.Idle)
         { reason = "Three-second eating completion invariants failed."; return false; }
 
         worker.TrySetCurrentCell(new(new Vector2I(4, 4)), out _);
-        needs.Hunger.EnsureForMercenary(mercenaryId).TrySetHunger(.70f, out _);
+        needs.Hunger.EnsureForMercenary(mercenaryId).TrySetHunger(.65f, out _);
         if (!coordinator.TryIssueAuto(mercenaryId, out reason) || !coordinator.TryGet(mercenaryId, out eating) || eating == null || !control.ExternalMovements.TryGetActive(mercenaryId, out movement) || movement == null)
         { reason = "Auto Eat did not create a moving eating request."; return false; }
         worker.TrySetCurrentCell(foodCell, out _);
@@ -68,7 +68,7 @@ public static class EatingArrivalTransitionSelfCheckV3
         if (completion == null || !coordinator.TryHandleMovementResult(completion) || eating.Phase != EatingWorkPhaseV3.Eating)
         { reason = "Auto Eat did not share the arrival transition."; return false; }
         coordinator.Cancel(mercenaryId, "CancelledByDirectMove");
-        if (resources.AmountReservations.Count != 0 || Math.Abs(needs.Hunger.GetHunger(mercenaryId) - .70f) > .001f)
+        if (resources.AmountReservations.Count != 0 || Math.Abs(needs.Hunger.GetHunger(mercenaryId) - .65f) > .001f)
         { reason = "Direct Move cancellation leaked or consumed the food reservation."; return false; }
 
         worker.TrySetCurrentCell(new(new Vector2I(4, 4)), out _);
@@ -95,7 +95,7 @@ public static class EatingArrivalTransitionSelfCheckV3
         worker.TrySetCurrentCell(foodCell, out _);
         control.ExternalMovements.Complete(movement, true, string.Empty);
         control.ExternalMovements.TryDequeueResult(out completion);
-        if (completion == null || !coordinator.TryHandleMovementResult(completion) || coordinator.ActiveCount != 0 || resources.AmountReservations.Count != 0 || coordinator.Diagnostics.LastEatingTransitionFailure != "FoodStackInvalidAtArrival" || Math.Abs(needs.Hunger.GetHunger(mercenaryId) - .70f) > .001f || resources.ConsumptionLedger.GetConsumedAmount(ResourceTypeV3.Ration) != 1)
+        if (completion == null || !coordinator.TryHandleMovementResult(completion) || coordinator.ActiveCount != 0 || resources.AmountReservations.Count != 0 || coordinator.Diagnostics.LastEatingTransitionFailure != "FoodStackInvalidAtArrival" || Math.Abs(needs.Hunger.GetHunger(mercenaryId) - .65f) > .001f || resources.ConsumptionLedger.GetConsumedAmount(ResourceTypeV3.Ration) != 1)
         { reason = "Removed food stack did not fail terminally without Eating side effects."; return false; }
 
         reason = string.Empty;

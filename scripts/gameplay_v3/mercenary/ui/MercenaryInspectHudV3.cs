@@ -5,6 +5,7 @@ using GameplayV3.Control;
 using GameplayV3.Work;
 using GameplayV3.Needs;
 using GameplayV3.Needs.Runtime;
+using GameplayV3.Farming.Runtime;
 using Godot;
 using WorldV2;
 
@@ -68,7 +69,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
         WorldManagerV2 manager,
         ConstructionWorkCoordinatorV3? construction,
         DemolitionWorkCoordinatorV3? demolition,
-        MercenaryNeedsSessionV3? needs=null,RestWorkCoordinatorV3? restWork=null,EatingWorkCoordinatorV3? eatingWork=null)
+        MercenaryNeedsSessionV3? needs=null,RestWorkCoordinatorV3? restWork=null,EatingWorkCoordinatorV3? eatingWork=null,FarmingWorkCoordinatorV3? farmingWork=null)
     {
         _control = control;
         _manager = manager;
@@ -81,7 +82,8 @@ public partial class MercenaryInspectHudV3 : Godot.Control
             needs==null?new PlaceholderMercenaryConditionSnapshotProviderV3():new MixedMercenaryConditionSnapshotProviderV3(needs),
             construction,
             demolition,
-            eatingWork);
+            eatingWork,
+            farmingWork);
         BuildInterface();
         _control.Selection.SelectionChanged += OnSelectionChanged;
         if (MercenaryConditionSelfCheckV3.TryValidate(out string reason))
@@ -376,7 +378,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
         _workProgress.Value = value.ProgressNormalized * 100f;
         _workProgressText.Text = value.HasProgress ? $"{value.Progress:0.0}/{value.Required:0.0}" : string.Empty;
         _cancelButton!.Disabled = string.IsNullOrEmpty(value.WorkRequestId);
-        RestAssignmentV3? bed=null;bool assigned=_needs!=null&&_needs.Assignments.TryGetByMercenary(value.MercenaryId,out bed)&&bed!=null;_bedLabel!.Text=assigned?$"침대: {ShortId(bed!.StructureId)} / 슬롯 {bed.SlotIndex}":"침대: 미배정";_unassignBedButton!.Disabled=!assigned;_restButton!.Disabled=!assigned||value.Condition.FatigueNormalized<=(_needs?.Settings.ManualRestMinimum??.2f);int ration=_eatingWork?.GetAvailableRationAmount()??0;float hunger=_needs?.Hunger.GetHunger(value.MercenaryId)??value.Condition.HungerNormalized;_foodLabel!.Text=ration>0?$"식량: 비상식량 {ration} · {HungerPolicyV3.Stage(hunger)}":"식량: 비상식량 없음 · "+HungerPolicyV3.Stage(hunger);_eatButton!.Disabled=_eatingWork==null||ration<1||hunger<(_needs?.HungerConfig.ManualEatMinimumHunger??.2f);
+        RestAssignmentV3? bed=null;bool assigned=_needs!=null&&_needs.Assignments.TryGetByMercenary(value.MercenaryId,out bed)&&bed!=null;_bedLabel!.Text=assigned?$"침대: {ShortId(bed!.StructureId)} / 슬롯 {bed.SlotIndex}":"침대: 미배정";_unassignBedButton!.Disabled=!assigned;_restButton!.Disabled=!assigned||value.Condition.FatigueNormalized<=(_needs?.Settings.ManualRestMinimum??.2f);int ration=_eatingWork?.GetAvailableFoodAmount(GameplayV3.Resources.ResourceTypeV3.Ration)??0;int potato=_eatingWork?.GetAvailableFoodAmount(GameplayV3.Resources.ResourceTypeV3.Potato)??0;float hunger=_needs?.Hunger.GetHunger(value.MercenaryId)??value.Condition.HungerNormalized;string meal="";if(_eatingWork?.TryPreviewMeal(value.MercenaryId,out _,out var preview,out _)==true)meal=$" · 예정 {preview.PlannedUnits}개/{preview.PlannedCalories}kcal";_foodLabel!.Text=$"식량: 비상식량 {ration} / 감자 {potato} · {HungerPolicyV3.Stage(hunger)}{meal}";_eatButton!.Disabled=_eatingWork==null||ration+potato<1||hunger<(_needs?.HungerConfig.ManualEatMinimumHunger??.2f);
 
         MercenaryConditionSnapshotV3 condition = value.Condition;
         _conditionDetail!.Text = $"{condition.HealthSummary} · {condition.InjurySummary}\n{condition.TreatmentSummary}";

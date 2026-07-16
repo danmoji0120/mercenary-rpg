@@ -3,6 +3,8 @@ using GameplayV3.Control;
 using GameplayV3.Work;
 using GameplayV3.Needs.Runtime;
 using GameplayV3.Needs;
+using GameplayV3.Farming;
+using GameplayV3.Farming.Runtime;
 using Godot;
 using WorldV2;
 
@@ -58,6 +60,8 @@ public static class MercenaryHudTextFormatterV3
         WorkTypeV3.Construction => "건설",
         WorkTypeV3.Demolition => "철거",
         WorkTypeV3.Eating => "식사",
+        WorkTypeV3.Sowing => "파종",
+        WorkTypeV3.Harvesting => "수확",
         _ => "확인 필요"
     };
 
@@ -66,6 +70,7 @@ public static class MercenaryHudTextFormatterV3
         "Wood" => "목재",
         "Stone" => "석재",
         "Ration" => "비상식량",
+        "Potato" => "감자",
         _ => "자원"
     };
 
@@ -112,6 +117,7 @@ public sealed class MercenaryInspectHudSnapshotBuilderV3
     private readonly ConstructionWorkCoordinatorV3? _construction;
     private readonly DemolitionWorkCoordinatorV3? _demolition;
     private readonly EatingWorkCoordinatorV3? _eating;
+    private readonly FarmingWorkCoordinatorV3? _farming;
     private readonly IMercenaryConditionSnapshotProviderV3 _conditions;
     private readonly string _companyName;
 
@@ -123,7 +129,8 @@ public sealed class MercenaryInspectHudSnapshotBuilderV3
         IMercenaryConditionSnapshotProviderV3 conditions,
         ConstructionWorkCoordinatorV3? construction,
         DemolitionWorkCoordinatorV3? demolition,
-        EatingWorkCoordinatorV3? eating=null)
+        EatingWorkCoordinatorV3? eating=null,
+        FarmingWorkCoordinatorV3? farming=null)
     {
         _mercenaries = mercenaries;
         _control = control;
@@ -133,6 +140,7 @@ public sealed class MercenaryInspectHudSnapshotBuilderV3
         _construction = construction;
         _demolition = demolition;
         _eating=eating;
+        _farming=farming;
     }
 
     public bool TryBuild(string mercenaryId, out MercenaryInspectHudSnapshotV3? snapshot)
@@ -169,7 +177,8 @@ public sealed class MercenaryInspectHudSnapshotBuilderV3
             value.Carry = $"{MercenaryHudTextFormatterV3.Resource(carry.ResourceType)} {carry.Amount} / {value.MaxCarryUnits}";
         }
 
-        if(_eating?.TryGet(mercenaryId,out var eating)==true&&eating!=null){value.WorkRequestId=eating.WorkRequestId;value.WorkType="식사";value.Status=eating.Phase==EatingWorkPhaseV3.MovingToFood?"비상식량으로 이동 중":"식사 중";value.CommandSource=eating.CommandSource==EatingCommandSourceV3.DirectOrder?"직접 명령":"필요 행동";value.Phase=eating.Phase==EatingWorkPhaseV3.MovingToFood?"식량으로 이동":"식사 중";value.Target="비상식량";value.Destination=eating.InteractionCell;value.Progress=eating.EatingProgressSeconds;value.Required=eating.EatingDurationSeconds;value.HasProgress=eating.Phase==EatingWorkPhaseV3.Eating;snapshot=value;return true;}
+        if(_eating?.TryGet(mercenaryId,out var eating)==true&&eating!=null){value.WorkRequestId=eating.WorkRequestId;value.WorkType="식사";value.Status=eating.Phase==EatingWorkPhaseV3.MovingToFood?$"{eating.FoodDisplayName}(으)로 이동 중":"식사 중";value.CommandSource=eating.CommandSource==EatingCommandSourceV3.DirectOrder?"직접 명령":"필요 행동";value.Phase=eating.Phase==EatingWorkPhaseV3.MovingToFood?"식량으로 이동":"식사 중";value.Target=$"{eating.FoodDisplayName} {eating.PlannedUnits}";value.Destination=eating.InteractionCell;value.Progress=eating.EatingProgressSeconds;value.Required=eating.EatingDurationSeconds;value.HasProgress=eating.Phase==EatingWorkPhaseV3.Eating;snapshot=value;return true;}
+        if(_farming?.TryGet(mercenaryId,out var farming)==true&&farming!=null){value.WorkRequestId=farming.WorkRequestId;value.WorkType=farming.Action==FarmingActionV3.Sowing?"파종":"수확";value.Status=farming.Phase==FarmingWorkPhaseV3.MovingToFarmCell?"밭으로 이동 중":value.WorkType+" 중";value.CommandSource="직접 명령";value.Phase=farming.Phase.ToString();value.Target="감자밭";value.Destination=farming.TargetCell;value.Progress=farming.ProgressSeconds;value.Required=farming.RequiredDurationSeconds;value.HasProgress=farming.Phase is FarmingWorkPhaseV3.Sowing or FarmingWorkPhaseV3.Harvesting;snapshot=value;return true;}
 
         if (_construction?.TryGetHudSnapshot(mercenaryId, out ConstructionWorkHudSnapshotV3 construction) == true)
         {

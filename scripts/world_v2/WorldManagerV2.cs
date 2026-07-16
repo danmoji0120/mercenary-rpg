@@ -14,6 +14,7 @@ using GameplayV3.Stockpile;
 using GameplayV3.Construction;
 using GameplayV3.Needs;
 using GameplayV3.Needs.Runtime;
+using GameplayV3.Farming;
 using Godot;
 
 namespace WorldV2;
@@ -250,6 +251,8 @@ public partial class WorldManagerV2 : Node
     public void BindEatingCoordinator(EatingWorkCoordinatorV3? coordinator)=>_eatingWorkCoordinator=coordinator;
     public int ReservedSourceStackCount=>_workSession?.SourceStackReservations.Count??0;public int CarryingMercenaryCount=>_workSession?.Carries.Count??0;public int ActiveHaulingRequestCount=>_workSession?.ActiveHaulingRequestCount??0;
     public int WoodAmountInStockpile=>GetStockpileAmount(ResourceTypeV3.Wood);public int StoneAmountInStockpile=>GetStockpileAmount(ResourceTypeV3.Stone);public int GroundAmountOutsideStockpile=>GetOutsideStockpileAmount();
+    public int GroundRationAmount=>_resourceSession?.GroundStacks.GetTotalAmount(ResourceTypeV3.Ration)??0;public int GroundPotatoAmount=>_resourceSession?.GroundStacks.GetTotalAmount(ResourceTypeV3.Potato)??0;public int ConsumedRationAmount=>_resourceSession?.ConsumptionLedger.GetConsumedAmount(ResourceTypeV3.Ration)??0;public int ConsumedPotatoAmount=>_resourceSession?.ConsumptionLedger.GetConsumedAmount(ResourceTypeV3.Potato)??0;public int GeneratedPotatoAmount=>_resourceSession?.GenerationLedger.GetGeneratedAmount(ResourceTypeV3.Potato)??0;
+    public int FarmPlotCount=>GameplaySessionV3.TryGetFarmSession(out var farm)&&farm!=null?farm.Plots.Count:0;public int FarmCellCount=>GameplaySessionV3.TryGetFarmSession(out var farm)&&farm!=null?farm.Plots.CellCount:0;public int EmptyFarmCellCount=>GameplaySessionV3.TryGetFarmSession(out var farm)&&farm!=null?farm.Plots.GetStageCount(CropStageV3.Empty):0;public int GrowingCropCount=>GameplaySessionV3.TryGetFarmSession(out var farm)&&farm!=null?farm.Plots.GetStageCount(CropStageV3.Growing):0;public int MatureCropCount=>GameplaySessionV3.TryGetFarmSession(out var farm)&&farm!=null?farm.Plots.GetStageCount(CropStageV3.Mature):0;public int FarmReservationCount=>GameplaySessionV3.TryGetFarmSession(out var farm)&&farm!=null?farm.Reservations.Count:0;public int ActiveFarmingWorkCount=>GameplaySessionV3.TryGetFarmSession(out var farm)&&farm!=null?farm.Works.Count:0;public int FarmGrowthTickCount=>GameplaySessionV3.TryGetFarmSession(out var farm)&&farm!=null?farm.Diagnostics.GrowthTickCount:0;public string LastFarmFailureReason=>GameplaySessionV3.TryGetFarmSession(out var farm)&&farm!=null?farm.Diagnostics.LastFailureReason:string.Empty;
 
     private readonly ProceduralWorldGeneratorV2 _generator = new();
     private readonly Dictionary<Vector2I, SectorMetadata> _metadataBySector = new();
@@ -685,6 +688,7 @@ public partial class WorldManagerV2 : Node
     public bool TryGetStockpileSession(out StockpileSessionV3? stockpileSession){stockpileSession=_stockpileSession;return stockpileSession!=null;}
     public bool TryGetConstructionSession(out ConstructionSessionV3? constructionSession){constructionSession=_constructionSession;return constructionSession!=null;}
     public bool TryGetNeedsSession(out MercenaryNeedsSessionV3? needsSession)=>GameplaySessionV3.TryGetNeedsSession(out needsSession);
+    public bool TryGetFarmSession(out FarmSessionV3? farmSession)=>GameplaySessionV3.TryGetFarmSession(out farmSession);
 
     public bool CanPlayerControlMercenary(string playerId, string mercenaryId)
     {
@@ -1136,6 +1140,7 @@ public partial class WorldManagerV2 : Node
         if(HungerEatingSelfCheckV3.TryValidate(out string hungerReason))GD.Print("[HungerV3] Self-check PASS");else GD.PushError($"[HungerV3] Self-check FAIL: {hungerReason}");
         if(EatingRuntimeSelfCheckV3.TryValidate(out string eatingReason))GD.Print("[EatingV3] Runtime self-check PASS");else GD.PushError($"[EatingV3] Runtime self-check FAIL: {eatingReason}");
         if(EatingArrivalTransitionSelfCheckV3.TryValidate(out string eatingArrivalReason))GD.Print("[EatingV3] Arrival transition self-check PASS");else GD.PushError($"[EatingV3] Arrival transition self-check FAIL: {eatingArrivalReason}");
+        if(FarmingSelfCheckV3.TryValidate(out string farmingReason))GD.Print("[FarmingV3] Self-check PASS");else GD.PushError($"[FarmingV3] Self-check FAIL: {farmingReason}");
 #endif
         UpdateDebugHud();
     }
@@ -1295,7 +1300,7 @@ public partial class WorldManagerV2 : Node
         GD.Print($"[ConstructionUiV3] trayOpen={ConstructionTrayOpen} activeTool={ActiveConstructionTool} stockpileMode={StockpileDesignationMode} blockedByWorldMap={ConstructionUiInputBlockedByWorldMap} lastAction={LastConstructionUiAction}");
         GD.Print($"[MercenaryInspectHudV3] visible={MercenaryInspectHudVisible} mode={MercenaryInspectHudMode} selected={MercenaryInspectHudSelectedCount} mercenary={MercenaryInspectHudDisplayedId} work={MercenaryInspectHudWorkType} phase={MercenaryInspectHudWorkPhase} carry={MercenaryInspectHudCarry} progress={MercenaryInspectHudProgress:0.000} refresh={MercenaryInspectHudRefreshCount} reason={MercenaryInspectHudLastRefreshReason} blockedByMap={MercenaryInspectHudInputBlockedByWorldMap} panelRect={MercenaryInspectHudGlobalRect} trayRect={ConstructionUiGlobalRect} overlapsTray={MercenaryInspectHudOverlapsConstructionTray} lastAction={MercenaryInspectHudLastAction}");
         GD.Print($"[MercenaryInspectHudV3] conditionSource={MercenaryConditionDataSource} placeholder={MercenaryConditionSnapshotIsPlaceholder} affectsGameplay={MercenaryConditionAffectsGameplay} health={MercenaryInspectHealth:0.000} fullness={MercenaryInspectFullness:0.000} rest={MercenaryInspectRest:0.000} morale={MercenaryInspectMorale:0.000}");
-        if(GameplaySessionV3.TryGetNeedsSession(out var needs)&&needs!=null){string selected=MercenaryInspectHudDisplayedId;float hunger=string.IsNullOrEmpty(selected)?0:needs.Hunger.GetHunger(selected);GD.Print($"[HungerV3] states={needs.Hunger.Count} selected={selected} hunger={hunger:0.000} fullness={1-hunger:0.000} stage={HungerPolicyV3.Stage(hunger)} hungerMultiplier={needs.HungerWorkMultiplier(selected)} combinedMultiplier={needs.WorkMultiplier(selected)} ticks={needs.HungerTickCount}");}if(_resourceSession!=null)GD.Print($"[EatingV3] rationGround={_resourceSession.GroundStacks.GetTotalAmount(ResourceTypeV3.Ration)} reserved={_resourceSession.AmountReservations.GetReservedAmount(_resourceSession.InitialRationStackId)} consumed={_resourceSession.ConsumptionLedger.GetConsumedAmount(ResourceTypeV3.Ration)}");PrintEatingArrivalDiagnostics();
+        if(GameplaySessionV3.TryGetNeedsSession(out var needs)&&needs!=null){string selected=MercenaryInspectHudDisplayedId;float hunger=string.IsNullOrEmpty(selected)?0:needs.Hunger.GetHunger(selected);GD.Print($"[HungerV3] states={needs.Hunger.Count} selected={selected} hunger={hunger:0.000} fullness={1-hunger:0.000} stage={HungerPolicyV3.Stage(hunger)} hungerMultiplier={needs.HungerWorkMultiplier(selected)} combinedMultiplier={needs.WorkMultiplier(selected)} ticks={needs.HungerTickCount}");}if(_resourceSession!=null)GD.Print($"[EatingV3] rationGround={_resourceSession.GroundStacks.GetTotalAmount(ResourceTypeV3.Ration)} potatoGround={_resourceSession.GroundStacks.GetTotalAmount(ResourceTypeV3.Potato)} rationConsumed={_resourceSession.ConsumptionLedger.GetConsumedAmount(ResourceTypeV3.Ration)} potatoConsumed={_resourceSession.ConsumptionLedger.GetConsumedAmount(ResourceTypeV3.Potato)} potatoGenerated={_resourceSession.GenerationLedger.GetGeneratedAmount(ResourceTypeV3.Potato)}");if(GameplaySessionV3.TryGetFarmSession(out var farm)&&farm!=null)GD.Print($"[FarmingV3] plots={farm.Plots.Count} cells={farm.Plots.CellCount} activeWork={farm.Works.Count} reservations={farm.Reservations.Count} growthTicks={farm.Diagnostics.GrowthTickCount} sowed={farm.Diagnostics.CompletedSowingCount} harvested={farm.Diagnostics.CompletedHarvestCount} failure={farm.Diagnostics.LastFailureReason}");PrintEatingArrivalDiagnostics();
         GD.Print($"[ConstructionV3] blueprints={ConstructionBlueprintCount} structures={ConstructionStructureCount} blockingCells={ConstructionBlockingCellCount} reservations={ConstructionReservationCount} occupancyRevision={ConstructionOccupancyRevision}");
         if(_workSession==null){GD.Print("[WorkCoreV3] initialized=false");return;}
         MercenaryWorkDiagnosticsV3 diagnostics=_workSession.Diagnostics;

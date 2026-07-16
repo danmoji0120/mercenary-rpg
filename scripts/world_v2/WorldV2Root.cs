@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 using GameplayV3.Control;
 using GameplayV3.Control.Runtime;
@@ -17,6 +18,8 @@ using GameplayV3.Construction.Runtime;
 using GameplayV3.Needs;
 using GameplayV3.Needs.Runtime;
 using GameplayV3.Session;
+using GameplayV3.Farming;
+using GameplayV3.Farming.Runtime;
 
 namespace WorldV2;
 
@@ -55,6 +58,10 @@ public partial class WorldV2Root : Node2D
     private RestWorkCoordinatorV3? _restWork;
     private EatingWorkCoordinatorV3? _eatingWork;
     private RestAssignmentOverlayV3? _restAssignmentOverlay;
+    private FarmWorldOverlayV3? _farmOverlay;
+    private FarmDesignationControllerV3? _farmDesignation;
+    private FarmGrowthRuntimeV3? _farmGrowthRuntime;
+    private FarmingWorkCoordinatorV3? _farmingWork;
     private string _pendingBedAssignmentMercenaryId=string.Empty;
     private bool _cameraInputWasLocked;
 
@@ -133,6 +140,13 @@ public partial class WorldV2Root : Node2D
             }
 
             if (_worldManager?.PlanVersion == WorldPlanVersionV2.V3
+                && _farmDesignation?.TryHandleInput(@event) == true)
+            {
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
+            if (_worldManager?.PlanVersion == WorldPlanVersionV2.V3
                 && _constructionPlacement?.TryHandleInput(@event) == true)
             {
                 GetViewport().SetInputAsHandled();
@@ -164,6 +178,15 @@ public partial class WorldV2Root : Node2D
             && TryHandleBedAssignment(@event))
         {
             GetViewport().SetInputAsHandled();return;
+        }
+
+        if (_worldManager?.PlanVersion == WorldPlanVersionV2.V3
+            && !IsWorldInputLocked()
+            && !IsWorldMapOverlayOpen()
+            && ((_farmDesignation?.TryHandleInput(@event) == true)||TryHandleFarmingAction(@event)))
+        {
+            GetViewport().SetInputAsHandled();
+            return;
         }
 
         if (_worldManager?.PlanVersion == WorldPlanVersionV2.V3
@@ -271,12 +294,14 @@ public partial class WorldV2Root : Node2D
                 _worldManager.RegenerateVisibleChunks(clearRuntimeStructures: false);
                 _stockpileOverlay?.Refresh();
                 _constructionOverlay?.Refresh();
+                _farmOverlay?.Refresh();
                 _constructionPlacement?.RefreshPreview();
                 break;
             case Key.F12:
                 _worldManager.RegenerateVisibleChunks(clearRuntimeStructures: true);
                 _stockpileOverlay?.Refresh();
                 _constructionOverlay?.Refresh();
+                _farmOverlay?.Refresh();
                 _constructionPlacement?.RefreshPreview();
                 break;
             case Key.Home:
@@ -524,25 +549,38 @@ public partial class WorldV2Root : Node2D
             _mercenaryWorkRuntime.Initialize(work,controlSession,resources,mercenaries,navigationQuery,_resourceNodeViews,_groundStackViews,_mercenaryViewRegistry,_groundResourcesContainer,_gridRenderer,_worldManager,needsSession);
             _constructionOverlay=new ConstructionWorldOverlayV3{Name="ConstructionWorldOverlayV3"};gameplayEntities.AddChild(_constructionOverlay);_constructionOverlay.Initialize(construction,_gridRenderer);
             _constructionPlacement=new ConstructionPlacementControllerV3{Name="ConstructionPlacementControllerV3"};gameplayEntities.AddChild(_constructionPlacement);_constructionPlacement.Initialize(construction,resources,stockpiles,mercenaries,navigationQuery,_gridRenderer,_worldManager,_constructionOverlay);
+            if(GameplaySessionV3.TryGetFarmSession(out FarmSessionV3? farm)&&farm!=null)
+            {
+                _farmOverlay=new FarmWorldOverlayV3{Name="FarmWorldOverlayV3"};gameplayEntities.AddChild(_farmOverlay);_farmOverlay.Initialize(farm,_gridRenderer);
+                _farmDesignation=new FarmDesignationControllerV3{Name="FarmDesignationControllerV3"};gameplayEntities.AddChild(_farmDesignation);_farmDesignation.Initialize(farm,construction,resources,stockpiles,navigationQuery,_gridRenderer,_worldManager,_farmOverlay);
+                _farmGrowthRuntime=new FarmGrowthRuntimeV3{Name="FarmGrowthRuntimeV3"};gameplayEntities.AddChild(_farmGrowthRuntime);_farmGrowthRuntime.Initialize(farm);
+                _farmingWork=new FarmingWorkCoordinatorV3(farm,resources,work,controlSession,mercenaries,navigationQuery,_worldManager.LocalPlayerId,_worldManager.LocalCompanyId);
+                if(needsSession!=null)_farmingWork.AttachNeedsMultiplier(needsSession.WorkMultiplier);
+                _farmingWork.Changed+=()=>_farmOverlay?.Refresh();
+                _farmingWork.ResourcesChanged+=MaterializeResources;
+            }
             _constructionWork=new ConstructionWorkCoordinatorV3(construction,resources,stockpiles,work,controlSession,mercenaries,navigationQuery,_worldManager);_constructionWork.Changed+=()=>{_constructionOverlay?.Refresh();_restAssignmentOverlay?.Refresh();};_constructionWork.ResourcesChanged+=MaterializeResources;
             if(needsSession!=null)_constructionWork.AttachWorkMultiplier(needsSession.WorkMultiplier);
             _demolitionWork=new DemolitionWorkCoordinatorV3(construction,resources,work,controlSession,mercenaries,navigationQuery,_worldManager.LocalPlayerId,_worldManager.LocalCompanyId,_worldManager.WorldBounds,id=>{_constructionWork.CancelForDirectMove(id);_eatingWork?.Cancel(id,"SupersededByNewWork");},true);_demolitionWork.Changed+=()=>{_constructionOverlay?.Refresh();_restAssignmentOverlay?.Refresh();};_demolitionWork.ResourcesChanged+=MaterializeResources;
             if(needsSession!=null)_demolitionWork.AttachWorkMultiplier(needsSession.WorkMultiplier);
-            if(needsSession!=null){_restWork=new RestWorkCoordinatorV3(needsSession,mercenaries,controlSession,work,construction,navigationQuery);_eatingWork=new EatingWorkCoordinatorV3(needsSession,resources,mercenaries,controlSession,work,navigationQuery,_worldManager.LocalPlayerId,_worldManager.LocalCompanyId);_eatingWork.Changed+=MaterializeResources;_eatingWork.ResourcesChanged+=MaterializeResources;_restWork.AttachEatingCancellation(id=>_eatingWork.Cancel(id,"SupersededByRest"));_mercenaryNeedsRuntime?.AttachRestCoordinator(_restWork);_mercenaryNeedsRuntime?.AttachEatingCoordinator(_eatingWork);_demolitionWork.AttachRestLifecycle(_restWork.OnStructureDemolitionStarted,_restWork.OnStructureDemolitionEnded);_restAssignmentOverlay=new RestAssignmentOverlayV3{Name="RestAssignmentOverlayV3"};gameplayEntities.AddChild(_restAssignmentOverlay);_restAssignmentOverlay.Initialize(construction,needsSession,mercenaries,_gridRenderer,_worldManager.LocalCompanyId);construction.Structures.StructureRemoved+=removed=>{if(construction.Definitions.TryGetDefinition(removed.DefinitionId,out var removedDefinition)&&removedDefinition!=null)needsSession.RemoveStructure(removed.StructureId,removedDefinition,removed);_restAssignmentOverlay?.Refresh();};controlSession.Selection.SelectionChanged+=CancelBedAssignmentMode;}
+            if(needsSession!=null){_restWork=new RestWorkCoordinatorV3(needsSession,mercenaries,controlSession,work,construction,navigationQuery);_eatingWork=new EatingWorkCoordinatorV3(needsSession,resources,mercenaries,controlSession,work,navigationQuery,_worldManager.LocalPlayerId,_worldManager.LocalCompanyId);_eatingWork.ResourcesChanged+=MaterializeResources;_restWork.AttachEatingCancellation(id=>_eatingWork.Cancel(id,"SupersededByRest"));_mercenaryNeedsRuntime?.AttachRestCoordinator(_restWork);_mercenaryNeedsRuntime?.AttachEatingCoordinator(_eatingWork);_demolitionWork.AttachRestLifecycle(_restWork.OnStructureDemolitionStarted,_restWork.OnStructureDemolitionEnded);_restAssignmentOverlay=new RestAssignmentOverlayV3{Name="RestAssignmentOverlayV3"};gameplayEntities.AddChild(_restAssignmentOverlay);_restAssignmentOverlay.Initialize(construction,needsSession,mercenaries,_gridRenderer,_worldManager.LocalCompanyId);construction.Structures.StructureRemoved+=removed=>{if(construction.Definitions.TryGetDefinition(removed.DefinitionId,out var removedDefinition)&&removedDefinition!=null)needsSession.RemoveStructure(removed.StructureId,removedDefinition,removed);_restAssignmentOverlay?.Refresh();};controlSession.Selection.SelectionChanged+=CancelBedAssignmentMode;}
             _demolitionDesignation=new DemolitionDesignationControllerV3{Name="DemolitionDesignationControllerV3"};gameplayEntities.AddChild(_demolitionDesignation);_demolitionDesignation.Initialize(construction,_gridRenderer,_worldManager,_constructionOverlay,_demolitionWork);
-            controlSession.AttachConstructionCancellation(id=>{bool changed=_constructionWork.CancelForDirectMove(id)|_demolitionWork.CancelForDirectMove(id);if(_restWork?.Cancel(id,"CancelledByDirectMove")==true)changed=true;if(_eatingWork?.Cancel(id,"CancelledByDirectMove")==true)changed=true;return changed;});
-            work.AttachExternalWorkSupersede(id=>{_demolitionWork.CancelForNewWork(id);_restWork?.Cancel(id,"SupersededByNewWork");_eatingWork?.Cancel(id,"SupersededByNewWork");});
+            controlSession.AttachConstructionCancellation(id=>{bool changed=_constructionWork.CancelForDirectMove(id)|_demolitionWork.CancelForDirectMove(id);if(_restWork?.Cancel(id,"CancelledByDirectMove")==true)changed=true;if(_eatingWork?.Cancel(id,"CancelledByDirectMove")==true)changed=true;if(_farmingWork?.Cancel(id,"CancelledByDirectMove")==true)changed=true;return changed;});
+            work.AttachExternalWorkSupersede(id=>{_demolitionWork.CancelForNewWork(id);_restWork?.Cancel(id,"SupersededByNewWork");_eatingWork?.Cancel(id,"SupersededByNewWork");_farmingWork?.Cancel(id,"SupersededByNewWork");});
             _constructionUi.ConstructionToolChanged+=HandleConstructionToolChanged;
-            _constructionUi.DemolitionToolChanged+=active=>{if(active)_constructionPlacement?.ClearActivePlacementTool();_demolitionDesignation?.SetActive(active);};
+            _constructionUi.DemolitionToolChanged+=active=>{if(active){_constructionPlacement?.ClearActivePlacementTool();_farmDesignation?.SetActive(false);}_demolitionDesignation?.SetActive(active);};
+            _constructionUi.FarmToolChanged+=active=>{if(active){_constructionPlacement?.ClearActivePlacementTool();_demolitionDesignation?.SetActive(false);_stockpileDesignation?.SetMode(StockpileDesignationModeV3.None);}_farmDesignation?.SetActive(active);};
+            if(_farmDesignation!=null)_farmDesignation.ActiveChanged+=active=>{if(!active&&_constructionUi?.ActiveConstructionTool=="PotatoFarm")_constructionUi.SetFarmTool(false);};
             _constructionPlacement.ActiveChanged+=active=>{if(active||_constructionUi==null)return;if(_constructionUi.ActiveConstructionTool=="WoodenWall")_constructionUi.SetWallTool(false);else if(_constructionUi.ActiveConstructionTool=="BasicBed")_constructionUi.SetBedTool(false);};
             _demolitionDesignation.ActiveChanged+=active=>{if(!active&&_constructionUi?.ActiveConstructionTool=="Demolition")_constructionUi.SetDemolitionTool(false);};
             _mercenaryWorkRuntime.AttachConstruction(_constructionWork);
             _mercenaryWorkRuntime.AttachDemolition(_demolitionWork);
             if(_restWork!=null)_mercenaryWorkRuntime.AttachRest(_restWork);
             if(_eatingWork!=null){_mercenaryWorkRuntime.AttachEating(_eatingWork);_worldManager.BindEatingCoordinator(_eatingWork);}
+            if(_farmingWork!=null)_mercenaryWorkRuntime.AttachFarming(_farmingWork);
             _mercenaryInspectHud=new MercenaryInspectHudV3{Name="MercenaryInspectHudV3"};
             canvasLayer.AddChild(_mercenaryInspectHud);
-            _mercenaryInspectHud.Initialize(controlSession,mercenaries,work,_worldManager,_constructionWork,_demolitionWork,needsSession,_restWork,_eatingWork);
+            _mercenaryInspectHud.Initialize(controlSession,mercenaries,work,_worldManager,_constructionWork,_demolitionWork,needsSession,_restWork,_eatingWork,_farmingWork);
             _mercenaryInspectHud.BedAssignmentRequested+=id=>{_pendingBedAssignmentMercenaryId=id;_restAssignmentOverlay?.SetAssignmentMode(true,id);_constructionPlacement?.ClearActivePlacementTool();_demolitionDesignation?.SetActive(false);_stockpileDesignation?.SetMode(StockpileDesignationModeV3.None);_worldManager.UpdateDebugHud("배정할 간이 침대를 클릭하세요.");};
         }
     }
@@ -553,6 +591,7 @@ public partial class WorldV2Root : Node2D
         if(toolKind==ConstructionPlacementToolKindV3.None){if(active)_constructionPlacement.ClearActivePlacementTool();return;}
         if(active)
         {
+            _farmDesignation?.SetActive(false);
             string definitionId=toolKind switch{ConstructionPlacementToolKindV3.WoodenWall=>StructureDefinitionCatalogV3.WoodenWallId,ConstructionPlacementToolKindV3.BasicBed=>StructureDefinitionCatalogV3.BasicBedId,_=>string.Empty};
             _constructionPlacement.SetActivePlacementTool(toolKind,definitionId);
         }
@@ -560,6 +599,19 @@ public partial class WorldV2Root : Node2D
         {
             _constructionPlacement.ClearActivePlacementTool();
         }
+    }
+
+    private bool TryHandleFarmingAction(InputEvent e)
+    {
+        if(_farmDesignation?.Active==true||_farmingWork==null||_gridRenderer==null||_worldManager==null)return false;
+        if(e is not InputEventMouseButton click||!click.Pressed||click.ButtonIndex!=MouseButton.Right)return false;
+        if(!GameplaySessionV3.TryGetFarmSession(out FarmSessionV3? farm)||farm==null)return false;
+        GlobalCellCoord cell=new(_gridRenderer.WorldToCell(GetViewport().GetCanvasTransform().AffineInverse()*click.Position));
+        if(!farm.Plots.TryGetCrop(cell,out var crop)||crop==null)return false;
+        if(crop.Stage==CropStageV3.Empty&&_worldManager.TryGetResourceSession(out ResourceSessionV3? farmResources)&&farmResources?.GroundStacks.GetStacksAtCell(cell).Count>0)return false;
+        IReadOnlyList<string> selected=_worldManager.TryGetMercenaryControlSession(out MercenaryControlSessionV3? control)&&control!=null?control.Selection.GetSelectedIds():Array.Empty<string>();
+        if(_farmingWork.TryIssue(cell,selected,out string reason)){_worldManager.UpdateDebugHud("농사 작업 시작");_farmOverlay?.Refresh();}else _worldManager.UpdateDebugHud(reason);
+        return true;
     }
 
     private bool TryHandleBedAssignment(InputEvent e)
@@ -633,7 +685,7 @@ public partial class WorldV2Root : Node2D
         }
 
         _worldMapOverlay.Toggle(_worldManager);
-        if(_worldMapOverlay.IsOpen){CancelBedAssignmentMode();_constructionPlacement?.ClearActivePlacementTool();}
+        if(_worldMapOverlay.IsOpen){CancelBedAssignmentMode();_constructionPlacement?.ClearActivePlacementTool();_farmDesignation?.SetActive(false);}
         _constructionUi?.SetWorldMapBlocked(_worldMapOverlay.IsOpen);
         _mercenaryInspectHud?.SetWorldMapBlocked(_worldMapOverlay.IsOpen);
     }

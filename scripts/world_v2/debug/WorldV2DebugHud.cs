@@ -100,6 +100,8 @@ public partial class WorldV2DebugHud : Control
         if(manager.TryGetMercenaryWorkSession(out MercenaryWorkSessionV3? workDiagnosticsSession)&&workDiagnosticsSession!=null){MercenaryWorkDiagnosticsV3 diagnostics=workDiagnosticsSession.Diagnostics;workLine+=$" completed/failed/cancelled/superseded={diagnostics.CompletedWorkCount}/{diagnostics.FailedWorkCount}/{diagnostics.CancelledWorkCount}/{diagnostics.SupersededWorkCount} cycles={diagnostics.CompletedCycleCount} lastFailure={diagnostics.LastFailureReason}";}
         string stockpileLine=$"Stockpile zones/cells/local={manager.StockpileZoneCount}/{manager.StockpileCellCount}/{manager.LocalCompanyZoneCount} mode={manager.StockpileDesignationMode} reserved={manager.ReservedStockpileCellCount} outside={manager.GroundAmountOutsideStockpile} stored W/S={manager.WoodAmountInStockpile}/{manager.StoneAmountInStockpile}";
         string constructionUiLine=$"ConstructionTrayOpen={manager.ConstructionTrayOpen} ActiveConstructionTool={manager.ActiveConstructionTool} StockpileDesignationMode={manager.StockpileDesignationMode} ConstructionUiInputBlockedByWorldMap={manager.ConstructionUiInputBlockedByWorldMap} LastConstructionUiAction={manager.LastConstructionUiAction}";
+        string foodLine=$"Food defs=2 ration/potato ground={manager.GroundRationAmount}/{manager.GroundPotatoAmount} consumed={manager.ConsumedRationAmount}/{manager.ConsumedPotatoAmount} generatedPotato={manager.GeneratedPotatoAmount}";
+        string farmingLine=$"Farm plots/cells={manager.FarmPlotCount}/{manager.FarmCellCount} empty/growing/mature={manager.EmptyFarmCellCount}/{manager.GrowingCropCount}/{manager.MatureCropCount} work/reserved={manager.ActiveFarmingWorkCount}/{manager.FarmReservationCount} growthTicks={manager.FarmGrowthTickCount} failure={manager.LastFarmFailureReason}";
         string mercenaryInspectLine=$"InspectHud visible/mode/selected={manager.MercenaryInspectHudVisible}/{manager.MercenaryInspectHudMode}/{manager.MercenaryInspectHudSelectedCount} id={ShortId(manager.MercenaryInspectHudDisplayedId)} work={manager.MercenaryInspectHudWorkType}:{manager.MercenaryInspectHudWorkPhase} carry={manager.MercenaryInspectHudCarry} progress={manager.MercenaryInspectHudProgress:0.00} refresh={manager.MercenaryInspectHudRefreshCount}:{manager.MercenaryInspectHudLastRefreshReason} mapBlocked={manager.MercenaryInspectHudInputBlockedByWorldMap} rect={manager.MercenaryInspectHudGlobalRect} trayRect={manager.ConstructionUiGlobalRect} overlap={manager.MercenaryInspectHudOverlapsConstructionTray}";
         string mercenaryConditionLine=$"InspectCondition source={manager.MercenaryConditionDataSource} placeholder={manager.MercenaryConditionSnapshotIsPlaceholder} affectsGameplay={manager.MercenaryConditionAffectsGameplay} health/fullness/rest/morale={manager.MercenaryInspectHealth:0.00}/{manager.MercenaryInspectFullness:0.00}/{manager.MercenaryInspectRest:0.00}/{manager.MercenaryInspectMorale:0.00} action={manager.MercenaryInspectHudLastAction}";
         if(manager.TryGetNeedsSession(out MercenaryNeedsSessionV3? needs)&&needs!=null){manager.TryGetMercenarySession(out MercenarySessionV3? fatigueMercenaries);float average=needs.Fatigue.Count==0?0:fatigueMercenaries!=null?fatigueMercenaries.Registry.GetAllMercenaryIds().Select(needs.Fatigue.GetValue).DefaultIfEmpty().Average():0;float hungerAverage=needs.Hunger.Count==0?0:fatigueMercenaries!=null?fatigueMercenaries.Registry.GetAllMercenaryIds().Select(needs.Hunger.GetHunger).DefaultIfEmpty().Average():0;mercenaryConditionLine+=$" fatigueCount/avg={needs.Fatigue.Count}/{average:0.000} hungerCount/avg={needs.Hunger.Count}/{hungerAverage:0.000} hungerTicks={needs.HungerTickCount} assigned/reserved/resting={needs.Assignments.Count}/{needs.Reservations.Count}/{needs.ActiveRestCount} rest completed/cancelled={needs.Diagnostics.CompletedRestCount}/{needs.Diagnostics.CancelledRestCount} blockedWork={needs.Diagnostics.BlockedWorkCount}";}
@@ -250,7 +252,7 @@ public partial class WorldV2DebugHud : Control
                 $"{mercenaryPathLine}\n" +
                 $"{resourceLine}\n" +
                 $"{workLine}\n" +
-                $"{stockpileLine}\n" +
+                $"{stockpileLine}\n{foodLine}\n{farmingLine}\n" +
                 $"{constructionUiLine}\n" +
                 $"{constructionLine}\n" +
                 $"{haulingLine}\n" +
@@ -318,7 +320,7 @@ public partial class WorldV2DebugHud : Control
             $"{mercenaryPathLine}\n" +
             $"{resourceLine}\n" +
             $"{workLine}\n" +
-            $"{stockpileLine}\n" +
+            $"{stockpileLine}\n{foodLine}\n{farmingLine}\n" +
             $"{constructionUiLine}\n" +
             $"{constructionLine}\n" +
             $"{haulingLine}\n" +

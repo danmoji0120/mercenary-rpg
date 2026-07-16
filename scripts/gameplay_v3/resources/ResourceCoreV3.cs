@@ -36,7 +36,7 @@ public static class GroundResourceStackIdFactoryV3
     public static bool IsValid(string? value) => ResourceIdValidationV3.IsCanonical(value, Prefix);
 }
 
-public enum ResourceTypeV3 { Wood, Stone, Ration }
+public enum ResourceTypeV3 { Wood, Stone, Ration, Potato }
 public enum ResourceNodeTypeV3 { Tree, StoneOutcrop }
 
 public sealed class ResourceNodeStateV3
@@ -123,6 +123,13 @@ public sealed class ResourceConsumptionLedgerV3
 {
     private readonly List<ResourceConsumptionEntryV3> _entries=new();private readonly HashSet<string> _workIds=new(StringComparer.Ordinal);public int Count=>_entries.Count;public bool TryRecord(ResourceTypeV3 type,int amount,string reason,string mercenaryId,string workId){if(amount<1||string.IsNullOrWhiteSpace(workId)||!_workIds.Add(workId))return false;_entries.Add(new(type,amount,reason,mercenaryId,workId,DateTime.UtcNow));return true;}public int GetConsumedAmount(ResourceTypeV3 type)=>_entries.Where(x=>x.ResourceType==type).Sum(x=>x.Amount);public IReadOnlyList<ResourceConsumptionEntryV3> GetEntries()=>_entries.AsReadOnly();public void Clear(){_entries.Clear();_workIds.Clear();}
 }
+public sealed record ResourceGenerationEntryV3(ResourceTypeV3 ResourceType,int Amount,string Reason,string MercenaryId,string WorkRequestId,string SourceId,GlobalCellCoord Cell,DateTime TimestampUtc);
+public sealed class ResourceGenerationLedgerV3
+{
+    private readonly List<ResourceGenerationEntryV3> _entries=new();private readonly HashSet<string> _workIds=new(StringComparer.Ordinal);public int Count=>_entries.Count;
+    public bool TryRecord(ResourceTypeV3 type,int amount,string reason,string mercenaryId,string workId,string sourceId,GlobalCellCoord cell){if(amount<1||string.IsNullOrWhiteSpace(workId)||!_workIds.Add(workId))return false;_entries.Add(new(type,amount,reason,mercenaryId,workId,sourceId,cell,DateTime.UtcNow));return true;}
+    public int GetGeneratedAmount(ResourceTypeV3 type)=>_entries.Where(x=>x.ResourceType==type).Sum(x=>x.Amount);public IReadOnlyList<ResourceGenerationEntryV3> GetEntries()=>_entries.AsReadOnly();public void Clear(){_entries.Clear();_workIds.Clear();}
+}
 
 public sealed class InitialGatheringPatchResultV3
 {
@@ -132,7 +139,7 @@ public sealed class InitialGatheringPatchResultV3
 
 public sealed class ResourceSessionV3
 {
-    public ResourceSessionV3(){AmountReservations=new(GroundStacks);}public ResourceNodeRegistryV3 Nodes{get;}=new();public GroundResourceStackRegistryV3 GroundStacks{get;}=new();public ResourceAmountReservationRegistryV3 AmountReservations{get;}public ResourceConsumptionLedgerV3 ConsumptionLedger{get;}=new();public InitialGatheringPatchResultV3? InitialPatchResult{get;internal set;}public bool InitialRationPlacementInitialized{get;internal set;}public string InitialRationStackId{get;internal set;}=string.Empty;
+    public ResourceSessionV3(){AmountReservations=new(GroundStacks);}public ResourceNodeRegistryV3 Nodes{get;}=new();public GroundResourceStackRegistryV3 GroundStacks{get;}=new();public ResourceAmountReservationRegistryV3 AmountReservations{get;}public ResourceConsumptionLedgerV3 ConsumptionLedger{get;}=new();public ResourceGenerationLedgerV3 GenerationLedger{get;}=new();public InitialGatheringPatchResultV3? InitialPatchResult{get;internal set;}public bool InitialRationPlacementInitialized{get;internal set;}public string InitialRationStackId{get;internal set;}=string.Empty;
 }
 
 public sealed class InitialGatheringPatchPlacementSettingsV3
