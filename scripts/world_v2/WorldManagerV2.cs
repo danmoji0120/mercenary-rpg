@@ -16,6 +16,8 @@ using GameplayV3.Needs;
 using GameplayV3.Needs.Runtime;
 using GameplayV3.Farming;
 using GameplayV3.Jobs;
+using GameplayV3.Rooms;
+using GameplayV3.Production;
 using Godot;
 
 namespace WorldV2;
@@ -203,9 +205,14 @@ public partial class WorldManagerV2 : Node
     public bool ResourceCoreInitialized => _resourceSession?.InitialPatchResult?.Succeeded == true;
     public bool WorkCoreInitialized => _workSession != null;
     public int ResourceNodeCount => _resourceSession?.Nodes.Count ?? 0;
-    public int TreeNodeCount => _resourceSession?.Nodes.GetNodesByType(ResourceNodeTypeV3.Tree).Count ?? 0;
-    public int StoneNodeCount => _resourceSession?.Nodes.GetNodesByType(ResourceNodeTypeV3.StoneOutcrop).Count ?? 0;
-    public int DepletedResourceNodeCount { get { int count=0;if(_resourceSession!=null)foreach(string id in _resourceSession.Nodes.GetAllNodeIds())if(_resourceSession.Nodes.TryGet(id,out ResourceNodeStateV3? node)&&node?.IsDepleted==true)count++;return count; } }
+    public int TreeNodeCount => _resourceSession?.Nodes.TreeCount ?? 0;
+    public int StoneNodeCount => _resourceSession?.Nodes.StoneCount ?? 0;
+    public int DepletedResourceNodeCount => _resourceSession?.Nodes.DepletedCount ?? 0;
+    public string StarterResourceRegistryCounts=>FormatNodeTypeCounts(type=>_resourceSession?.Nodes.GetCount(type)??0);
+    public string StarterResourceLoadedCounts=>FormatNodeTypeCounts(type=>_runtimeResourceViewCounts[(int)type]);
+    public string StarterResourceExhaustedCounts=>FormatNodeTypeCounts(type=>_resourceSession?.Nodes.GetDepletedCount(type)??0);
+    public string StarterResourceGatheredAmounts=>$"iron={_resourceSession?.GenerationLedger.GetGeneratedAmount(ResourceTypeV3.IronOre)??0} copper={_resourceSession?.GenerationLedger.GetGeneratedAmount(ResourceTypeV3.CopperOre)??0} coal={_resourceSession?.GenerationLedger.GetGeneratedAmount(ResourceTypeV3.Coal)??0} clay={_resourceSession?.GenerationLedger.GetGeneratedAmount(ResourceTypeV3.Clay)??0} fiber={_resourceSession?.GenerationLedger.GetGeneratedAmount(ResourceTypeV3.Fiber)??0} herb={_resourceSession?.GenerationLedger.GetGeneratedAmount(ResourceTypeV3.MedicinalHerb)??0}";
+    public long UnknownResourceDefinitionCount{get;private set;}public int UnknownResourceVisualCount=>0;
     public int GroundStackCount => _resourceSession?.GroundStacks.Count ?? 0;
     public int WoodAmountOnGround => _resourceSession?.GroundStacks.GetTotalAmount(ResourceTypeV3.Wood) ?? 0;
     public int StoneAmountOnGround => _resourceSession?.GroundStacks.GetTotalAmount(ResourceTypeV3.Stone) ?? 0;
@@ -213,11 +220,34 @@ public partial class WorldManagerV2 : Node
     public int ActiveWorkAssignmentCount => _workSession?.ActiveAssignmentCount ?? 0;
     public int ActiveWorkReservationCount => _workSession?.ActiveReservationCount ?? 0;
     public int RuntimeResourceNodeViewCount{get;private set;}
+    public long RuntimeResourceNodeViewCreatedTotal{get;private set;}public int RuntimeResourceNodeViewAttachedChunkCount{get;private set;}public int RuntimeResourceNodeViewOutsideRenderedChunkCount{get;private set;}public int RuntimeResourceNodeViewPooledCount=>0;
+    public int ResourcePlacementAlgorithmVersion=>ResourcePlacementEvaluatorV3.AlgorithmVersion;
+    public int BiomeResourceProfileCount=>BiomeResourceDistributionCatalogV3.Count;
+    public int BiomeResourceSpawnRuleCount=>BiomeResourceDistributionCatalogV3.RuleCount;
+    public long ResourceCandidateCellsEvaluated{get;private set;}
+    public long ResourceEligibleCandidateCount{get;private set;}
+    public long DistributedTreeCount{get;private set;}
+    public long DistributedStoneCount{get;private set;}
+    public long ResourceStaticExclusionRejectedCount{get;private set;}
+    public long ResourceTerrainRejectedCount{get;private set;}
+    public long ResourceSpacingRejectedCount{get;private set;}
+    public long ResourceConflictRejectedCount{get;private set;}
+    public long ResourceChunkCapRejectedCount{get;private set;}
+    public long ResourceDuplicateDescriptorCount{get;private set;}
+    public long ResourceFallbackProfileUseCount{get;private set;}
+    public long MainThreadResourcePlacementCount{get;private set;}
+    public double ResourcePlacementWorkerMilliseconds{get;private set;}
+    public double MaxResourcePlacementWorkerMilliseconds{get;private set;}
+    public Vector2I LastResourcePlacementChunk{get;private set;}
     public int RuntimeGroundStackViewCount{get;private set;}
     public int MovingToWorkCount { get { int count=0;if(_workSession!=null)foreach(MercenaryWorkExecutionStateV3 execution in _workSession.GetActiveExecutions())if(execution.Phase is WorkExecutionPhaseV3.WaitingForPath or WorkExecutionPhaseV3.MovingToApproach)count++;return count; } }
     public int WorkingMercenaryCount { get { int count=0;if(_workSession!=null)foreach(MercenaryWorkExecutionStateV3 execution in _workSession.GetActiveExecutions())if(execution.Phase==WorkExecutionPhaseV3.Working)count++;return count; } }
     public int StockpileZoneCount=>_stockpileSession?.Zones.Count??0;public int StockpileCellCount=>_stockpileSession?.Zones.CellCount??0;public int LocalCompanyZoneCount=>_stockpileSession?.Zones.GetZonesByCompany(LocalCompanyId).Count??0;public string StockpileDesignationMode=>_stockpileSession?.Diagnostics.DesignationMode.ToString()??"None";public int ReservedStockpileCellCount=>_stockpileSession?.CellReservations.Count??0;
     public int ConstructionBlueprintCount=>_constructionSession?.Blueprints.Count??0;public int ConstructionStructureCount=>_constructionSession?.Structures.Count??0;public int ConstructionBlockingCellCount=>_constructionSession?.Structures.MovementBlockingCellCount??0;public int ConstructionReservationCount=>_constructionSession?.Reservations.Count??0;public long ConstructionOccupancyRevision=>_constructionSession?.Structures.OccupancyRevision??0;
+    public int CompletedFloorCellCount=>_constructionSession?.Floors.Count??0;public int FloorBlueprintCount=>_constructionSession?.Floors.BlueprintCount??0;public int FloorDemolitionMarkCount=>_constructionSession?.Floors.DemolitionMarkCount??0;public int FloorChunkIndexCount=>_constructionSession?.Floors.ChunkCount??0;public int DirtyFloorChunkCount=>_constructionSession?.Floors.DirtyChunkCount??0;public long FloorMovementRevision=>_constructionSession?.Floors.MovementCostRevision??0;public FloorDiagnosticsV3? FloorDiagnostics=>_constructionSession?.Floors.Diagnostics;
+    public int PendingFloorDesignationBatchCount{get;private set;}public int PendingFloorDesignationCellCount{get;private set;}public int FloorRequestedPreviewCells{get;private set;}public int FloorValidPreviewCells{get;private set;}public int FloorSkippedPreviewCells{get;private set;}public string LastFloorBatchId{get;private set;}=string.Empty;public void SetFloorRuntimeDiagnostics(int batches,int cells,int requested,int valid,int skipped,string batchId){PendingFloorDesignationBatchCount=batches;PendingFloorDesignationCellCount=cells;FloorRequestedPreviewCells=requested;FloorValidPreviewCells=valid;FloorSkippedPreviewCells=skipped;LastFloorBatchId=batchId;}
+    public int StableRoomCount=>GameplaySessionV3.TryGetRoomSession(out var rooms)&&rooms!=null?rooms.Registry.Count:0;public int RoomCellCount=>GameplaySessionV3.TryGetRoomSession(out var rooms)&&rooms!=null?rooms.Registry.CellCount:0;public int RoomPortalCount=>GameplaySessionV3.TryGetRoomSession(out var rooms)&&rooms!=null?rooms.Registry.PortalCount:0;public int RoomChunkIndexCount=>GameplaySessionV3.TryGetRoomSession(out var rooms)&&rooms!=null?rooms.Registry.ChunkCount:0;public RoomDiagnosticsV3? RoomDiagnostics=>GameplaySessionV3.TryGetRoomSession(out var rooms)&&rooms!=null?rooms.Registry.Diagnostics:null;
+    public bool DoorRuntimeInitialized=>_constructionSession!=null;public int DoorCount=>_constructionSession?.DoorPassages.Count??0;public int ClosedDoorCount=>_constructionSession?.DoorPassages.ClosedCount??0;public int OpeningDoorCount=>_constructionSession?.DoorPassages.OpeningCount??0;public int OpenDoorCount=>_constructionSession?.DoorPassages.OpenCount??0;public int ClosingDoorCount=>_constructionSession?.DoorPassages.ClosingCount??0;public int DoorPassageUserCount=>_constructionSession?.DoorPassages.ActivePassageUserCount??0;public int DoorScheduledTransitionCount=>_constructionSession?.DoorPassages.ScheduledTransitionCount??0;public long DoorAcquireCount=>_constructionSession?.DoorPassages.Diagnostics.AcquireCount??0;public long DoorReleaseCount=>_constructionSession?.DoorPassages.Diagnostics.ReleaseCount??0;public long DoorTransitionCount=>_constructionSession?.DoorPassages.Diagnostics.TransitionCount??0;public long DoorStaleScheduleCount=>_constructionSession?.DoorPassages.Diagnostics.StaleScheduleCount??0;public double DoorLastTickCpuMilliseconds=>_constructionSession?.DoorPassages.Diagnostics.LastTickCpuMilliseconds??0;
     public int DemolitionDesignationCount=>_constructionSession?.Demolitions.Count??0;public int UnderDemolitionCount=>_constructionSession?.Demolitions.GetAllStructureIds().Count(id=>_constructionSession.Demolitions.TryGet(id,out var state)&&state?.Status==StructureDemolitionStatusV3.UnderDemolition)??0;public int DemolitionReservationCount=>_constructionSession?.DemolitionReservations.Count??0;public int CompletedDemolitionCount=>_constructionSession?.DemolitionDiagnostics.CompletedCount??0;public int FailedDemolitionCount=>_constructionSession?.DemolitionDiagnostics.FailedCount??0;public string LastDemolitionFailureReason=>_constructionSession?.DemolitionDiagnostics.LastFailureReason??string.Empty;public string LastDemolishedStructureId=>_constructionSession?.DemolitionDiagnostics.LastDemolishedStructureId??string.Empty;public string LastDemolitionWorkerId=>_constructionSession?.DemolitionDiagnostics.LastWorkerId??string.Empty;public float LastDemolitionDuration=>_constructionSession?.DemolitionDiagnostics.LastDuration??0;public int LastSalvageTotalAmount=>_constructionSession?.DemolitionDiagnostics.LastSalvageTotalAmount??0;
     public bool ConstructionTrayOpen { get; private set; }
     public string ActiveConstructionTool { get; private set; } = "-";
@@ -275,10 +305,12 @@ public partial class WorldManagerV2 : Node
     private EatingWorkCoordinatorV3? _eatingWorkCoordinator;
     private readonly StartingDeploymentCoordinatorV3 _startingDeploymentCoordinator = new();
     private readonly HashSet<string> _materializedMercenaryIds = new(StringComparer.Ordinal);
-    private readonly HashSet<string> _materializedResourceNodeIds=new(StringComparer.Ordinal);
+    private readonly HashSet<string> _materializedResourceNodeIds=new(StringComparer.Ordinal);private readonly int[] _runtimeResourceViewCounts=new int[Enum.GetValues<ResourceNodeTypeV3>().Length];
     private readonly HashSet<string> _materializedGroundStackIds=new(StringComparer.Ordinal);
+    private readonly List<string> _debugResourceNodeIds = new();
     private Texture2D? _worldMapTexture;
     private string _worldMapCacheKey = string.Empty;
+    private bool _loggedFirstResourcePlacementChunk;
 
     public override void _Ready()
     {
@@ -601,7 +633,7 @@ public partial class WorldManagerV2 : Node
         PrintStartingDeploymentSummary();
         PrintMercenaryCoreSummary(detailed: true);
         PrintMercenaryControlSummary(detailed: true);
-        PrintResourceWorkSummary(detailed: true);
+        PrintResourceWorkSummary(detailed: false);
         GD.Print($"WorldV2 world: map={MapSizePreset} size={WorldMapSize.WidthCells}x{WorldMapSize.HeightCells} plan={PlanVersion} generated={GeneratedPlanType} seed={WorldSeed}");
         GD.Print(V3VillageDebugSummary);
         GD.Print($"V3 biomes: enabled={V3BiomeLayerEnabled} mode={V3BiomeResolveMode} regions={V3BiomeRegionCount} major={V3MajorBiomeRegionCount} minor={V3MinorBiomeRegionCount} avgMajorRadius={V3AverageMajorBiomeRadius:0} avgMinorRadius={V3AverageMinorBiomeRadius:0} forestLand={V3BiomeForestLandCount} rocky={V3BiomeRockyHillsCount} dry={V3BiomeDrylandCount} wasteland={V3BiomeWastelandCount}");
@@ -634,6 +666,12 @@ public partial class WorldManagerV2 : Node
     {
         ResolveReferences();
         _debugHud?.Refresh(this, _buildManager, message);
+    }
+
+    public void PrintDebugHudDiagnostics()
+    {
+        ResolveReferences();
+        _debugHud?.PrintDiagnostics();
     }
 
     public bool TryGetLocalCompany(out CompanyStateV3? company)
@@ -683,6 +721,28 @@ public partial class WorldManagerV2 : Node
         return resourceSession != null;
     }
 
+    public IReadOnlyList<string> RegisterChunkNaturalResources(ChunkDataV2 chunkData)
+    {
+        if(_resourceSession==null||GenerationRequest.PlanVersion!=WorldPlanVersionV2.V3)return Array.Empty<string>();
+        List<string> added=new();
+        foreach(NaturalResourceSpawnDescriptorV3 descriptor in chunkData.NaturalResourceSpawns)
+        {
+            if(_resourceSession.Nodes.Contains(descriptor.DeterministicResourceId))continue;
+            if(!NaturalResourceDefinitionCatalogV3.TryGet(descriptor.ResourceDefinitionId,out NaturalResourceDefinitionV3? definition)||definition==null){UnknownResourceDefinitionCount++;continue;}
+            int spacing=2;if(BiomeResourceDistributionCatalogV3.TryGet(descriptor.ProfileId,out BiomeResourceDistributionProfileV3? profile)&&profile!=null)foreach(ResourceSpawnRuleV3 rule in profile.Rules)if(rule.ResourceDefinitionId==descriptor.ResourceDefinitionId){spacing=rule.MinimumSpacingCells;break;}bool nearGuarantee=false;for(int y=-spacing;y<=spacing&&!nearGuarantee;y++)for(int x=-spacing;x<=spacing;x++){if(x==0&&y==0)continue;if(_resourceSession.Nodes.TryGetAtCell(descriptor.GlobalCell+new Vector2I(x,y),out ResourceNodeStateV3? nearby)&&nearby!=null&&nearby.NodeType==definition.NodeType&&nearby.OriginKind==NaturalResourceOriginKindV3.StartingGuarantee){nearGuarantee=true;break;}}if(nearGuarantee){ResourceSpacingRejectedCount++;continue;}
+            if(!ResourceNodeStateV3.TryCreate(descriptor.DeterministicResourceId,definition.NodeType,new GlobalCellCoord(descriptor.GlobalCell),definition.InitialAmount,definition.InitialAmount,definition.YieldPerCycle,WorldBounds,DateTime.UtcNow,out ResourceNodeStateV3? state,out _)||state==null)continue;
+            state.SetInitialPlacementMetadata(descriptor.ProfileId,descriptor.ProfileVersion,descriptor.PlacementAlgorithmVersion,descriptor.OriginKind);
+            if(!_resourceSession.Nodes.TryRegister(state,out _)){ResourceConflictRejectedCount++;continue;}
+            added.Add(state.ResourceNodeId);
+        }
+        if(chunkData.ResourcePlacementDiagnostics is ResourcePlacementChunkDiagnosticsV3 d)
+        {
+            LastResourcePlacementChunk=d.ChunkCoord;ResourceCandidateCellsEvaluated+=d.CandidateCellsEvaluated;ResourceEligibleCandidateCount+=d.EligibleCandidateCount;DistributedTreeCount+=d.TreeCount;DistributedStoneCount+=d.StoneCount;ResourceStaticExclusionRejectedCount+=d.StaticExclusionRejectedCount;ResourceTerrainRejectedCount+=d.TerrainRejectedCount;ResourceSpacingRejectedCount+=d.SpacingRejectedCount;ResourceConflictRejectedCount+=d.ConflictRejectedCount;ResourceChunkCapRejectedCount+=d.ChunkCapRejectedCount;ResourceFallbackProfileUseCount+=d.FallbackProfileUseCount;ResourcePlacementWorkerMilliseconds+=d.ElapsedMilliseconds;MaxResourcePlacementWorkerMilliseconds=Math.Max(MaxResourcePlacementWorkerMilliseconds,d.ElapsedMilliseconds);if(!d.WorkerThread)MainThreadResourcePlacementCount++;
+            if(!_loggedFirstResourcePlacementChunk){_loggedFirstResourcePlacementChunk=true;GD.Print($"[ResourceDistributionV3] first chunk={d.ChunkCoord} trees={d.TreeCount} stones={d.StoneCount} registered={added.Count} candidates={d.CandidateCellsEvaluated} eligible={d.EligibleCandidateCount} worker={d.WorkerThread} ms={d.ElapsedMilliseconds:0.00}");}
+        }
+        return added.AsReadOnly();
+    }
+
     public bool TryGetMercenaryWorkSession(out MercenaryWorkSessionV3? workSession)
     {
         workSession = _workSession;
@@ -690,6 +750,7 @@ public partial class WorldManagerV2 : Node
     }
     public bool TryGetStockpileSession(out StockpileSessionV3? stockpileSession){stockpileSession=_stockpileSession;return stockpileSession!=null;}
     public bool TryGetConstructionSession(out ConstructionSessionV3? constructionSession){constructionSession=_constructionSession;return constructionSession!=null;}
+    public bool TryGetRoomSession(out RoomSessionV3? roomSession)=>GameplaySessionV3.TryGetRoomSession(out roomSession);
     public bool TryGetNeedsSession(out MercenaryNeedsSessionV3? needsSession)=>GameplaySessionV3.TryGetNeedsSession(out needsSession);
     public bool TryGetFarmSession(out FarmSessionV3? farmSession)=>GameplaySessionV3.TryGetFarmSession(out farmSession);
 
@@ -698,8 +759,9 @@ public partial class WorldManagerV2 : Node
         return _mercenarySession?.CanPlayerControlMercenary(playerId, mercenaryId) == true;
     }
 
-    public void SetResourceRuntimeDiagnostics(IReadOnlyList<string> nodeIds,IReadOnlyList<string> stackIds)
-    {_materializedResourceNodeIds.Clear();foreach(string id in nodeIds)_materializedResourceNodeIds.Add(id);_materializedGroundStackIds.Clear();foreach(string id in stackIds)_materializedGroundStackIds.Add(id);RuntimeResourceNodeViewCount=_materializedResourceNodeIds.Count;RuntimeGroundStackViewCount=_materializedGroundStackIds.Count;}
+    public void SetResourceRuntimeDiagnostics(IReadOnlyList<string> nodeIds,IReadOnlyList<string> stackIds,long createdTotal=-1,int attachedChunkCount=-1,int outsideRenderedChunkCount=-1)
+    {_materializedResourceNodeIds.Clear();Array.Clear(_runtimeResourceViewCounts);foreach(string id in nodeIds){_materializedResourceNodeIds.Add(id);if(_resourceSession?.Nodes.TryGet(id,out ResourceNodeStateV3? node)==true&&node!=null)_runtimeResourceViewCounts[(int)node.NodeType]++;}_materializedGroundStackIds.Clear();foreach(string id in stackIds)_materializedGroundStackIds.Add(id);RuntimeResourceNodeViewCount=_materializedResourceNodeIds.Count;RuntimeGroundStackViewCount=_materializedGroundStackIds.Count;if(createdTotal>=0)RuntimeResourceNodeViewCreatedTotal=Math.Max(RuntimeResourceNodeViewCreatedTotal,createdTotal);if(attachedChunkCount>=0)RuntimeResourceNodeViewAttachedChunkCount=attachedChunkCount;if(outsideRenderedChunkCount>=0)RuntimeResourceNodeViewOutsideRenderedChunkCount=outsideRenderedChunkCount;}
+    private static string FormatNodeTypeCounts(Func<ResourceNodeTypeV3,int> value)=>$"iron={value(ResourceNodeTypeV3.IronVein)} copper={value(ResourceNodeTypeV3.CopperVein)} coal={value(ResourceNodeTypeV3.CoalSeam)} clay={value(ResourceNodeTypeV3.ClayDeposit)} fiber={value(ResourceNodeTypeV3.FiberBush)} herb={value(ResourceNodeTypeV3.MedicinalHerbPatch)}";
     public bool IsResourceNodeViewMaterialized(string id)=>_materializedResourceNodeIds.Contains(id);
     public bool IsGroundStackViewMaterialized(string id)=>_materializedGroundStackIds.Contains(id);
     private int GetStockpileAmount(ResourceTypeV3 type){int total=0;if(_resourceSession==null||_stockpileSession==null)return 0;foreach(string id in _resourceSession.GroundStacks.GetAllStackIds())if(_resourceSession.GroundStacks.TryGet(id,out GroundResourceStackV3? stack)&&stack!=null&&stack.ResourceType==type&&_stockpileSession.Zones.IsOwnedStockpileCell(LocalCompanyId,stack.Cell))total+=stack.Amount;return total;}
@@ -1121,7 +1183,7 @@ public partial class WorldManagerV2 : Node
         }
 
         _resourceSession=resources;_workSession=work;_stockpileSession=work.Stockpiles;GameplaySessionV3.TryGetConstructionSession(out _constructionSession);
-        InitialGatheringPatchResultV3 result=InitialGatheringPatchPlacementServiceV3.Place(resources,deployment,placement,WorldBounds,SampleV3PlanCellForNavigation);
+        InitialGatheringPatchResultV3 result=InitialGatheringPatchPlacementServiceV3.Place(resources,deployment,placement,WorldBounds,SampleV3PlanCellForNavigation,new InitialGatheringPatchPlacementSettingsV3{WorldSeed=WorldSeed});
         if(!result.Succeeded){GD.PushError($"[ResourceCoreV3] Initial patch failed: {result.FailureReason}");return;}
         if(!InitialRationPlacementServiceV3.TryPlace(resources,deployment,WorldBounds,cell=>SampleV3PlanCellForNavigation(cell).IsWalkable,out GroundResourceStackV3? ration,out string rationReason)){GD.PushError($"[HungerV3] Initial ration placement failed: {rationReason}");return;}if(ration!=null)GD.Print($"[HungerV3] Initial ration stack={ration.ResourceStackId} cell={ration.Cell} amount={ration.Amount}");
         if(!result.ReusedExisting)
@@ -1131,15 +1193,25 @@ public partial class WorldManagerV2 : Node
         }
 #if DEBUG
         WorkResourceSelfCheckResultV3 selfCheck=WorkResourceSelfCheckV3.Run();
+        if(BiomeResourceDistributionSelfCheckV3.TryValidate(out string distributionReason))GD.Print($"[ResourceDistributionV3] self-check PASS {BiomeResourceDistributionSelfCheckV3.LastDistributionSummary}");else GD.PushError($"[ResourceDistributionV3] self-check FAIL: {distributionReason}");
+        if(OS.GetEnvironment("BIOME_RESOURCE_FIXTURE")=="1"){GD.Print($"[ResourceDistributionV3] fixture {BiomeResourceDistributionSelfCheckV3.RunPerformanceFixture(100)}");GD.Print($"[ResourceDistributionV3] fixture {BiomeResourceDistributionSelfCheckV3.RunPerformanceFixture(1000)}");}
+        if(OS.GetEnvironment("BIOME_RESOURCE_PRESET_FIXTURE")=="1")GD.Print($"[ResourceDistributionV3] presets {BiomeResourceDistributionSelfCheckV3.RunPresetFixture()}");
         if(selfCheck.Passed)GD.Print($"[WorkCoreV3] Self-check {selfCheck.Summary}");else GD.PushError($"[WorkCoreV3] Self-check {selfCheck.Summary}");
         StockpileHaulingSelfCheckResultV3 stockpileCheck=StockpileHaulingSelfCheckV3.Run();
         if(stockpileCheck.Passed)GD.Print($"[StockpileV3] Self-check {stockpileCheck.Summary}");else GD.PushError($"[StockpileV3] Self-check {stockpileCheck.Summary}");
         ConstructionSelfCheckResultV3 constructionCheck=ConstructionSelfCheckV3.Run();
+        if(ConstructionMaterialSelfCheckV3.TryValidate(out string materialReason))GD.Print("[ConstructionMaterialV3] Self-check PASS");else GD.PushError($"[ConstructionMaterialV3] Self-check FAIL: {materialReason}");
+        if(ConstructionSupplySelfCheckV3.TryValidate(out string supplyReason))GD.Print("[ConstructionSupplyV3] Self-check PASS");else GD.PushError($"[ConstructionSupplyV3] Self-check FAIL: {supplyReason}");
+        if(GameplayV3.Selection.SelectionInspectSelfCheckV3.TryValidate(out string selectionReason))GD.Print("[SelectionInspectV3] Self-check PASS");else GD.PushError($"[SelectionInspectV3] Self-check FAIL: {selectionReason}");
         if(constructionCheck.Succeeded)GD.Print($"[ConstructionV3] Self-check {constructionCheck.Summary}");else GD.PushError($"[ConstructionV3] Self-check {constructionCheck.Summary}");
+        if(StarterProductionSelfCheckV3.TryValidate(out string productionReason))GD.Print($"[ProductionV3] Self-check {StarterProductionSelfCheckV3.LastSummary}");else GD.PushError($"[ProductionV3] Self-check FAIL: {productionReason}");
+        if(WorkSessionBindingSelfCheckV3.TryValidateCurrent(out string bindingReason))GD.Print($"[WorkBindingV3] Self-check {WorkSessionBindingSelfCheckV3.LastSummary}");else GD.PushError($"[WorkBindingV3] Self-check FAIL: {bindingReason}");
         ConstructionRuntimeSelfCheckResultV3 constructionRuntimeCheck=ConstructionRuntimeSelfCheckV3.Run();
         if(constructionRuntimeCheck.Passed)GD.Print($"[ConstructionV3] Runtime self-check {constructionRuntimeCheck.Summary} singleTrips={constructionRuntimeCheck.SingleStackTrips} splitTrips={constructionRuntimeCheck.SplitStackTrips}");else GD.PushError($"[ConstructionV3] Runtime self-check {constructionRuntimeCheck.Summary}");
         DemolitionSelfCheckResultV3 demolitionCheck=DemolitionSelfCheckV3.Run();
         if(demolitionCheck.Passed)GD.Print($"[DemolitionV3] Self-check {demolitionCheck.Summary} scores={demolitionCheck.RecruitAScore:0.00}/{demolitionCheck.RecruitBScore:0.00}/{demolitionCheck.RecruitCScore:0.00} salvage={demolitionCheck.SalvagedWood}");else GD.PushError($"[DemolitionV3] Self-check {demolitionCheck.Summary}");
+        DoorPassageSelfCheckResultV3 doorCheck=DoorPassageSelfCheckV3.Run();
+        if(doorCheck.Passed)GD.Print($"[DoorPassageV3] Self-check {doorCheck.Summary} doors={doorCheck.RegisteredDoorCount} events={doorCheck.PassageEventCount} cpuMs={doorCheck.PerformanceMilliseconds:0.000}");else GD.PushError($"[DoorPassageV3] Self-check {doorCheck.Summary}");
         if(HungerEatingSelfCheckV3.TryValidate(out string hungerReason))GD.Print("[HungerV3] Self-check PASS");else GD.PushError($"[HungerV3] Self-check FAIL: {hungerReason}");
         if(EatingRuntimeSelfCheckV3.TryValidate(out string eatingReason))GD.Print("[EatingV3] Runtime self-check PASS");else GD.PushError($"[EatingV3] Runtime self-check FAIL: {eatingReason}");
         if(EatingArrivalTransitionSelfCheckV3.TryValidate(out string eatingArrivalReason))GD.Print("[EatingV3] Arrival transition self-check PASS");else GD.PushError($"[EatingV3] Arrival transition self-check FAIL: {eatingArrivalReason}");
@@ -1310,12 +1382,17 @@ public partial class WorldManagerV2 : Node
     private void PrintResourceWorkSummary(bool detailed)
     {
         GD.Print($"[ResourceCoreV3] initialized={ResourceCoreInitialized} nodes={ResourceNodeCount} trees={TreeNodeCount} stones={StoneNodeCount} depleted={DepletedResourceNodeCount} stacks={GroundStackCount} wood={WoodAmountOnGround} stone={StoneAmountOnGround} nodeViews={RuntimeResourceNodeViewCount} stackViews={RuntimeGroundStackViewCount}");
+        GD.Print($"[ResourceDistributionV3] algorithm={ResourcePlacementAlgorithmVersion} profiles={BiomeResourceProfileCount} rules={BiomeResourceSpawnRuleCount} lastChunk={LastResourcePlacementChunk} candidates={ResourceCandidateCellsEvaluated} eligible={ResourceEligibleCandidateCount} trees={DistributedTreeCount} stones={DistributedStoneCount} rejectStatic={ResourceStaticExclusionRejectedCount} rejectTerrain={ResourceTerrainRejectedCount} rejectSpacing={ResourceSpacingRejectedCount} rejectConflict={ResourceConflictRejectedCount} rejectCap={ResourceChunkCapRejectedCount} fallback={ResourceFallbackProfileUseCount} duplicate={ResourceDuplicateDescriptorCount} mainThread={MainThreadResourcePlacementCount} workerMs={ResourcePlacementWorkerMilliseconds:0.00}/{MaxResourcePlacementWorkerMilliseconds:0.00}");
         GD.Print($"[StockpileV3] zones={StockpileZoneCount} cells={StockpileCellCount} localZones={LocalCompanyZoneCount} mode={StockpileDesignationMode} reservedCells={ReservedStockpileCellCount} outside={GroundAmountOutsideStockpile} woodStored={WoodAmountInStockpile} stoneStored={StoneAmountInStockpile}");
         GD.Print($"[ConstructionUiV3] trayOpen={ConstructionTrayOpen} activeTool={ActiveConstructionTool} stockpileMode={StockpileDesignationMode} blockedByWorldMap={ConstructionUiInputBlockedByWorldMap} lastAction={LastConstructionUiAction}");
         GD.Print($"[MercenaryInspectHudV3] visible={MercenaryInspectHudVisible} mode={MercenaryInspectHudMode} selected={MercenaryInspectHudSelectedCount} mercenary={MercenaryInspectHudDisplayedId} work={MercenaryInspectHudWorkType} phase={MercenaryInspectHudWorkPhase} carry={MercenaryInspectHudCarry} progress={MercenaryInspectHudProgress:0.000} refresh={MercenaryInspectHudRefreshCount} reason={MercenaryInspectHudLastRefreshReason} blockedByMap={MercenaryInspectHudInputBlockedByWorldMap} panelRect={MercenaryInspectHudGlobalRect} trayRect={ConstructionUiGlobalRect} overlapsTray={MercenaryInspectHudOverlapsConstructionTray} lastAction={MercenaryInspectHudLastAction}");
         GD.Print($"[MercenaryInspectHudV3] conditionSource={MercenaryConditionDataSource} placeholder={MercenaryConditionSnapshotIsPlaceholder} affectsGameplay={MercenaryConditionAffectsGameplay} health={MercenaryInspectHealth:0.000} fullness={MercenaryInspectFullness:0.000} rest={MercenaryInspectRest:0.000} morale={MercenaryInspectMorale:0.000}");
         if(GameplaySessionV3.TryGetNeedsSession(out var needs)&&needs!=null){string selected=MercenaryInspectHudDisplayedId;float hunger=string.IsNullOrEmpty(selected)?0:needs.Hunger.GetHunger(selected);GD.Print($"[HungerV3] states={needs.Hunger.Count} selected={selected} hunger={hunger:0.000} fullness={1-hunger:0.000} stage={HungerPolicyV3.Stage(hunger)} hungerMultiplier={needs.HungerWorkMultiplier(selected)} combinedMultiplier={needs.WorkMultiplier(selected)} ticks={needs.HungerTickCount}");}if(_resourceSession!=null)GD.Print($"[EatingV3] rationGround={_resourceSession.GroundStacks.GetTotalAmount(ResourceTypeV3.Ration)} potatoGround={_resourceSession.GroundStacks.GetTotalAmount(ResourceTypeV3.Potato)} rationConsumed={_resourceSession.ConsumptionLedger.GetConsumedAmount(ResourceTypeV3.Ration)} potatoConsumed={_resourceSession.ConsumptionLedger.GetConsumedAmount(ResourceTypeV3.Potato)} potatoGenerated={_resourceSession.GenerationLedger.GetGeneratedAmount(ResourceTypeV3.Potato)}");if(GameplaySessionV3.TryGetFarmSession(out var farm)&&farm!=null)GD.Print($"[FarmingV3] plots={farm.Plots.Count} cells={farm.Plots.CellCount} activeWork={farm.Works.Count} reservations={farm.Reservations.Count} growthTicks={farm.Diagnostics.GrowthTickCount} sowed={farm.Diagnostics.CompletedSowingCount} harvested={farm.Diagnostics.CompletedHarvestCount} failure={farm.Diagnostics.LastFailureReason}");if(GameplaySessionV3.TryGetJobManager(out var jobs)&&jobs!=null)GD.Print($"[JobManagerV3] jobs={jobs.Count} queued={jobs.QueuedCount} active={jobs.ActiveAssignmentCount} assignments={jobs.Diagnostics.AssignmentsSucceeded} candidates={jobs.Diagnostics.CandidateEvaluations} lastTickMs={jobs.Diagnostics.LastTickMilliseconds:0.000} cartesian={jobs.Diagnostics.CartesianScanCount} last={jobs.Diagnostics.LastAction}");PrintCentralJobDetails();PrintEatingArrivalDiagnostics();
         GD.Print($"[ConstructionV3] blueprints={ConstructionBlueprintCount} structures={ConstructionStructureCount} blockingCells={ConstructionBlockingCellCount} reservations={ConstructionReservationCount} occupancyRevision={ConstructionOccupancyRevision}");
+        GD.Print($"[FloorV3] completed={CompletedFloorCellCount} blueprints={FloorBlueprintCount} marks={FloorDemolitionMarkCount} chunks={FloorChunkIndexCount} dirtyChunks={DirtyFloorChunkCount} movementRevision={FloorMovementRevision} perCellNodes={FloorDiagnostics?.PerCellNodeCount??0} perCellProcess={FloorDiagnostics?.PerCellProcessCount??0} fullScans={FloorDiagnostics?.FullFloorRegistryScanCount??0}/{FloorDiagnostics?.FullFloorBlueprintScanCount??0} lastFailure={FloorDiagnostics?.LastFailure??string.Empty}");
+        GD.Print($"[RoomV3] stable={StableRoomCount} cells={RoomCellCount} chunks={RoomChunkIndexCount} portals={RoomPortalCount} flood={RoomDiagnostics?.FloodCellsProcessedThisTick??0} maxFlood={RoomDiagnostics?.MaxFloodCellsProcessedInTick??0} commits={RoomDiagnostics?.TopologyCommitsThisTick??0}/{RoomDiagnostics?.MetadataCommitsThisTick??0} outdoor={RoomDiagnostics?.OutdoorCandidateCount??0} tooLarge={RoomDiagnostics?.TooLargeCandidateCount??0} fullScans={RoomDiagnostics?.FullWorldRoomScanCount??0} doorStateRebuild={RoomDiagnostics?.DoorStateTriggeredRebuildCount??0}");
+        GD.Print($"[DoorPassageV3] initialized={DoorRuntimeInitialized} doors={DoorCount} closed/opening/open/closing={ClosedDoorCount}/{OpeningDoorCount}/{OpenDoorCount}/{ClosingDoorCount} users={DoorPassageUserCount} scheduled={DoorScheduledTransitionCount} acquire/release/transition={DoorAcquireCount}/{DoorReleaseCount}/{DoorTransitionCount} stale={DoorStaleScheduleCount} tickCpuMs={DoorLastTickCpuMilliseconds:0.000}");
+        if(detailed&&_constructionSession!=null)foreach(DoorPassageStateV3 door in _constructionSession.DoorPassages.GetAll())GD.Print($"  door={door.StructureId} cell={door.Cell} rotation={door.Rotation} state={door.State} mode={door.Mode} revision={door.Revision} users={string.Join(',',door.GetActivePassageUserIds())} closeDue={door.CloseDueAt:0.000} token={door.CloseScheduleToken} reason={door.LastOpenReason}");
         if(_workSession==null){GD.Print("[WorkCoreV3] initialized=false");return;}
         MercenaryWorkDiagnosticsV3 diagnostics=_workSession.Diagnostics;
         GD.Print($"[WorkCoreV3] initialized=true requests={ActiveWorkRequestCount} assignments={ActiveWorkAssignmentCount} reservations={ActiveWorkReservationCount} movingToWork={MovingToWorkCount} working={WorkingMercenaryCount} completed={diagnostics.CompletedWorkCount} failed={diagnostics.FailedWorkCount} cancelled={diagnostics.CancelledWorkCount} superseded={diagnostics.SupersededWorkCount} cycles={diagnostics.CompletedCycleCount} lastFailure={diagnostics.LastFailureReason}");
@@ -1328,8 +1405,9 @@ public partial class WorldManagerV2 : Node
         foreach(HaulingWorkExecutionStateV3 execution in _workSession.GetActiveHaulingExecutions())
         {HaulingWorkPayloadV3 p=execution.Payload;int carry=_workSession.Carries.TryGetCarry(execution.MercenaryId,out MercenaryCarryStateV3? c)&&c!=null?c.Amount:0;GD.Print($"[HaulingV3] request={execution.WorkRequestId} mercenary={execution.MercenaryId} source={p.SourceStackId}@{p.SourceCell} requested={p.RequestedAmount} remaining={p.RemainingRequestedAmount} carry={carry} destination={p.DestinationCell?.ToString()??"-"} phase={execution.Phase} trips={p.CompletedTripCount} planned={execution.PlannedPickupAmount} handling={execution.HandlingProgressSeconds:0.00}/{execution.RequiredHandlingSeconds:0.00} score={execution.Calculation.HaulingScore:0.00} capacity={execution.Calculation.MaxCarryUnits} revision={execution.Revision}");}
         if(!detailed||_resourceSession==null)return;
-        foreach(string id in _resourceSession.Nodes.GetAllNodeIds())if(_resourceSession.Nodes.TryGet(id,out ResourceNodeStateV3? node)&&node!=null)GD.Print($"[ResourceCoreV3] node={id} type={node.NodeType} cell={node.Cell} amount={node.RemainingAmount}/{node.MaxAmount} yield={node.YieldPerCycle} depleted={node.IsDepleted} reserved={_workSession.Reservations.IsReserved(id)} view={IsResourceNodeViewMaterialized(id)}");
-        foreach(string id in _resourceSession.GroundStacks.GetAllStackIds())if(_resourceSession.GroundStacks.TryGet(id,out GroundResourceStackV3? stack)&&stack!=null)GD.Print($"[ResourceCoreV3] stack={id} type={stack.ResourceType} amount={stack.Amount} cell={stack.Cell} view={IsGroundStackViewMaterialized(id)}");
+        int omitted=_resourceSession.Nodes.GetBoundedDebugNodeIds(WorldV2DebugHud.MaxResourceDetailRows,_debugResourceNodeIds);
+        foreach(string id in _debugResourceNodeIds)if(_resourceSession.Nodes.TryGet(id,out ResourceNodeStateV3? node)&&node!=null)GD.Print($"[ResourceCoreV3] node={id} type={node.NodeType} cell={node.Cell} amount={node.RemainingAmount}/{node.MaxAmount} yield={node.YieldPerCycle} depleted={node.IsDepleted} origin={node.OriginKind} profile={node.InitialProfileId}:{node.InitialProfileVersion} placementV={node.PlacementAlgorithmVersion} reserved={_workSession.Reservations.IsReserved(id)} view={IsResourceNodeViewMaterialized(id)}");
+        if(omitted>0)GD.Print($"[ResourceCoreV3] ... {omitted} resource nodes omitted");
     }
 
     private static string ShortMercenaryId(string mercenaryId)

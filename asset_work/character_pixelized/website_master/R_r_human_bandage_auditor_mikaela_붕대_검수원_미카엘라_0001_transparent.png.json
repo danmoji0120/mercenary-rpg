@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_human_bandage_auditor_mikaela_붕대_검수원_미카엘라_0001_transparent.png",
+  "sourceRelativePath": "R_r_human_bandage_auditor_mikaela_붕대_검수원_미카엘라_0001_transparent.png",
+  "sourceSha256": "c8c8afdf7cc187c9499b0f2e5080d5a367df986da7bd6a82634434a4f6710f2a",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_human_bandage_auditor_mikaela_붕대_검수원_미카엘라_0001_transparent.png",
+  "outputSha256": "8e76905b2a107e0b1bc93bca6c897f33a02d99bc48cbca118b3a6757f47e4ae7",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    391,
+    56,
+    1198,
+    2423
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    807,
+    2367
+  ],
+  "outputSize": [
+    816,
+    2376
+  ],
+  "outputBoundingBox": [
+    4,
+    5,
+    808,
+    2369
+  ],
+  "contentBoundingBox": [
+    4,
+    5,
+    808,
+    2369
+  ],
+  "bottomCenterAnchor": [
+    408.0,
+    2369.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9970538720538721,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 876456,
+  "transparentPixelCount": 1062360,
+  "sourceUniqueColorEstimate": 32421,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 22075,
+  "saturationClampedPixelCount": 187,
+  "elapsedMilliseconds": 1813.929,
+  "warningCodes": [],
+  "errorMessage": ""
+}

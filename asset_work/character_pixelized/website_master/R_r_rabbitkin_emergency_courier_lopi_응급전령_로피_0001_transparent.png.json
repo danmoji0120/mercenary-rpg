@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_rabbitkin_emergency_courier_lopi_응급전령_로피_0001_transparent.png",
+  "sourceRelativePath": "R_r_rabbitkin_emergency_courier_lopi_응급전령_로피_0001_transparent.png",
+  "sourceSha256": "aa5f5d6af2d48abd79758a339afbf67d8d6048e90aba4433e6b934eda844a235",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_rabbitkin_emergency_courier_lopi_응급전령_로피_0001_transparent.png",
+  "outputSha256": "66f79d3cc9488157527b73ab443556ff0bc165baa237c7ccb0453ce55b4416e6",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    288,
+    0,
+    1369,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1081,
+    2432
+  ],
+  "outputSize": [
+    1092,
+    2442
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1085,
+    2436
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1085,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    546.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1087992,
+  "transparentPixelCount": 1578672,
+  "sourceUniqueColorEstimate": 58102,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 29406,
+  "saturationClampedPixelCount": 3886,
+  "elapsedMilliseconds": 2374.585,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

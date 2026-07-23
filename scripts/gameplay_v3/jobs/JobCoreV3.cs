@@ -4,8 +4,8 @@ using Godot;
 
 namespace GameplayV3.Jobs;
 
-public enum JobTypeV3 { Hauling, Construction, Demolition, Gathering, Sowing, Harvesting }
-public enum JobSourceKindV3 { GroundResourceStack, Blueprint, Structure, ResourceNode, FarmCell }
+public enum JobTypeV3 { Hauling, Construction, Demolition, Gathering, Sowing, Harvesting, Production }
+public enum JobSourceKindV3 { GroundResourceStack, Blueprint, Structure, ResourceNode, FarmCell, FloorBlueprint, FloorDemolitionMark, ProductionFacility, GroundEquipment }
 public enum JobStateV3 { Queued, Reserved, Assigned, Running, RetryWaiting, Completed, Cancelled, Invalidated, FailedTerminal }
 public enum JobCommandSourceV3 { Automatic, NeedAutomatic, DirectOrder, ForceOrder }
 
@@ -52,6 +52,7 @@ public sealed class MercenaryWorkPriorityProfileV3
         _values[(int)JobTypeV3.Gathering] = 3;
         _values[(int)JobTypeV3.Sowing] = 3;
         _values[(int)JobTypeV3.Harvesting] = 2;
+        _values[(int)JobTypeV3.Production] = 3;
     }
 }
 
@@ -116,6 +117,17 @@ public sealed class JobManagerDiagnosticsV3
     public double LastTickMilliseconds { get; internal set; }
     public int PeakQueuedJobs { get; internal set; }
     public string LastAction { get; internal set; } = "None";
+    public int GatheringJobMaterializationBudget{get;internal set;}
+    public int GatheringJobMaterializedCount{get;internal set;}
+    public int GatheringCandidateIndexedCount{get;internal set;}
+    public bool GatheringRefillRequested{get;internal set;}
+    public int GatheringRefillProcessedLastFrame{get;internal set;}
+    public long GatheringJobMaterializedTotal{get;internal set;}
+    public long GatheringJobRetiredTotal{get;internal set;}
+    public long GatheringDirectWorkBypassCount{get;internal set;}
+    public long InvalidGatheringCandidateCount{get;internal set;}
+    public long DuplicateGatheringJobRejectedCount{get;internal set;}
+    public long GatheringFullRegistryScanCount{get;internal set;}
 }
 
 public readonly record struct JobDispatchResultV3(bool Succeeded, string WorkRequestId, string FailureReason)

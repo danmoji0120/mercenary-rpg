@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_human_demolition_leader_doyle_철거반장_도일_0001_transparent.png",
+  "sourceRelativePath": "R_r_human_demolition_leader_doyle_철거반장_도일_0001_transparent.png",
+  "sourceSha256": "4e63f6f2a72450534c6e5f5f491b9dd2956be0364c48d05d67825f1c24f614bf",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_human_demolition_leader_doyle_철거반장_도일_0001_transparent.png",
+  "outputSha256": "611859b8b6e8f37e983f06d79e4849df5f202cb95da3d71b1bf1535c9122984b",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    97,
+    11,
+    1419,
+    2428
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1322,
+    2417
+  ],
+  "outputSize": [
+    1332,
+    2430
+  ],
+  "outputBoundingBox": [
+    5,
+    9,
+    1325,
+    2426
+  ],
+  "contentBoundingBox": [
+    5,
+    9,
+    1325,
+    2426
+  ],
+  "bottomCenterAnchor": [
+    666.0,
+    2426.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983539094650206,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1555542,
+  "transparentPixelCount": 1681218,
+  "sourceUniqueColorEstimate": 37999,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 40861,
+  "saturationClampedPixelCount": 751,
+  "elapsedMilliseconds": 3204.918,
+  "warningCodes": [],
+  "errorMessage": ""
+}

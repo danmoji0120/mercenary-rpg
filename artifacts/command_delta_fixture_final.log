@@ -1,0 +1,9 @@
+Godot Engine v4.7.stable.mono.official.5b4e0cb0f - https://godotengine.org
+
+[MCP Runtime] Server listening on port 7777
+[MCP Runtime] Autoload ready, server starting on port 7777
+[ServerCommandDeltaEnetV3] PASS=False System.InvalidOperationException: CompanyId must be a non-empty canonical cmp_ ID.
+   at GameplayV3.Network.ServerCommandDeltaEnetFixtureV3.Check(Boolean value, String reason) in E:\mercenary-rpg\scripts\gameplay_v3\network\ServerCommandDeltaEnetFixtureV3.cs:line 143
+   at GameplayV3.Network.ServerCommandDeltaEnetFixtureV3.Populate(PlayerCompanyStateV3 company, RegionPersistentStateV3 region) in E:\mercenary-rpg\scripts\gameplay_v3\network\ServerCommandDeltaEnetFixtureV3.cs:line 109
+   at GameplayV3.Network.ServerCommandDeltaEnetFixtureV3.RunFixture() in E:\mercenary-rpg\scripts\gameplay_v3\network\ServerCommandDeltaEnetFixtureV3.cs:line 40
+   at GameplayV3.Network.ServerCommandDeltaEnetFixtureV3._Ready() in E:\mercenary-rpg\scripts\gameplay_v3\network\ServerCommandDeltaEnetFixtureV3.cs:line 26

@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_dwarf_armor_mender_tilda_방어구_수선공_틸다_0001_transparent.png",
+  "sourceRelativePath": "R_r_dwarf_armor_mender_tilda_방어구_수선공_틸다_0001_transparent.png",
+  "sourceSha256": "4d5f03e37e81aae031b426288c1fe1ebc5983d4db38f5df1fa3fb82c6e37dcf4",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_dwarf_armor_mender_tilda_방어구_수선공_틸다_0001_transparent.png",
+  "outputSha256": "5c465b1fffe7be3a61f4770895ad59581007d259129fbc35eb42879903210671",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    361,
+    51,
+    1313,
+    2386
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    952,
+    2335
+  ],
+  "outputSize": [
+    960,
+    2346
+  ],
+  "outputBoundingBox": [
+    4,
+    7,
+    956,
+    2341
+  ],
+  "contentBoundingBox": [
+    4,
+    7,
+    956,
+    2341
+  ],
+  "bottomCenterAnchor": [
+    480.0,
+    2341.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9978687127024722,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1331712,
+  "transparentPixelCount": 920448,
+  "sourceUniqueColorEstimate": 44831,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 34994,
+  "saturationClampedPixelCount": 1618,
+  "elapsedMilliseconds": 2903.709,
+  "warningCodes": [],
+  "errorMessage": ""
+}

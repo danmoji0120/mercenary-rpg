@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_elf_artillery_mage_selene_포격마도사_셀레네_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_elf_artillery_mage_selene_포격마도사_셀레네_0001_transparent.png",
+  "sourceSha256": "e572ac0d2243fefdfbefd3f416e089af4f908aeb58c155d5aed7ab01378eb6ea",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_elf_artillery_mage_selene_포격마도사_셀레네_0001_transparent.png",
+  "outputSha256": "00c2e8ffcebdd06ce85a829eb890b9235397cfbe033568f75dd74018761ff85d",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    37,
+    13,
+    1622,
+    2413
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1585,
+    2400
+  ],
+  "outputSize": [
+    1596,
+    2412
+  ],
+  "outputBoundingBox": [
+    5,
+    8,
+    1589,
+    2408
+  ],
+  "contentBoundingBox": [
+    5,
+    8,
+    1589,
+    2408
+  ],
+  "bottomCenterAnchor": [
+    798.0,
+    2408.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983416252072969,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1645236,
+  "transparentPixelCount": 2204316,
+  "sourceUniqueColorEstimate": 67657,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 43027,
+  "saturationClampedPixelCount": 5200,
+  "elapsedMilliseconds": 3553.401,
+  "warningCodes": [],
+  "errorMessage": ""
+}

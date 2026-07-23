@@ -61,9 +61,10 @@ public sealed class DemolitionWorkPayloadV3
 public sealed record DemolitionCompletionResultV3(bool Succeeded,string FailureReason,string StructureId,IReadOnlyList<string> SalvageStackIds,int SalvageAmount,long OccupancyRevisionBefore,long OccupancyRevisionAfter);
 public static class DemolitionCompletionServiceV3
 {
-    public static DemolitionCompletionResultV3 TryComplete(ConstructionSessionV3 construction,ResourceSessionV3 resources,string structureId,string workRequestId,Rect2I bounds,float requiredProgressSeconds)
+    public static DemolitionCompletionResultV3 TryComplete(ConstructionSessionV3 construction,ResourceSessionV3 resources,string structureId,string workRequestId,Rect2I bounds,float requiredProgressSeconds,Func<string,bool>? hasEquipmentOutput=null)
     {
         if(!construction.Structures.TryGet(structureId,out var structure)||structure==null)return Fail("StructureMissing");
+        if(hasEquipmentOutput?.Invoke(structureId)==true)return Fail("EquipmentOutputNotEmpty");
         if(!construction.Demolitions.TryGet(structureId,out var demolition)||demolition==null||demolition.Status!=StructureDemolitionStatusV3.UnderDemolition||!float.IsFinite(requiredProgressSeconds)||requiredProgressSeconds<=0||demolition.ProgressSeconds<requiredProgressSeconds)return Fail("InvalidDemolitionState");
         if(!construction.DemolitionReservations.IsReservedBy(structureId,workRequestId))return Fail("ReservationLost");
         foreach(var cell in structure.OccupiedCells)if(!construction.Structures.TryGetStructureAtCell(cell,out var indexed)||!ReferenceEquals(indexed,structure))return Fail("StructureIndexCorrupted");

@@ -102,7 +102,7 @@ public static class MercenaryHudTextFormatterV3
         MercenaryWorkSkillTypeV3.Construction => "건설",
         MercenaryWorkSkillTypeV3.Gathering => "채집",
         MercenaryWorkSkillTypeV3.Farming => "농사",
-        MercenaryWorkSkillTypeV3.Production => "생산",
+        MercenaryWorkSkillTypeV3.Production => "\uC81C\uC791",
         MercenaryWorkSkillTypeV3.Medicine => "치료",
         MercenaryWorkSkillTypeV3.Guarding => "경계",
         _ => "-"

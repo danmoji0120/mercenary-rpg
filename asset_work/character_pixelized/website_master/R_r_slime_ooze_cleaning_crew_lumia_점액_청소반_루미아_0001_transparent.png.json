@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_slime_ooze_cleaning_crew_lumia_점액_청소반_루미아_0001_transparent.png",
+  "sourceRelativePath": "R_r_slime_ooze_cleaning_crew_lumia_점액_청소반_루미아_0001_transparent.png",
+  "sourceSha256": "943328683fb7b785d05d9b3f7069806ea418333f63d6da9adb43948b82ec62ba",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_slime_ooze_cleaning_crew_lumia_점액_청소반_루미아_0001_transparent.png",
+  "outputSha256": "8bdead945a9e8b49623ed042bb03a7a95c6d513953572af7d3ebde9de1e5c4a0",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    107,
+    99,
+    1482,
+    2388
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1375,
+    2289
+  ],
+  "outputSize": [
+    1386,
+    2298
+  ],
+  "outputBoundingBox": [
+    5,
+    5,
+    1379,
+    2291
+  ],
+  "contentBoundingBox": [
+    5,
+    5,
+    1379,
+    2291
+  ],
+  "bottomCenterAnchor": [
+    693.0,
+    2291.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9969538729329852,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1448820,
+  "transparentPixelCount": 1736208,
+  "sourceUniqueColorEstimate": 61080,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 37950,
+  "saturationClampedPixelCount": 12535,
+  "elapsedMilliseconds": 2985.929,
+  "warningCodes": [],
+  "errorMessage": ""
+}

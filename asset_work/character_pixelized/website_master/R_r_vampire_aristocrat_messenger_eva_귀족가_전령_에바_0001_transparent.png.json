@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_vampire_aristocrat_messenger_eva_귀족가_전령_에바_0001_transparent.png",
+  "sourceRelativePath": "R_r_vampire_aristocrat_messenger_eva_귀족가_전령_에바_0001_transparent.png",
+  "sourceSha256": "1d76ba28b97e642e6f229180131cc14af51491f4180c347d43a2b39bd540001a",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_vampire_aristocrat_messenger_eva_귀족가_전령_에바_0001_transparent.png",
+  "outputSha256": "a64e6a9ae498eb54de53b81ce2160e7a16f7524f3ba7ef07fadf11e1f41ce4de",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    190,
+    0,
+    1498,
+    2419
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1308,
+    2419
+  ],
+  "outputSize": [
+    1320,
+    2430
+  ],
+  "outputBoundingBox": [
+    6,
+    7,
+    1314,
+    2425
+  ],
+  "contentBoundingBox": [
+    6,
+    7,
+    1314,
+    2425
+  ],
+  "bottomCenterAnchor": [
+    660.0,
+    2425.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9979423868312757,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1275012,
+  "transparentPixelCount": 1932588,
+  "sourceUniqueColorEstimate": 44401,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 33648,
+  "saturationClampedPixelCount": 1946,
+  "elapsedMilliseconds": 2746.793,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

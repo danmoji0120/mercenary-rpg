@@ -1,5 +1,4 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -21,12 +20,12 @@ Global
 		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Debug|x64.Build.0 = Debug|Any CPU
 		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Debug|x86.Build.0 = Debug|Any CPU
-		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|Any CPU.Build.0 = Debug|Any CPU
-		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|x64.ActiveCfg = Debug|Any CPU
-		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|x64.Build.0 = Debug|Any CPU
-		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|x86.ActiveCfg = Debug|Any CPU
-		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|x86.Build.0 = Debug|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|x64.ActiveCfg = Release|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|x64.Build.0 = Release|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|x86.ActiveCfg = Release|Any CPU
+		{AC047F5E-CB80-4C70-8009-C8EAF0B63EDD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

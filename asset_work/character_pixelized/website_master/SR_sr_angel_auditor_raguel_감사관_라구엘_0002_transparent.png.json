@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_angel_auditor_raguel_감사관_라구엘_0002_transparent.png",
+  "sourceRelativePath": "SR_sr_angel_auditor_raguel_감사관_라구엘_0002_transparent.png",
+  "sourceSha256": "a868dba75551b8b152a8e5d22c1e4dbfaf19636473f11b4713006da3e1c2e648",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_angel_auditor_raguel_감사관_라구엘_0002_transparent.png",
+  "outputSha256": "14bd4736fef7c7b5edbc61a2952eafcf50be45dda5720e0d1934902b0b4489f7",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    64,
+    39,
+    1567,
+    2413
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1503,
+    2374
+  ],
+  "outputSize": [
+    1512,
+    2382
+  ],
+  "outputBoundingBox": [
+    4,
+    4,
+    1504,
+    2378
+  ],
+  "contentBoundingBox": [
+    4,
+    4,
+    1504,
+    2378
+  ],
+  "bottomCenterAnchor": [
+    756.0,
+    2378.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998320738874895,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1452768,
+  "transparentPixelCount": 2148816,
+  "sourceUniqueColorEstimate": 58568,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 37922,
+  "saturationClampedPixelCount": 164,
+  "elapsedMilliseconds": 3167.857,
+  "warningCodes": [],
+  "errorMessage": ""
+}

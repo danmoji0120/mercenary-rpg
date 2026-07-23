@@ -1,0 +1,5 @@
+Godot Engine v4.7.stable.mono.official.5b4e0cb0f - https://godotengine.org
+
+[MCP Runtime] Server listening on port 7777
+[MCP Runtime] Autoload ready, server starting on port 7777
+[TwoRegionLifecycleV3] PASS=True worlds=1 companies=1 regions=2 active=region_test_frontier_001 revision=5 A=1/1/1/1/1/1 B=1/1/1/1/1/1 equipment=2/2 jobs/reservations=0/0 crossRegion=0 orphan=0 duplicate=0 staleAccepted=0

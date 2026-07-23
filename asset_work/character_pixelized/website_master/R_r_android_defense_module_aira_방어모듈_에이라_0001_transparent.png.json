@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_android_defense_module_aira_방어모듈_에이라_0001_transparent.png",
+  "sourceRelativePath": "R_r_android_defense_module_aira_방어모듈_에이라_0001_transparent.png",
+  "sourceSha256": "4e0f64161d3f7bc8420a2e7e01371450f146a73c421f2768244aab1eaec93ed3",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_android_defense_module_aira_방어모듈_에이라_0001_transparent.png",
+  "outputSha256": "6b973e7be5778ef1ee0a02f72be997fe1be10935e6ce1aca40b47a2b08adf06b",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    326,
+    15,
+    1213,
+    2426
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    887,
+    2411
+  ],
+  "outputSize": [
+    900,
+    2424
+  ],
+  "outputBoundingBox": [
+    6,
+    9,
+    893,
+    2420
+  ],
+  "contentBoundingBox": [
+    6,
+    9,
+    893,
+    2420
+  ],
+  "bottomCenterAnchor": [
+    450.0,
+    2420.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983498349834984,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 933168,
+  "transparentPixelCount": 1248432,
+  "sourceUniqueColorEstimate": 44080,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 24536,
+  "saturationClampedPixelCount": 283,
+  "elapsedMilliseconds": 2324.538,
+  "warningCodes": [],
+  "errorMessage": ""
+}

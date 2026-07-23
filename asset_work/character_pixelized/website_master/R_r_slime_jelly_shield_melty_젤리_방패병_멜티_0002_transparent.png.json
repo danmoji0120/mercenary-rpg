@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_slime_jelly_shield_melty_젤리_방패병_멜티_0002_transparent.png",
+  "sourceRelativePath": "R_r_slime_jelly_shield_melty_젤리_방패병_멜티_0002_transparent.png",
+  "sourceSha256": "67f31a03e3b2ef7efb06e5eb5ba061625616a35f39773c94c153815585a271e1",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_slime_jelly_shield_melty_젤리_방패병_멜티_0002_transparent.png",
+  "outputSha256": "d774c8d7d26b17f15e7a92b8bcf8262c43fe27ec95f99d1b08d4b111cd84ce24",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    184,
+    65,
+    1398,
+    2369
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1214,
+    2304
+  ],
+  "outputSize": [
+    1224,
+    2316
+  ],
+  "outputBoundingBox": [
+    5,
+    8,
+    1217,
+    2312
+  ],
+  "contentBoundingBox": [
+    5,
+    8,
+    1217,
+    2312
+  ],
+  "bottomCenterAnchor": [
+    612.0,
+    2312.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998272884283247,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1656684,
+  "transparentPixelCount": 1178100,
+  "sourceUniqueColorEstimate": 54119,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 45018,
+  "saturationClampedPixelCount": 4538,
+  "elapsedMilliseconds": 3192.903,
+  "warningCodes": [],
+  "errorMessage": ""
+}

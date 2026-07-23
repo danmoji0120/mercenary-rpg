@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_lizardkin_acid_javelin_nashika_산성투창_나시카_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_lizardkin_acid_javelin_nashika_산성투창_나시카_0001_transparent.png",
+  "sourceSha256": "efdf8ff8d7950c2d8476c30e90f46aa363165792ea7574c5f57d91d22516f6d6",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_lizardkin_acid_javelin_nashika_산성투창_나시카_0001_transparent.png",
+  "outputSha256": "903802fc7d6baed71cc13f8ca4dfc7ade904a654059354d00de70ebeb08e3968",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    33,
+    27,
+    1567,
+    2405
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1534,
+    2378
+  ],
+  "outputSize": [
+    1542,
+    2388
+  ],
+  "outputBoundingBox": [
+    4,
+    6,
+    1538,
+    2382
+  ],
+  "contentBoundingBox": [
+    4,
+    6,
+    1538,
+    2382
+  ],
+  "bottomCenterAnchor": [
+    771.0,
+    2382.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9974874371859297,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1023924,
+  "transparentPixelCount": 2658372,
+  "sourceUniqueColorEstimate": 52865,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 27066,
+  "saturationClampedPixelCount": 457,
+  "elapsedMilliseconds": 2457.606,
+  "warningCodes": [],
+  "errorMessage": ""
+}

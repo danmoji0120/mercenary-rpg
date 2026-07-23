@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_foxkin_deceiver_sehoa_기만술사_세호아_0002_transparent.png",
+  "sourceRelativePath": "SR_sr_foxkin_deceiver_sehoa_기만술사_세호아_0002_transparent.png",
+  "sourceSha256": "f594413fa76c6c684cd582e2f00890edcfb76ecb2810d83c12e0406896755c75",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_foxkin_deceiver_sehoa_기만술사_세호아_0002_transparent.png",
+  "outputSha256": "ab0f8c5f774822beb36d97d80f8fda0cd9c29098c90b8a6d55d52e9558f13a37",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    192,
+    27,
+    1599,
+    2395
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1407,
+    2368
+  ],
+  "outputSize": [
+    1416,
+    2376
+  ],
+  "outputBoundingBox": [
+    4,
+    4,
+    1408,
+    2372
+  ],
+  "contentBoundingBox": [
+    4,
+    4,
+    1408,
+    2372
+  ],
+  "bottomCenterAnchor": [
+    708.0,
+    2372.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983164983164983,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1468932,
+  "transparentPixelCount": 1895484,
+  "sourceUniqueColorEstimate": 54718,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 39141,
+  "saturationClampedPixelCount": 5057,
+  "elapsedMilliseconds": 3165.14,
+  "warningCodes": [],
+  "errorMessage": ""
+}

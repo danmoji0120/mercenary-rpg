@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_harpy_storm_rescue_captain_aria_폭풍구조대장_아리아_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_harpy_storm_rescue_captain_aria_폭풍구조대장_아리아_0001_transparent.png",
+  "sourceSha256": "dbeee6e665729e07378f9c3dcd50e89467e478d461ae491100a288d5de9a8d9f",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_harpy_storm_rescue_captain_aria_폭풍구조대장_아리아_0001_transparent.png",
+  "outputSha256": "371d44c7cd7a047add83487e230b4a2cdb9a954772ea9b5f8dfe23764975e987",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    98,
+    87,
+    1613,
+    2386
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1515,
+    2299
+  ],
+  "outputSize": [
+    1524,
+    2310
+  ],
+  "outputBoundingBox": [
+    4,
+    7,
+    1516,
+    2305
+  ],
+  "contentBoundingBox": [
+    4,
+    7,
+    1516,
+    2305
+  ],
+  "bottomCenterAnchor": [
+    762.0,
+    2305.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9978354978354979,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1130184,
+  "transparentPixelCount": 2390256,
+  "sourceUniqueColorEstimate": 51690,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 30171,
+  "saturationClampedPixelCount": 2065,
+  "elapsedMilliseconds": 2641.629,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 
@@ -5,6 +6,9 @@ namespace WorldV2;
 
 public partial class WorldStreamManagerV2 : Node
 {
+    public event Action<ChunkDataV2>? ChunkDataReady;
+    public event Action<ChunkDataV2>? ChunkRendererAttached;
+    public event Action<Vector2I>? ChunkRendererDetached;
     [Export]
     public int RenderRadiusChunks { get; set; } = 2;
 
@@ -154,6 +158,9 @@ public partial class WorldStreamManagerV2 : Node
     public int WorkerCompletedCount => _generationWorker?.CompletedCount ?? 0;
     public double WorkerAverageMs => _generationWorker?.AverageMs ?? 0.0;
     public double WorkerMaxMs => _generationWorker?.MaxMs ?? 0.0;
+    public long ChunkGenerationStartedTotal=>_chunkCache.GenerationStartedTotal;public long ChunkGenerationCompletedTotal=>_chunkCache.GenerationCompletedTotal;public long ChunkGenerationCancelledTotal=>_chunkCache.GenerationCancelledTotal;
+    public int CurrentGeneratingChunkCount=>_chunkCache.GetSummary().GeneratingCount;
+    public int OrphanGeneratingEntryCount=>Math.Max(0,CurrentGeneratingChunkCount-(RequiredQueueCount+WarmQueueCount+PrefetchQueueCount+WorkerPendingCount+WorkerCompletedCount));
 
     private readonly Dictionary<Vector2I, ChunkRendererV2> _chunkRenderersByCoord = new();
     private readonly Stack<ChunkRendererV2> _rendererPool = new();
@@ -552,6 +559,7 @@ public partial class WorldStreamManagerV2 : Node
             if (!_desiredRenderChunks.Contains(chunkCoord))
             {
                 _pendingGeneration.Remove(chunkCoord);
+                _chunkCache.CancelGenerating(chunkCoord);
                 continue;
             }
 
@@ -592,6 +600,7 @@ public partial class WorldStreamManagerV2 : Node
 
             if (!result.Success || result.ChunkData == null)
             {
+                _chunkCache.CancelGenerating(result.GlobalChunkCoord);
                 GD.PushWarning($"WorldV2 chunk generation failed at {result.GlobalChunkCoord}: {result.Error}");
                 continue;
             }
@@ -600,6 +609,7 @@ public partial class WorldStreamManagerV2 : Node
             {
                 _chunkCache.StoreChunkData(result.GlobalChunkCoord, result.ChunkData);
             }
+            ChunkDataReady?.Invoke(result.ChunkData);
 
             if (result.RequestType is WorldChunkGenerationRequestTypeV2.DirectionalPrefetch or WorldChunkGenerationRequestTypeV2.IdlePrefetch or WorldChunkGenerationRequestTypeV2.Warm)
             {
@@ -861,6 +871,7 @@ public partial class WorldStreamManagerV2 : Node
         AttachedThisFrame++;
         WorldV2PerformanceProfiler.Instance.IncrementRendererAttachesThisFrame();
         WorldV2PerformanceProfiler.Instance.EndSample(WorldV2PerformanceProfiler.RendererAttach, attachStart, chunkCoord);
+        ChunkRendererAttached?.Invoke(chunkData);
     }
 
     private ChunkRendererV2 RentRenderer(Vector2I chunkCoord)
@@ -922,6 +933,7 @@ public partial class WorldStreamManagerV2 : Node
         WorldV2PerformanceProfiler.Instance.IncrementRendererDetachesThisFrame();
         DetachedThisFrame++;
         WorldV2PerformanceProfiler.Instance.EndSample(WorldV2PerformanceProfiler.RendererDetach, detachStart, chunkCoord);
+        ChunkRendererDetached?.Invoke(chunkCoord);
     }
 
     private void EvictColdChunkData()

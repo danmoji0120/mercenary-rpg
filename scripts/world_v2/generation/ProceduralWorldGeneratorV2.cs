@@ -191,6 +191,16 @@ public sealed class ProceduralWorldGeneratorV2
             }
         }
 
+        IReadOnlyList<NaturalResourceSpawnDescriptorV3> resourceSpawns = ResourcePlacementEvaluatorV3.GenerateChunk(
+            worldSeed,
+            _generationRequest.PlanVersion.ToString(),
+            globalChunkCoord,
+            _generationRequest.MapSize.CellBounds,
+            _flatlandPlanV3.SampleCell,
+            out ResourcePlacementChunkDiagnosticsV3 resourceDiagnostics);
+        chunkData.NaturalResourceSpawns.AddRange(resourceSpawns);
+        chunkData.ResourcePlacementDiagnostics = resourceDiagnostics;
+
         double sampleTotalMs = WorldV2PerformanceProfiler.ElapsedMilliseconds(sampleStart);
         profiler.RecordSample(WorldV2PerformanceProfiler.FlatlandSample, sampleTotalMs, globalChunkCoord);
         profiler.RecordSample(WorldV2PerformanceProfiler.FlatlandSampleTotal, sampleTotalMs, globalChunkCoord);

@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_lamia_binding_shield_mirena_결박방패_미레나_0004_transparent.png",
+  "sourceRelativePath": "R_r_lamia_binding_shield_mirena_결박방패_미레나_0004_transparent.png",
+  "sourceSha256": "9b4bca63d7d3ba1244f6bf3fc8849c5049da404e7bf2ed00f4910f205b7ea159",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_lamia_binding_shield_mirena_결박방패_미레나_0004_transparent.png",
+  "outputSha256": "fffefd952b27ad5bf58eb249e846a5d0c937131e84f05d7dc39c1795f0aa5714",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    126,
+    46,
+    1603,
+    2405
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1477,
+    2359
+  ],
+  "outputSize": [
+    1488,
+    2370
+  ],
+  "outputBoundingBox": [
+    5,
+    7,
+    1481,
+    2365
+  ],
+  "contentBoundingBox": [
+    5,
+    7,
+    1481,
+    2365
+  ],
+  "bottomCenterAnchor": [
+    744.0,
+    2365.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9978902953586498,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1685052,
+  "transparentPixelCount": 1841508,
+  "sourceUniqueColorEstimate": 56175,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 45532,
+  "saturationClampedPixelCount": 11032,
+  "elapsedMilliseconds": 3600.37,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_minotaur_enforcer_dorkan_징벌집행관_도르칸_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_minotaur_enforcer_dorkan_징벌집행관_도르칸_0001_transparent.png",
+  "sourceSha256": "6d7f03ae9a57b40b86e7621e329302151b304c3f44e92819afdc4608dd71b7f5",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_minotaur_enforcer_dorkan_징벌집행관_도르칸_0001_transparent.png",
+  "outputSha256": "81dd547277aff56204c2e84459bb46b535abecc811a7d3ef5f5590bd333ef268",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    94,
+    42,
+    1582,
+    2393
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1488,
+    2351
+  ],
+  "outputSize": [
+    1500,
+    2364
+  ],
+  "outputBoundingBox": [
+    6,
+    9,
+    1494,
+    2360
+  ],
+  "contentBoundingBox": [
+    6,
+    9,
+    1494,
+    2360
+  ],
+  "bottomCenterAnchor": [
+    750.0,
+    2360.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983079526226735,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1988676,
+  "transparentPixelCount": 1557324,
+  "sourceUniqueColorEstimate": 31308,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 53280,
+  "saturationClampedPixelCount": 2477,
+  "elapsedMilliseconds": 4022.628,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_human_pr_gambler_lucio_홍보_도박사_루치오_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_human_pr_gambler_lucio_홍보_도박사_루치오_0001_transparent.png",
+  "sourceSha256": "5161ff18a60cc12f34a4caf6ead31138fb1d64be362f57f0f019b7f44b68372e",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_human_pr_gambler_lucio_홍보_도박사_루치오_0001_transparent.png",
+  "outputSha256": "ca46dc0b2be2b185bafe6204bc0ea15d9bf868ba11abb233222a3563d0ced4a6",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    202,
+    0,
+    1441,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1239,
+    2432
+  ],
+  "outputSize": [
+    1248,
+    2442
+  ],
+  "outputBoundingBox": [
+    4,
+    6,
+    1240,
+    2436
+  ],
+  "contentBoundingBox": [
+    4,
+    6,
+    1240,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    624.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1168668,
+  "transparentPixelCount": 1878948,
+  "sourceUniqueColorEstimate": 63103,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 30312,
+  "saturationClampedPixelCount": 254,
+  "elapsedMilliseconds": 2440.244,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_yuki_onna_ice_lancer_yukira_얼음창병_유키라_0002_transparent.png",
+  "sourceRelativePath": "R_r_yuki_onna_ice_lancer_yukira_얼음창병_유키라_0002_transparent.png",
+  "sourceSha256": "1a8b4cc662dac94124ef033bb447cb70ad8ad41166ac2d2577677ae6ac80e15d",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_yuki_onna_ice_lancer_yukira_얼음창병_유키라_0002_transparent.png",
+  "outputSha256": "9f4649607ed77b6000c78527f8b58af21953aa334d8cfcd124eba95edbc3efac",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    87,
+    28,
+    1613,
+    2409
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1526,
+    2381
+  ],
+  "outputSize": [
+    1536,
+    2394
+  ],
+  "outputBoundingBox": [
+    5,
+    9,
+    1529,
+    2390
+  ],
+  "contentBoundingBox": [
+    5,
+    9,
+    1529,
+    2390
+  ],
+  "bottomCenterAnchor": [
+    768.0,
+    2390.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983291562238931,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1138614,
+  "transparentPixelCount": 2538570,
+  "sourceUniqueColorEstimate": 60125,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 27980,
+  "saturationClampedPixelCount": 4691,
+  "elapsedMilliseconds": 2675.66,
+  "warningCodes": [],
+  "errorMessage": ""
+}

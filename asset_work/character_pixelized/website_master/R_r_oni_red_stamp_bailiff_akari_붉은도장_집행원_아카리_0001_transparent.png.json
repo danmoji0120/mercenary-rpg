@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_oni_red_stamp_bailiff_akari_붉은도장_집행원_아카리_0001_transparent.png",
+  "sourceRelativePath": "R_r_oni_red_stamp_bailiff_akari_붉은도장_집행원_아카리_0001_transparent.png",
+  "sourceSha256": "332dc4b8abf8b34a2f594b1ff7d224e8aed006bb2e4e72a9dcfc4b498698a90d",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_oni_red_stamp_bailiff_akari_붉은도장_집행원_아카리_0001_transparent.png",
+  "outputSha256": "2c73bfde092953eab938751c5d1dfd432adcd5def9d00cc8814d30848886b3cf",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    139,
+    89,
+    1513,
+    2364
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1374,
+    2275
+  ],
+  "outputSize": [
+    1386,
+    2286
+  ],
+  "outputBoundingBox": [
+    6,
+    7,
+    1380,
+    2281
+  ],
+  "contentBoundingBox": [
+    6,
+    7,
+    1380,
+    2281
+  ],
+  "bottomCenterAnchor": [
+    693.0,
+    2281.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9978127734033246,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1197324,
+  "transparentPixelCount": 1971072,
+  "sourceUniqueColorEstimate": 44408,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 32065,
+  "saturationClampedPixelCount": 3275,
+  "elapsedMilliseconds": 2743.611,
+  "warningCodes": [],
+  "errorMessage": ""
+}

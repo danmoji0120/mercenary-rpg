@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_undead_medic_rosaline_언데드_의무병_로잘린_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_undead_medic_rosaline_언데드_의무병_로잘린_0001_transparent.png",
+  "sourceSha256": "5a7a284610f52e40ced99564b30d99017864dc7942832df7b743a3bca0926972",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_undead_medic_rosaline_언데드_의무병_로잘린_0001_transparent.png",
+  "outputSha256": "f714901d93b6ed8fad9be46fc136574bfc8ffd9c91a8975833a73d469f26d004",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    326,
+    0,
+    1371,
+    2415
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1045,
+    2415
+  ],
+  "outputSize": [
+    1056,
+    2424
+  ],
+  "outputBoundingBox": [
+    5,
+    5,
+    1049,
+    2417
+  ],
+  "contentBoundingBox": [
+    5,
+    5,
+    1049,
+    2417
+  ],
+  "bottomCenterAnchor": [
+    528.0,
+    2417.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9971122112211221,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1101024,
+  "transparentPixelCount": 1458720,
+  "sourceUniqueColorEstimate": 39943,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 27419,
+  "saturationClampedPixelCount": 305,
+  "elapsedMilliseconds": 2330.397,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

@@ -23,6 +23,9 @@ public sealed class ChunkDataV2
     public Vector2I LocalChunkCoordInSector { get; }
     public Vector2I OriginGlobalCell { get; }
     public int FilledCellCount { get; private set; }
+    public List<NaturalResourceSpawnDescriptorV3> NaturalResourceSpawns { get; } = new();
+    public ResourcePlacementChunkDiagnosticsV3? ResourcePlacementDiagnostics { get; set; }
+    public IReadOnlyList<ResourceEcologyCapacitySnapshotV3> ResourceEcologyCapacities => ResourcePlacementDiagnostics?.EcologyCapacities ?? System.Array.Empty<ResourceEcologyCapacitySnapshotV3>();
 
     public static int ToIndex(int localX, int localY)
     {

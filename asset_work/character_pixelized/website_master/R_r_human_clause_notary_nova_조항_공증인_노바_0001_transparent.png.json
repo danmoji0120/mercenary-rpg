@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_human_clause_notary_nova_조항_공증인_노바_0001_transparent.png",
+  "sourceRelativePath": "R_r_human_clause_notary_nova_조항_공증인_노바_0001_transparent.png",
+  "sourceSha256": "a0920217d6977e7b224f8d68a6a51ea9c032de9a5b51402f26f0449d6e3bb259",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_human_clause_notary_nova_조항_공증인_노바_0001_transparent.png",
+  "outputSha256": "30fba71242137d9c8e4f10d84e730d66c30e4ec4bbe983c84bc0e32eb2efd3d4",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    161,
+    73,
+    1528,
+    2395
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1367,
+    2322
+  ],
+  "outputSize": [
+    1380,
+    2334
+  ],
+  "outputBoundingBox": [
+    6,
+    8,
+    1373,
+    2330
+  ],
+  "contentBoundingBox": [
+    6,
+    8,
+    1373,
+    2330
+  ],
+  "bottomCenterAnchor": [
+    690.0,
+    2330.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998286203941731,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 963642,
+  "transparentPixelCount": 2257278,
+  "sourceUniqueColorEstimate": 44438,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 24838,
+  "saturationClampedPixelCount": 460,
+  "elapsedMilliseconds": 2238.236,
+  "warningCodes": [],
+  "errorMessage": ""
+}

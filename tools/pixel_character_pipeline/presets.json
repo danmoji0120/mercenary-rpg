@@ -1,0 +1,70 @@
+{
+  "saturation_levels": {
+    "none": 1.0,
+    "low": 1.1,
+    "medium": 1.2,
+    "high": 1.35
+  },
+    "presets": {
+        "world_64": {
+            "target_content_height": 64,
+            "pixel_block_size": 2,
+            "palette_colors": 16,
+            "increase_saturation": "high",
+            "saturation_multiplier": 1.35,
+            "blur": 0,
+            "erode": 0,
+            "alpha_threshold": 16,
+            "padding": 2
+        },
+        "world_80": {
+            "target_content_height": 80,
+            "pixel_block_size": 2,
+            "palette_colors": 20,
+            "increase_saturation": "high",
+            "saturation_multiplier": 1.35,
+            "blur": 0,
+            "erode": 0,
+            "alpha_threshold": 16,
+            "padding": 2
+        },
+        "world_96": {
+            "target_content_height": 96,
+            "pixel_block_size": 3,
+            "palette_colors": 24,
+            "increase_saturation": "high",
+            "saturation_multiplier": 1.35,
+            "blur": 0,
+            "erode": 0,
+            "alpha_threshold": 16,
+            "padding": 3
+        },
+        "world_128_detail": {
+            "target_content_height": 128,
+            "pixel_block_size": 2,
+            "palette_colors": 32,
+            "increase_saturation": "high",
+            "saturation_multiplier": 1.35,
+            "blur": 0,
+            "erode": 0,
+            "alpha_threshold": 16,
+            "padding": 4
+        },
+        "website_master": {
+            "preserve_source_dimensions": true,
+            "target_content_height": null,
+            "pixel_block_size": 6,
+            "palette_colors": 16,
+            "smoothing": "none",
+            "inflate_outlines": "none",
+            "increase_saturation": "high",
+            "high_contrast": "none",
+            "dithering": false,
+            "alpha_threshold": 1,
+            "preserve_transparency": true,
+            "twitter_transparent_pixel": false,
+            "crop_after_conversion": true,
+            "padding": 4
+        }
+    }
+}

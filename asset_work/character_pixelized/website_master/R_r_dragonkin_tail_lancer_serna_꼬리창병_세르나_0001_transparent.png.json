@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_dragonkin_tail_lancer_serna_꼬리창병_세르나_0001_transparent.png",
+  "sourceRelativePath": "R_r_dragonkin_tail_lancer_serna_꼬리창병_세르나_0001_transparent.png",
+  "sourceSha256": "639211a9986ce34487f6cba1f5471049051afb06e2c471a5c27086af715d9cb4",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_dragonkin_tail_lancer_serna_꼬리창병_세르나_0001_transparent.png",
+  "outputSha256": "21df3628b618ccd3f16fc7deff0ba8df560d1ef0ac0c9fc02c6d2c98395fdc3a",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    71,
+    10,
+    1575,
+    2424
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1504,
+    2414
+  ],
+  "outputSize": [
+    1512,
+    2424
+  ],
+  "outputBoundingBox": [
+    4,
+    6,
+    1508,
+    2418
+  ],
+  "contentBoundingBox": [
+    4,
+    6,
+    1508,
+    2418
+  ],
+  "bottomCenterAnchor": [
+    756.0,
+    2418.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975247524752475,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1097724,
+  "transparentPixelCount": 2567364,
+  "sourceUniqueColorEstimate": 54282,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 29167,
+  "saturationClampedPixelCount": 1128,
+  "elapsedMilliseconds": 2760.153,
+  "warningCodes": [],
+  "errorMessage": ""
+}

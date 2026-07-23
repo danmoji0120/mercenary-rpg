@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_oni_thunder_hammer_kazuha_뇌격망치_카즈하_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_oni_thunder_hammer_kazuha_뇌격망치_카즈하_0001_transparent.png",
+  "sourceSha256": "69f16ad670f37e0f3151dd83b30c44013e12564820b1019740427f9d9935697f",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_oni_thunder_hammer_kazuha_뇌격망치_카즈하_0001_transparent.png",
+  "outputSha256": "6217498cfad7c0f05faa259c55d703f8af6de2987b793fd97da6a774234b0e67",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    84,
+    37,
+    1608,
+    2412
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1524,
+    2375
+  ],
+  "outputSize": [
+    1536,
+    2388
+  ],
+  "outputBoundingBox": [
+    6,
+    9,
+    1530,
+    2384
+  ],
+  "contentBoundingBox": [
+    6,
+    9,
+    1530,
+    2384
+  ],
+  "bottomCenterAnchor": [
+    768.0,
+    2384.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998324958123953,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1561074,
+  "transparentPixelCount": 2106894,
+  "sourceUniqueColorEstimate": 62361,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 41400,
+  "saturationClampedPixelCount": 1073,
+  "elapsedMilliseconds": 3226.77,
+  "warningCodes": [],
+  "errorMessage": ""
+}

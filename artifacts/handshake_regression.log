@@ -1,0 +1,5 @@
+Godot Engine v4.7.stable.mono.official.5b4e0cb0f - https://godotengine.org
+
+[MCP Runtime] Server listening on port 7777
+[MCP Runtime] Autoload ready, server starting on port 7777
+[DedicatedServerEnetV3] PASS=True port=31628 protocol=1 accepted/rejected=2/3 preHandshake/protocol/duplicate=1/1/1 world/company/region=1/1/1 stale/cleanup=0/0

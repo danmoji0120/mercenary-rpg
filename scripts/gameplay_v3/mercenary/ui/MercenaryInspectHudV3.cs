@@ -6,6 +6,9 @@ using GameplayV3.Work;
 using GameplayV3.Needs;
 using GameplayV3.Needs.Runtime;
 using GameplayV3.Farming.Runtime;
+using GameplayV3.Session;
+using GameplayV3.UI;
+using GameplayV3.Time;
 using Godot;
 using WorldV2;
 
@@ -16,7 +19,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
     public const float RefreshIntervalSeconds = 0.1f;
     public const int MaximumVisibleSelectionRows = 8;
     private const float PanelWidth = 600f;
-    private const float SinglePanelHeight = 300f;
+    private const float SinglePanelHeight = 348f;
     private const float MultiplePanelHeight = 222f;
     private const float BottomOffset = 88f;
 
@@ -46,9 +49,10 @@ public partial class MercenaryInspectHudV3 : Godot.Control
     private readonly Button[] _selectionButtons = new Button[MaximumVisibleSelectionRows];
     private readonly string[] _selectionButtonIds = new string[MaximumVisibleSelectionRows];
     private Button? _cancelButton;
-    private Label? _bedLabel;private Button? _assignBedButton;private Button? _unassignBedButton;private Button? _restButton;private Label? _foodLabel;private Button? _eatButton;private Button? _workPriorityButton;private MercenaryNeedsSessionV3? _needs;private RestWorkCoordinatorV3? _restWork;private EatingWorkCoordinatorV3? _eatingWork;
+    private Label? _bedLabel;private Button? _assignBedButton;private Button? _unassignBedButton;private Button? _restButton;private Label? _foodLabel;private Button? _eatButton;private Button? _workPriorityButton;private Button? _scheduleButton;private MercenaryNeedsSessionV3? _needs;private RestWorkCoordinatorV3? _restWork;private EatingWorkCoordinatorV3? _eatingWork;
     private double _refreshAccumulator;
     private bool _worldMapBlocked;
+    private bool _constructionUiBlocked;
 
     public MercenaryInspectHudModeV3 Mode { get; private set; }
     public int RefreshCount { get; private set; }
@@ -62,6 +66,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
     public bool WorldMapBlocked => _worldMapBlocked;
     public event Action<string>? BedAssignmentRequested;
     public event Action<string>? WorkPriorityRequested;
+    public event Action<string>? ScheduleRequested;
 
     public void Initialize(
         MercenaryControlSessionV3 control,
@@ -85,6 +90,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
             demolition,
             eatingWork,
             farmingWork);
+        Theme = GameplayUiThemeV3.Shared;
         BuildInterface();
         _control.Selection.SelectionChanged += OnSelectionChanged;
         if (MercenaryConditionSelfCheckV3.TryValidate(out string reason))
@@ -109,7 +115,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
 
     public override void _Process(double delta)
     {
-        if (_worldMapBlocked || _control == null || _control.Selection.Count == 0)
+        if (_worldMapBlocked || _constructionUiBlocked || _control == null || _control.Selection.Count == 0)
         {
             return;
         }
@@ -138,6 +144,13 @@ public partial class MercenaryInspectHudV3 : Godot.Control
         Refresh("WorldMapClosed");
     }
 
+    public void SetConstructionUiBlocked(bool blocked)
+    {
+        _constructionUiBlocked=blocked;
+        if(blocked){Visible=false;return;}
+        Refresh("ConstructionTrayClosed");
+    }
+
     private void BuildInterface()
     {
         MouseFilter = MouseFilterEnum.Ignore;
@@ -148,22 +161,8 @@ public partial class MercenaryInspectHudV3 : Godot.Control
             Name = "MercenaryInspectPanel",
             MouseFilter = MouseFilterEnum.Stop
         };
-        _panel.SetAnchorsPreset(LayoutPreset.BottomLeft);
+        GameplayUiShellV3.ConfigureSelection(_panel);
         SetPanelBounds(SinglePanelHeight);
-        StyleBoxFlat panelStyle = new()
-        {
-            BgColor = new Color(0.035f, 0.043f, 0.05f, 0.97f),
-            BorderColor = new Color(0.28f, 0.31f, 0.33f, 0.95f),
-            BorderWidthLeft = 1,
-            BorderWidthTop = 1,
-            BorderWidthRight = 1,
-            BorderWidthBottom = 1,
-            ContentMarginLeft = 9,
-            ContentMarginRight = 9,
-            ContentMarginTop = 7,
-            ContentMarginBottom = 7
-        };
-        _panel.AddThemeStyleboxOverride("panel", panelStyle);
         _panel.GuiInput += OnPanelGuiInput;
         AddChild(_panel);
 
@@ -237,7 +236,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
         stats.AddChild(_derivedLabel);
         columns.AddChild(stats);
         root.AddChild(columns);
-        HBoxContainer restFooter=new(){Name="RestFooter"};restFooter.AddThemeConstantOverride("separation",4);_bedLabel=MakeLabel("침대: 미배정",11,new Color(.72f,.76f,.8f));_bedLabel.SizeFlagsHorizontal=SizeFlags.ExpandFill;restFooter.AddChild(_bedLabel);_assignBedButton=new Button{Text="배정/재배정",CustomMinimumSize=new Vector2(86,24),MouseFilter=MouseFilterEnum.Stop};_assignBedButton.Pressed+=()=>{LastAction="BedAssignmentRequested";BedAssignmentRequested?.Invoke(DisplayedMercenaryId);GetViewport().SetInputAsHandled();};restFooter.AddChild(_assignBedButton);_unassignBedButton=new Button{Text="해제",CustomMinimumSize=new Vector2(42,24),MouseFilter=MouseFilterEnum.Stop};_unassignBedButton.Pressed+=OnUnassignBed;restFooter.AddChild(_unassignBedButton);_restButton=new Button{Text="휴식",CustomMinimumSize=new Vector2(48,24),MouseFilter=MouseFilterEnum.Stop};_restButton.Pressed+=OnRestPressed;restFooter.AddChild(_restButton);root.AddChild(restFooter);HBoxContainer foodFooter=new(){Name="FoodFooter"};foodFooter.AddThemeConstantOverride("separation",4);_foodLabel=MakeLabel("식량: 비상식량 없음",11,new Color(.82f,.72f,.48f));_foodLabel.SizeFlagsHorizontal=SizeFlags.ExpandFill;foodFooter.AddChild(_foodLabel);_eatButton=new Button{Text="식사",CustomMinimumSize=new Vector2(48,24),MouseFilter=MouseFilterEnum.Stop};_eatButton.Pressed+=OnEatPressed;foodFooter.AddChild(_eatButton);_workPriorityButton=new Button{Text="작업 우선순위",CustomMinimumSize=new Vector2(92,24),MouseFilter=MouseFilterEnum.Stop};_workPriorityButton.Pressed+=()=>{LastAction="WorkPriorityRequested";WorkPriorityRequested?.Invoke(DisplayedMercenaryId);GetViewport().SetInputAsHandled();};foodFooter.AddChild(_workPriorityButton);root.AddChild(foodFooter);
+        HBoxContainer restFooter=new(){Name="RestFooter"};restFooter.AddThemeConstantOverride("separation",4);_bedLabel=MakeLabel("침대: 미배정",11,new Color(.72f,.76f,.8f));_bedLabel.SizeFlagsHorizontal=SizeFlags.ExpandFill;restFooter.AddChild(_bedLabel);_assignBedButton=new Button{Text="배정/재배정",CustomMinimumSize=new Vector2(86,24),MouseFilter=MouseFilterEnum.Stop};_assignBedButton.Pressed+=()=>{LastAction="BedAssignmentRequested";BedAssignmentRequested?.Invoke(DisplayedMercenaryId);GetViewport().SetInputAsHandled();};restFooter.AddChild(_assignBedButton);_unassignBedButton=new Button{Text="해제",CustomMinimumSize=new Vector2(42,24),MouseFilter=MouseFilterEnum.Stop};_unassignBedButton.Pressed+=OnUnassignBed;restFooter.AddChild(_unassignBedButton);_restButton=new Button{Text="휴식",CustomMinimumSize=new Vector2(48,24),MouseFilter=MouseFilterEnum.Stop};_restButton.Pressed+=OnRestPressed;restFooter.AddChild(_restButton);root.AddChild(restFooter);HBoxContainer foodFooter=new(){Name="FoodFooter"};foodFooter.AddThemeConstantOverride("separation",4);_foodLabel=MakeLabel("식량: 비상식량 없음",11,new Color(.82f,.72f,.48f));_foodLabel.SizeFlagsHorizontal=SizeFlags.ExpandFill;foodFooter.AddChild(_foodLabel);_eatButton=new Button{Text="식사",CustomMinimumSize=new Vector2(48,24),MouseFilter=MouseFilterEnum.Stop};_eatButton.Pressed+=OnEatPressed;foodFooter.AddChild(_eatButton);_workPriorityButton=new Button{Text="작업 우선순위",CustomMinimumSize=new Vector2(92,24),MouseFilter=MouseFilterEnum.Stop};_workPriorityButton.Pressed+=()=>{LastAction="WorkPriorityRequested";WorkPriorityRequested?.Invoke(DisplayedMercenaryId);GetViewport().SetInputAsHandled();};foodFooter.AddChild(_workPriorityButton);root.AddChild(foodFooter);Button scheduleButton=new(){Text="\uC2DC\uAC04\uD45C",CustomMinimumSize=new Vector2(64,24),MouseFilter=MouseFilterEnum.Stop};scheduleButton.Pressed+=()=>{LastAction="ScheduleRequested";ScheduleRequested?.Invoke(DisplayedMercenaryId);GetViewport().SetInputAsHandled();};_scheduleButton=scheduleButton;foodFooter.AddChild(scheduleButton);
         return root;
     }
 
@@ -337,6 +336,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
             Visible = !_worldMapBlocked;
             _panel.Visible = false;
             DisplayedMercenaryId = string.Empty;
+            SetScheduleButtonAvailable(false);
             PushDiagnostics(null, reason);
             return;
         }
@@ -365,13 +365,17 @@ public partial class MercenaryInspectHudV3 : Godot.Control
     private void RenderSingle(MercenaryInspectHudSnapshotV3 value)
     {
         DisplayedMercenaryId = value.MercenaryId;
+        bool scheduleAvailable = _manager != null && value.State.CompanyId == _manager.LocalCompanyId
+            && GameplaySessionV3.TryGetMercenarySchedule(out MercenaryScheduleSessionV3? schedule)
+            && schedule != null && schedule.TryGetSchedule(value.MercenaryId, out _);
+        SetScheduleButtonAvailable(scheduleAvailable);
         DisplayedWorkType = value.WorkType;
         DisplayedWorkPhase = value.Phase;
         DisplayedCarry = value.Carry;
         DisplayedProgress = value.ProgressNormalized;
         _nameLabel!.Text = value.DisplayName;
         _statusLabel!.Text = value.Status;
-        _companyLabel!.Text = $"{value.CompanyName}  ·  {ShortId(value.MercenaryId)}  ·  Cell {value.State.CurrentCell}";
+        _companyLabel!.Text = $"{value.CompanyName}  ·  용병";
         _workLabel!.Text = $"{value.WorkType} / {value.Phase}  ·  {value.CommandSource}";
         _targetLabel!.Text = $"대상 {value.Target}  ·  목적지 {(value.Destination?.ToString() ?? "-")}  ·  운반 {value.Carry}";
         _workProgress!.Visible = value.HasProgress;
@@ -379,7 +383,7 @@ public partial class MercenaryInspectHudV3 : Godot.Control
         _workProgress.Value = value.ProgressNormalized * 100f;
         _workProgressText.Text = value.HasProgress ? $"{value.Progress:0.0}/{value.Required:0.0}" : string.Empty;
         _cancelButton!.Disabled = string.IsNullOrEmpty(value.WorkRequestId);
-        RestAssignmentV3? bed=null;bool assigned=_needs!=null&&_needs.Assignments.TryGetByMercenary(value.MercenaryId,out bed)&&bed!=null;_bedLabel!.Text=assigned?$"침대: {ShortId(bed!.StructureId)} / 슬롯 {bed.SlotIndex}":"침대: 미배정";_unassignBedButton!.Disabled=!assigned;_restButton!.Disabled=!assigned||value.Condition.FatigueNormalized<=(_needs?.Settings.ManualRestMinimum??.2f);int ration=_eatingWork?.GetAvailableFoodAmount(GameplayV3.Resources.ResourceTypeV3.Ration)??0;int potato=_eatingWork?.GetAvailableFoodAmount(GameplayV3.Resources.ResourceTypeV3.Potato)??0;float hunger=_needs?.Hunger.GetHunger(value.MercenaryId)??value.Condition.HungerNormalized;string meal="";if(_eatingWork?.TryPreviewMeal(value.MercenaryId,out _,out var preview,out _)==true)meal=$" · 예정 {preview.PlannedUnits}개/{preview.PlannedCalories}kcal";_foodLabel!.Text=$"식량: 비상식량 {ration} / 감자 {potato} · {HungerPolicyV3.Stage(hunger)}{meal}";_eatButton!.Disabled=_eatingWork==null||ration+potato<1||hunger<(_needs?.HungerConfig.ManualEatMinimumHunger??.2f);
+        RestAssignmentV3? bed=null;bool assigned=_needs!=null&&_needs.Assignments.TryGetByMercenary(value.MercenaryId,out bed)&&bed!=null;_bedLabel!.Text=assigned?$"\uCE68\uB300: {ShortId(bed!.StructureId)} / \uC2AC\uB86F {bed.SlotIndex}":"\uCE68\uB300: \uBBF8\uBC30\uC815";_unassignBedButton!.Disabled=!assigned;_restButton!.Disabled=!assigned||value.Condition.FatigueNormalized<=(_needs?.Settings.ManualRestMinimum??.2f);int foodAmount=0;foreach(var type in _needs?.FoodCatalog.GetEdibleTypes()??Array.Empty<GameplayV3.Resources.ResourceTypeV3>())foodAmount+=_eatingWork?.GetAvailableFoodAmount(type)??0;float hunger=_needs?.Hunger.GetHunger(value.MercenaryId)??value.Condition.HungerNormalized;string foodState="";if(_eatingWork?.TryGet(value.MercenaryId,out var activeMeal)==true&&activeMeal!=null)foodState=$"\n\uC12D\uCDE8: {activeMeal.FoodDisplayName} · \uD68C\uBCF5 \uC608\uC815 +{activeMeal.ExpectedHungerReduction*100:0}%";else if(_eatingWork?.TryPreviewMeal(value.MercenaryId,out _,out var preview,out string previewName)==true)foodState=$" · \uC608\uC815 {previewName} {preview.PlannedUnits}\uAC1C";string toolState="";if(GameplaySessionV3.TryGetWorkToolReservations(out var tools)&&tools?.TryGetForMercenary(value.MercenaryId,out var heldTool)==true&&heldTool!=null)toolState=$"\n\uC0AC\uC6A9 \uB3C4\uAD6C: {heldTool.DisplayName} · {heldTool.EffectText}";_foodLabel!.Text=$"\uC2DD\uB7C9: {foodAmount}\uAC1C · {HungerPolicyV3.Stage(hunger)}{foodState}{toolState}";_eatButton!.Disabled=_eatingWork==null||foodAmount<1||hunger<(_needs?.HungerConfig.ManualEatMinimumHunger??.2f);
 
         MercenaryConditionSnapshotV3 condition = value.Condition;
         _conditionDetail!.Text = $"{condition.HealthSummary} · {condition.InjurySummary}\n{condition.TreatmentSummary}";
@@ -403,13 +407,18 @@ public partial class MercenaryInspectHudV3 : Godot.Control
             SkillLine(MercenaryWorkSkillTypeV3.Production, skills.Production, topTypes) + "\n" +
             SkillLine(MercenaryWorkSkillTypeV3.Medicine, skills.Medicine, topTypes) + "\n" +
             SkillLine(MercenaryWorkSkillTypeV3.Guarding, skills.Guarding, topTypes);
-        _derivedLabel!.Text = $"이동 ×{value.Derived.MoveSpeedMultiplier:0.00}  작업 ×{value.Derived.WorkSpeedMultiplier:0.00}  운반 {value.Derived.CarryCapacity:0.0}\n" +
-            "상태 수치는 결정적 표시용 placeholder이며 gameplay에 영향 없음";
+        _derivedLabel!.Text = $"이동 ×{value.Derived.MoveSpeedMultiplier:0.00}  작업 ×{value.Derived.WorkSpeedMultiplier:0.00}  운반 {value.Derived.CarryCapacity:0.0}";
+    }
+
+    private void SetScheduleButtonAvailable(bool available)
+    {
+        if (_scheduleButton != null) _scheduleButton.Disabled = !available;
     }
 
     private void RenderMultiple(IReadOnlyList<string> selected)
     {
         DisplayedMercenaryId = string.Empty;
+        SetScheduleButtonAvailable(false);
         DisplayedWorkType = "Multiple";
         DisplayedWorkPhase = string.Empty;
         DisplayedCarry = string.Empty;
@@ -498,8 +507,8 @@ public partial class MercenaryInspectHudV3 : Godot.Control
     private void SetPanelBounds(float height)
     {
         if (_panel == null) return;
-        _panel.OffsetLeft = 12f;
-        _panel.OffsetRight = 12f + PanelWidth;
+        _panel.OffsetLeft = 14f;
+        _panel.OffsetRight = 14f + Math.Min(480f, PanelWidth);
         _panel.OffsetBottom = -BottomOffset;
         _panel.OffsetTop = -BottomOffset - height;
     }

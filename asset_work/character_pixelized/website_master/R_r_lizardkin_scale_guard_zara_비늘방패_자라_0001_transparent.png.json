@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_lizardkin_scale_guard_zara_비늘방패_자라_0001_transparent.png",
+  "sourceRelativePath": "R_r_lizardkin_scale_guard_zara_비늘방패_자라_0001_transparent.png",
+  "sourceSha256": "3c4104642b814f3724758b60ace055aaed24238a9272d40a63a5548242a36c50",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_lizardkin_scale_guard_zara_비늘방패_자라_0001_transparent.png",
+  "outputSha256": "4f8e233dbe5a175ef7f4b665085b57542927f607564e7efd2d80fa212f11140a",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    23,
+    43,
+    1470,
+    2395
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1447,
+    2352
+  ],
+  "outputSize": [
+    1458,
+    2364
+  ],
+  "outputBoundingBox": [
+    5,
+    8,
+    1451,
+    2360
+  ],
+  "contentBoundingBox": [
+    5,
+    8,
+    1451,
+    2360
+  ],
+  "bottomCenterAnchor": [
+    729.0,
+    2360.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983079526226735,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1284120,
+  "transparentPixelCount": 2162592,
+  "sourceUniqueColorEstimate": 54456,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 34252,
+  "saturationClampedPixelCount": 481,
+  "elapsedMilliseconds": 2870.988,
+  "warningCodes": [],
+  "errorMessage": ""
+}

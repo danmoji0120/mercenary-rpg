@@ -26,6 +26,7 @@ public sealed class GroundStackReservationRegistryV3
     public bool TryReduce(string id,string request,int amount){if(!_byStack.TryGetValue(id,out var old)||old.WorkRequestId!=request||amount<1||amount>old.RequestedAmount||!_shared.TryReduceByWork(request,amount))return false;if(amount==old.RequestedAmount)_byStack.Remove(id);else _byStack[id]=new(id,request,old.MercenaryId,old.CompanyId,old.RequestedAmount-amount,old.Revision,old.CreatedUtc);return true;}
     public int ReleaseByWorkRequest(string request){List<string> ids=new();foreach(var pair in _byStack)if(pair.Value.WorkRequestId==request)ids.Add(pair.Key);foreach(string id in ids)_byStack.Remove(id);_shared.ReleaseByWorkRequest(request);return ids.Count;}
     public int ReleaseByMercenary(string mercenary){List<string> ids=new();foreach(var pair in _byStack)if(pair.Value.MercenaryId==mercenary)ids.Add(pair.Key);foreach(string id in ids){string work=_byStack[id].WorkRequestId;_byStack.Remove(id);_shared.ReleaseByWorkRequest(work);}return ids.Count;}
+    public int ReleaseByGroundStack(string stackId){int count=_byStack.Remove(stackId)?1:0;_shared.ReleaseByGroundStack(stackId);return count;}
     public void Clear(){foreach(string work in _byStack.Values.Select(x=>x.WorkRequestId).ToList())_shared.ReleaseByWorkRequest(work);_byStack.Clear();}
 }
 
@@ -84,7 +85,7 @@ public sealed class HaulingWorkExecutionStateV3
 }
 
 public sealed class HaulingDiagnosticsV3
-{public int CompletedCount{get;internal set;}public int FailedCount{get;internal set;}public int CancelledCount{get;internal set;}public int SupersededCount{get;internal set;}public int EmergencyDropCount{get;internal set;}public int ResourceConservationMismatchCount{get;internal set;}public string LastRequestId{get;internal set;}=string.Empty;public string LastFailureReason{get;internal set;}=string.Empty;}
+{public int CompletedCount{get;internal set;}public int FailedCount{get;internal set;}public int CancelledCount{get;internal set;}public int SupersededCount{get;internal set;}public int EmergencyDropCount{get;internal set;}public int ResourceConservationMismatchCount{get;internal set;}public int SourceStackEmptyRejectCount{get;internal set;}public string LastRequestId{get;internal set;}=string.Empty;public string LastFailureReason{get;internal set;}=string.Empty;}
 
 public sealed partial class MercenaryWorkSessionV3
 {

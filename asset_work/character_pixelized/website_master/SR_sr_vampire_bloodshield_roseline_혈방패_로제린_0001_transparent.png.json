@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_vampire_bloodshield_roseline_혈방패_로제린_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_vampire_bloodshield_roseline_혈방패_로제린_0001_transparent.png",
+  "sourceSha256": "60211894cb8047ee6f07c6beb83c017be8a3f12a490af0250a1eee452c22833a",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_vampire_bloodshield_roseline_혈방패_로제린_0001_transparent.png",
+  "outputSha256": "b554c8a8031a0371a0cd84dc6961f9882766c551d17ffa61e02181fd01de393c",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    103,
+    0,
+    1591,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1488,
+    2432
+  ],
+  "outputSize": [
+    1500,
+    2442
+  ],
+  "outputBoundingBox": [
+    6,
+    6,
+    1494,
+    2436
+  ],
+  "contentBoundingBox": [
+    6,
+    6,
+    1494,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    750.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1885104,
+  "transparentPixelCount": 1777896,
+  "sourceUniqueColorEstimate": 50606,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 50994,
+  "saturationClampedPixelCount": 7195,
+  "elapsedMilliseconds": 3951.565,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

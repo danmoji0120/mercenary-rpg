@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_elf_grimoire_sealer_verdia_금서_봉인사_베르디아_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_elf_grimoire_sealer_verdia_금서_봉인사_베르디아_0001_transparent.png",
+  "sourceSha256": "73b13fac1e5488d7dc0510acc3745c514e19a13eb8fa87b3f5cdb1cff3aef03c",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_elf_grimoire_sealer_verdia_금서_봉인사_베르디아_0001_transparent.png",
+  "outputSha256": "1063332f09c99f18ca255adbce1043b48f9301a268ce88c115ffda28ef35eff6",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    205,
+    96,
+    1540,
+    2388
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1335,
+    2292
+  ],
+  "outputSize": [
+    1344,
+    2304
+  ],
+  "outputBoundingBox": [
+    4,
+    8,
+    1336,
+    2300
+  ],
+  "contentBoundingBox": [
+    4,
+    8,
+    1336,
+    2300
+  ],
+  "bottomCenterAnchor": [
+    672.0,
+    2300.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9982638888888888,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1536948,
+  "transparentPixelCount": 1559628,
+  "sourceUniqueColorEstimate": 50231,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 41200,
+  "saturationClampedPixelCount": 3791,
+  "elapsedMilliseconds": 3266.656,
+  "warningCodes": [],
+  "errorMessage": ""
+}

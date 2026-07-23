@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_sheepkin_pasture_shield_meira_방패목동_메이라_0001_transparent.png",
+  "sourceRelativePath": "R_r_sheepkin_pasture_shield_meira_방패목동_메이라_0001_transparent.png",
+  "sourceSha256": "2d599276fa4aacbe3f455e35a6911014030e93dbc434167918063ca060a2b9a1",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_sheepkin_pasture_shield_meira_방패목동_메이라_0001_transparent.png",
+  "outputSha256": "815b22d96dd3c3118f5dca90a61d3295c8f2912abf48cb2d2b454f294cda5379",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    126,
+    85,
+    1500,
+    2386
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1374,
+    2301
+  ],
+  "outputSize": [
+    1386,
+    2310
+  ],
+  "outputBoundingBox": [
+    6,
+    5,
+    1380,
+    2303
+  ],
+  "contentBoundingBox": [
+    6,
+    5,
+    1380,
+    2303
+  ],
+  "bottomCenterAnchor": [
+    693.0,
+    2303.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.996969696969697,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1480680,
+  "transparentPixelCount": 1720980,
+  "sourceUniqueColorEstimate": 52620,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 40365,
+  "saturationClampedPixelCount": 137,
+  "elapsedMilliseconds": 3065.259,
+  "warningCodes": [],
+  "errorMessage": ""
+}

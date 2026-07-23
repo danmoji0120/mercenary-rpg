@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_harpy_feather_sniper_erika_깃털저격수_에리카_0005_transparent.png",
+  "sourceRelativePath": "R_r_harpy_feather_sniper_erika_깃털저격수_에리카_0005_transparent.png",
+  "sourceSha256": "9bec57b85e16552e7d53d5ff4f012da83b534c1ebd19055a3577cc807cb4a37a",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_harpy_feather_sniper_erika_깃털저격수_에리카_0005_transparent.png",
+  "outputSha256": "74e2bd3d1697ba64a6500aa2bc45513c7924a9b1a6251f79225eb5195e44ea65",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    141,
+    25,
+    1628,
+    2422
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1487,
+    2397
+  ],
+  "outputSize": [
+    1500,
+    2406
+  ],
+  "outputBoundingBox": [
+    6,
+    5,
+    1493,
+    2399
+  ],
+  "contentBoundingBox": [
+    6,
+    5,
+    1493,
+    2399
+  ],
+  "bottomCenterAnchor": [
+    750.0,
+    2399.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9970906068162926,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1164048,
+  "transparentPixelCount": 2444952,
+  "sourceUniqueColorEstimate": 50241,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 30928,
+  "saturationClampedPixelCount": 452,
+  "elapsedMilliseconds": 2646.293,
+  "warningCodes": [],
+  "errorMessage": ""
+}

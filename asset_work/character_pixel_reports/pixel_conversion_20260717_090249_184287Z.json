@@ -1,0 +1,22 @@
+{
+  "run": {
+    "startedUtc": "2026-07-17T09:02:49.183287+00:00",
+    "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+    "inputDir": "E:\\mercenary-rpg\\asset_work\\character_sources",
+    "outputDir": "E:\\mercenary-rpg\\asset_work\\character_pixelized",
+    "presets": [
+      "world_96"
+    ],
+    "selectedSourceCount": 0,
+    "workers": 1,
+    "dryRun": true,
+    "contactSheets": []
+  },
+  "summary": {
+    "PASS": 0,
+    "WARNING": 0,
+    "SKIPPED": 0,
+    "FAILED": 0
+  },
+  "records": []
+}

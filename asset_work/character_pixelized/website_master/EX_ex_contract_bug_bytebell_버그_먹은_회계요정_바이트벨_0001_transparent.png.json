@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\EX_ex_contract_bug_bytebell_버그_먹은_회계요정_바이트벨_0001_transparent.png",
+  "sourceRelativePath": "EX_ex_contract_bug_bytebell_버그_먹은_회계요정_바이트벨_0001_transparent.png",
+  "sourceSha256": "5413ee7e84006b01c5fa2fd53475fb38c77b08ef5fcbdbc197a39d37b34b40b5",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\EX_ex_contract_bug_bytebell_버그_먹은_회계요정_바이트벨_0001_transparent.png",
+  "outputSha256": "b697400fca1c8bcca423958c29451e8e39d0068e2cd045a3764a3d57fa8a3c42",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    87,
+    25,
+    1626,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1539,
+    2407
+  ],
+  "outputSize": [
+    1548,
+    2418
+  ],
+  "outputBoundingBox": [
+    4,
+    7,
+    1540,
+    2413
+  ],
+  "contentBoundingBox": [
+    4,
+    7,
+    1540,
+    2413
+  ],
+  "bottomCenterAnchor": [
+    774.0,
+    2413.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9979321753515302,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1665648,
+  "transparentPixelCount": 2077416,
+  "sourceUniqueColorEstimate": 71749,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 44049,
+  "saturationClampedPixelCount": 3341,
+  "elapsedMilliseconds": 3730.327,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

@@ -23,7 +23,7 @@ public sealed class JobManagerV3
     private readonly HashSet<string> _retrySet = new(StringComparer.Ordinal);
     private readonly Queue<string> _recentTerminal = new();
     private readonly Dictionary<NegativeKey,double> _negativeUntil=new();private readonly Queue<NegativeKey> _negativeOrder=new();
-    private long _sequence;
+    private long _sequence;private int _queuedCount;
 
     public JobManagerV3(long sessionRevision, JobManagerSettingsV3? settings = null)
     { _sessionRevision = sessionRevision; _settings = settings ?? new JobManagerSettingsV3(); }
@@ -32,8 +32,9 @@ public sealed class JobManagerV3
     public JobManagerSettingsV3 Settings => _settings;
     public JobManagerDiagnosticsV3 Diagnostics { get; } = new();
     public int Count => _jobs.Count;
-    public int QueuedCount { get { int count=0; foreach (JobRecordV3 job in _jobs.Values) if (job.State == JobStateV3.Queued) count++; return count; } }
+    public int QueuedCount => _queuedCount;
     public int ActiveAssignmentCount => _assignedByMercenary.Count;
+    public event Action<string,JobTypeV3,int>? PriorityChanged;
 
     public MercenaryWorkPriorityProfileV3 GetOrCreatePriorityProfile(string mercenaryId)
     {
@@ -45,9 +46,12 @@ public sealed class JobManagerV3
     public bool TrySetPriority(string mercenaryId, JobTypeV3 type, int priority, out string reason)
     {
         if (string.IsNullOrWhiteSpace(mercenaryId)) { reason="MercenaryId is required."; return false; }
-        if (!GetOrCreatePriorityProfile(mercenaryId).TrySetPriority(type, priority, out reason)) return false;
+        MercenaryWorkPriorityProfileV3 profile=GetOrCreatePriorityProfile(mercenaryId);
+        if(profile.GetPriority(type)==priority){reason=string.Empty;return true;}
+        if (!profile.TrySetPriority(type, priority, out reason)) return false;
         QueueIdleMercenary(mercenaryId);
         Diagnostics.LastAction = $"Priority {mercenaryId} {type}={priority}";
+        PriorityChanged?.Invoke(mercenaryId,type,priority);
         return true;
     }
 
@@ -67,7 +71,7 @@ public sealed class JobManagerV3
             {
                 job.SourceRevision=sourceRevision; job.Revision++;
                 if (job.State is JobStateV3.Invalidated or JobStateV3.Completed or JobStateV3.Cancelled or JobStateV3.FailedTerminal)
-                { job.State=JobStateV3.Queued; job.FailureReason=string.Empty; AddSpatial(job); }
+                { job.State=JobStateV3.Queued;_queuedCount++;job.FailureReason=string.Empty; AddSpatial(job); }
             }
             Diagnostics.DuplicateSourceRejectedCount++;
             reason=string.Empty;
@@ -75,8 +79,8 @@ public sealed class JobManagerV3
         }
         string id=JobIdFactoryV3.Create();
         job=new JobRecordV3(id,key,targetCell,sourceRevision,++_sequence,DateTime.UtcNow);
-        _jobs.Add(id,job); _bySource.Add(key,id); AddSpatial(job); created=true;
-        Diagnostics.PeakQueuedJobs=Math.Max(Diagnostics.PeakQueuedJobs,QueuedCount);
+        _jobs.Add(id,job); _bySource.Add(key,id); AddSpatial(job);_queuedCount++;created=true;
+        Diagnostics.PeakQueuedJobs=Math.Max(Diagnostics.PeakQueuedJobs,_queuedCount);
         Diagnostics.LastAction=$"Source queued {key.JobType}:{key.SourceId}";
         reason=string.Empty;
         return true;
@@ -86,7 +90,7 @@ public sealed class JobManagerV3
     {
         if (!_bySource.TryGetValue(key,out string? id)||!_jobs.TryGetValue(id,out JobRecordV3? job)) return false;
         if (job.State is JobStateV3.Assigned or JobStateV3.Running) return false;
-        RemoveSpatial(job); job.State=JobStateV3.Invalidated; job.FailureReason=reason; job.Revision++;
+        RemoveSpatial(job);if(job.State==JobStateV3.Queued)_queuedCount--;job.State=JobStateV3.Invalidated; job.FailureReason=reason; job.Revision++;
         Diagnostics.InvalidatedCount++; Diagnostics.LastAction=$"Invalidated {key.JobType}:{key.SourceId}"; RecordTerminal(id);
         return true;
     }
@@ -98,6 +102,8 @@ public sealed class JobManagerV3
     { job=null; return _assignedByMercenary.TryGetValue(mercenaryId,out string? id)&&_jobs.TryGetValue(id,out job); }
     public IReadOnlyList<JobRecordV3> GetJobsSnapshot()
     { List<JobRecordV3> result=new(_jobs.Values); result.Sort((a,b)=>a.Sequence!=b.Sequence?a.Sequence.CompareTo(b.Sequence):StringComparer.Ordinal.Compare(a.JobId,b.JobId)); return result.AsReadOnly(); }
+    public IReadOnlyList<JobRecordV3> GetJobsAtCell(string companyId,Vector2I cell,int limit=16)
+    {List<JobRecordV3> result=new();int bx=FloorDiv(cell.X,_settings.SpatialBucketSize),by=FloorDiv(cell.Y,_settings.SpatialBucketSize);foreach(JobTypeV3 type in Enum.GetValues<JobTypeV3>()){if(!_spatial.TryGetValue(new BucketKey(companyId,type,bx,by),out var ids))continue;foreach(string id in ids)if(_jobs.TryGetValue(id,out var job)&&job.TargetCell==cell){result.Add(job);if(result.Count>=Math.Max(1,limit))return result.AsReadOnly();}}return result.AsReadOnly();}
 
     public void QueueIdleMercenary(string mercenaryId)
     { if (!string.IsNullOrWhiteSpace(mercenaryId)&&!_assignedByMercenary.ContainsKey(mercenaryId)&&_idleSet.Add(mercenaryId)) _idleQueue.Enqueue(mercenaryId); }
@@ -142,7 +148,7 @@ public sealed class JobManagerV3
             for(int i=0;i<attempts;i++)
             {
                 JobRecordV3 job=candidates[i].Job;
-                RemoveSpatial(job); job.State=JobStateV3.Reserved; job.AssignedMercenaryId=mercenaryId; job.PriorityAtAssignment=priority; job.Revision++;
+                RemoveSpatial(job);_queuedCount--;job.State=JobStateV3.Reserved; job.AssignedMercenaryId=mercenaryId; job.PriorityAtAssignment=priority; job.Revision++;
                 JobDispatchResultV3 result=dispatch(job,mercenaryId);
                 if(result.Succeeded)
                 {
@@ -222,7 +228,7 @@ public sealed class JobManagerV3
             string id=_retryQueue.Dequeue();_retrySet.Remove(id);
             if(!_jobs.TryGetValue(id,out JobRecordV3? job)||job.State!=JobStateV3.RetryWaiting)continue;
             if(job.RetryAtSeconds>nowSeconds){if(_retrySet.Add(id))_retryQueue.Enqueue(id);continue;}
-            job.State=JobStateV3.Queued;job.Revision++;AddSpatial(job);
+            job.State=JobStateV3.Queued;_queuedCount++;job.Revision++;AddSpatial(job);
         }
     }
 
@@ -252,5 +258,5 @@ public sealed class JobManagerV3
     private static int FloorDiv(int value,int divisor){int q=value/divisor,r=value%divisor;return r!=0&&value<0?q-1:q;}
 
     public void Clear()
-    { _jobs.Clear();_bySource.Clear();_spatial.Clear();_priorities.Clear();_assignedByMercenary.Clear();_idleQueue.Clear();_idleSet.Clear();_retryQueue.Clear();_retrySet.Clear();_recentTerminal.Clear();_negativeUntil.Clear();_negativeOrder.Clear(); }
+    { _jobs.Clear();_bySource.Clear();_spatial.Clear();_priorities.Clear();_assignedByMercenary.Clear();_idleQueue.Clear();_idleSet.Clear();_retryQueue.Clear();_retrySet.Clear();_recentTerminal.Clear();_negativeUntil.Clear();_negativeOrder.Clear();_queuedCount=0; }
 }

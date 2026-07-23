@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SSR_ssr_dragon_princess_elysra_용혈_왕녀_엘리스라_0005_transparent.png",
+  "sourceRelativePath": "SSR_ssr_dragon_princess_elysra_용혈_왕녀_엘리스라_0005_transparent.png",
+  "sourceSha256": "c3bcd511eb5afac5474628818680c1f104091f0a01aa5eb43904ad2187035cda",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SSR_ssr_dragon_princess_elysra_용혈_왕녀_엘리스라_0005_transparent.png",
+  "outputSha256": "c12774386b618289b49d069ea8a67d59ab178c744728f3b3f4db47eb7d7728f3",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    31,
+    15,
+    1646,
+    2405
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1615,
+    2390
+  ],
+  "outputSize": [
+    1626,
+    2400
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1619,
+    2394
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1619,
+    2394
+  ],
+  "bottomCenterAnchor": [
+    813.0,
+    2394.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1555776,
+  "transparentPixelCount": 2346624,
+  "sourceUniqueColorEstimate": 51520,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 41853,
+  "saturationClampedPixelCount": 8895,
+  "elapsedMilliseconds": 3479.267,
+  "warningCodes": [],
+  "errorMessage": ""
+}

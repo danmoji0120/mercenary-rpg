@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_deerkin_route_blesser_elda_길안전_축복사_엘다_0001_transparent.png",
+  "sourceRelativePath": "R_r_deerkin_route_blesser_elda_길안전_축복사_엘다_0001_transparent.png",
+  "sourceSha256": "99a9af692b5a88b07e4a8ec437d42e4aa29d51ec33f881fc20a3613a39ee9f4b",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_deerkin_route_blesser_elda_길안전_축복사_엘다_0001_transparent.png",
+  "outputSha256": "18481b3ff593d5322c7c8914e5fba5d03681e3394ad13b5bdde5afac82d803f5",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    324,
+    0,
+    1307,
+    2428
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    983,
+    2428
+  ],
+  "outputSize": [
+    996,
+    2436
+  ],
+  "outputBoundingBox": [
+    6,
+    4,
+    989,
+    2432
+  ],
+  "contentBoundingBox": [
+    6,
+    4,
+    989,
+    2432
+  ],
+  "bottomCenterAnchor": [
+    498.0,
+    2432.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983579638752053,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 880824,
+  "transparentPixelCount": 1545432,
+  "sourceUniqueColorEstimate": 58439,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 23518,
+  "saturationClampedPixelCount": 580,
+  "elapsedMilliseconds": 2056.947,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_heavy_shield_knight_claris_중갑_방패기사_클라리스_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_heavy_shield_knight_claris_중갑_방패기사_클라리스_0001_transparent.png",
+  "sourceSha256": "659c427bf9831705dcdb879099d94be0dc40d2de7fdb2c4ac79c4327a2297e59",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_heavy_shield_knight_claris_중갑_방패기사_클라리스_0001_transparent.png",
+  "outputSha256": "040561a41f5331a05cade13c5142bb1ab17fcb0434ffcb8d1c693f1042bf7520",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    131,
+    23,
+    1584,
+    2414
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1453,
+    2391
+  ],
+  "outputSize": [
+    1464,
+    2400
+  ],
+  "outputBoundingBox": [
+    5,
+    5,
+    1457,
+    2393
+  ],
+  "contentBoundingBox": [
+    5,
+    5,
+    1457,
+    2393
+  ],
+  "bottomCenterAnchor": [
+    732.0,
+    2393.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9970833333333333,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1754208,
+  "transparentPixelCount": 1759392,
+  "sourceUniqueColorEstimate": 52488,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 46676,
+  "saturationClampedPixelCount": 2959,
+  "elapsedMilliseconds": 3728.309,
+  "warningCodes": [],
+  "errorMessage": ""
+}

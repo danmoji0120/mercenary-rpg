@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_catkin_alley_informant_miu_골목_정보상_미우_0001_transparent.png",
+  "sourceRelativePath": "R_r_catkin_alley_informant_miu_골목_정보상_미우_0001_transparent.png",
+  "sourceSha256": "36b04c3372962aaf9a6c70eba4ececa332b064485e34e4d17397572b9458d702",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_catkin_alley_informant_miu_골목_정보상_미우_0001_transparent.png",
+  "outputSha256": "e305cc3b5bd0e087b9b32a36b28f5fa1c9d4d115682783a91b1cdc56c9be673b",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    345,
+    26,
+    1357,
+    2399
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1012,
+    2373
+  ],
+  "outputSize": [
+    1020,
+    2382
+  ],
+  "outputBoundingBox": [
+    4,
+    5,
+    1016,
+    2375
+  ],
+  "contentBoundingBox": [
+    4,
+    5,
+    1016,
+    2375
+  ],
+  "bottomCenterAnchor": [
+    510.0,
+    2375.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9970612930310663,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1229784,
+  "transparentPixelCount": 1199856,
+  "sourceUniqueColorEstimate": 32530,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 33124,
+  "saturationClampedPixelCount": 398,
+  "elapsedMilliseconds": 2512.241,
+  "warningCodes": [],
+  "errorMessage": ""
+}

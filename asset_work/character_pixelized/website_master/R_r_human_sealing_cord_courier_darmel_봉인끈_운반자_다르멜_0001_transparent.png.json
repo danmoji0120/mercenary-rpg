@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_human_sealing_cord_courier_darmel_봉인끈_운반자_다르멜_0001_transparent.png",
+  "sourceRelativePath": "R_r_human_sealing_cord_courier_darmel_봉인끈_운반자_다르멜_0001_transparent.png",
+  "sourceSha256": "26d179457548d7070735e143d540756d7892247ceda8bbc58047136b6fff8afb",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_human_sealing_cord_courier_darmel_봉인끈_운반자_다르멜_0001_transparent.png",
+  "outputSha256": "bcb4d5eed6ab6ef99f2fbb6c3e98c2982a680bca021cf2d769e9ab5ca2e2d5fc",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    201,
+    28,
+    1415,
+    2404
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1214,
+    2376
+  ],
+  "outputSize": [
+    1224,
+    2388
+  ],
+  "outputBoundingBox": [
+    5,
+    8,
+    1217,
+    2384
+  ],
+  "contentBoundingBox": [
+    5,
+    8,
+    1217,
+    2384
+  ],
+  "bottomCenterAnchor": [
+    612.0,
+    2384.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998324958123953,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1386900,
+  "transparentPixelCount": 1536012,
+  "sourceUniqueColorEstimate": 46741,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 37264,
+  "saturationClampedPixelCount": 1415,
+  "elapsedMilliseconds": 2861.897,
+  "warningCodes": [],
+  "errorMessage": ""
+}

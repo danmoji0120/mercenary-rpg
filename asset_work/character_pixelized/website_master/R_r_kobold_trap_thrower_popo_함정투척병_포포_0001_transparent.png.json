@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_kobold_trap_thrower_popo_함정투척병_포포_0001_transparent.png",
+  "sourceRelativePath": "R_r_kobold_trap_thrower_popo_함정투척병_포포_0001_transparent.png",
+  "sourceSha256": "c6fe396a3ccd34e0a1940ff7e3bc5ada4a3ef1e130213a87db6e9bb63c6fbfeb",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_kobold_trap_thrower_popo_함정투척병_포포_0001_transparent.png",
+  "outputSha256": "53f70ab8f479c5dfd8caac3277d91ce7be8c291926c778eafd4f0e268d44bab2",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    94,
+    39,
+    1540,
+    2397
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1446,
+    2358
+  ],
+  "outputSize": [
+    1458,
+    2370
+  ],
+  "outputBoundingBox": [
+    6,
+    8,
+    1452,
+    2366
+  ],
+  "contentBoundingBox": [
+    6,
+    8,
+    1452,
+    2366
+  ],
+  "bottomCenterAnchor": [
+    729.0,
+    2366.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983122362869198,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1213632,
+  "transparentPixelCount": 2241828,
+  "sourceUniqueColorEstimate": 57809,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 32167,
+  "saturationClampedPixelCount": 1043,
+  "elapsedMilliseconds": 2793.632,
+  "warningCodes": [],
+  "errorMessage": ""
+}

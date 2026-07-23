@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_elf_mirror_plan_reader_celine_거울작전_해석가_셀린_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_elf_mirror_plan_reader_celine_거울작전_해석가_셀린_0001_transparent.png",
+  "sourceSha256": "58b0ebb07ceecb036fd73020aa2b1474e5e553deb72e15c9516737a9426d3ea1",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_elf_mirror_plan_reader_celine_거울작전_해석가_셀린_0001_transparent.png",
+  "outputSha256": "49d98bb9191d56ed17c533a7d51f9b7f90375e24209862f2a4d23e84e8a16133",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    274,
+    84,
+    1476,
+    2393
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1202,
+    2309
+  ],
+  "outputSize": [
+    1212,
+    2322
+  ],
+  "outputBoundingBox": [
+    5,
+    9,
+    1205,
+    2318
+  ],
+  "contentBoundingBox": [
+    5,
+    9,
+    1205,
+    2318
+  ],
+  "bottomCenterAnchor": [
+    606.0,
+    2318.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9982773471145564,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1308252,
+  "transparentPixelCount": 1506012,
+  "sourceUniqueColorEstimate": 60907,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 34861,
+  "saturationClampedPixelCount": 4519,
+  "elapsedMilliseconds": 2760.949,
+  "warningCodes": [],
+  "errorMessage": ""
+}

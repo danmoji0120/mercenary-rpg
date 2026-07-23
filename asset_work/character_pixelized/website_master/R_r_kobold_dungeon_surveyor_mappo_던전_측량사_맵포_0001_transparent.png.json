@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_kobold_dungeon_surveyor_mappo_던전_측량사_맵포_0001_transparent.png",
+  "sourceRelativePath": "R_r_kobold_dungeon_surveyor_mappo_던전_측량사_맵포_0001_transparent.png",
+  "sourceSha256": "403aef4af41fc1733405a94333223d4b30900fd83675efab368c86b34fd05759",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_kobold_dungeon_surveyor_mappo_던전_측량사_맵포_0001_transparent.png",
+  "outputSha256": "627a6110a61735120be106db08d11eb782fd1f4c5ea3c7ad3dc72617a387a1a2",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    52,
+    92,
+    1541,
+    2345
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1489,
+    2253
+  ],
+  "outputSize": [
+    1500,
+    2262
+  ],
+  "outputBoundingBox": [
+    5,
+    5,
+    1493,
+    2255
+  ],
+  "contentBoundingBox": [
+    5,
+    5,
+    1493,
+    2255
+  ],
+  "bottomCenterAnchor": [
+    750.0,
+    2255.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9969053934571176,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1943028,
+  "transparentPixelCount": 1449972,
+  "sourceUniqueColorEstimate": 51459,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 51268,
+  "saturationClampedPixelCount": 1587,
+  "elapsedMilliseconds": 4108.891,
+  "warningCodes": [],
+  "errorMessage": ""
+}

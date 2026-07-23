@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_lionkin_shield_nadia_방패병_나디아_0001_transparent.png",
+  "sourceRelativePath": "R_r_lionkin_shield_nadia_방패병_나디아_0001_transparent.png",
+  "sourceSha256": "b6b727f47e4c422a8a0c0fc1dd15f88ef5d3a11773fed45f01e2c2e2b47bb826",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_lionkin_shield_nadia_방패병_나디아_0001_transparent.png",
+  "outputSha256": "f1d975b26d6a0d81defce218d81ba18a8d26c297bc3b0884f684ef6c10b38760",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    144,
+    15,
+    1593,
+    2391
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1449,
+    2376
+  ],
+  "outputSize": [
+    1458,
+    2388
+  ],
+  "outputBoundingBox": [
+    4,
+    8,
+    1450,
+    2384
+  ],
+  "contentBoundingBox": [
+    4,
+    8,
+    1450,
+    2384
+  ],
+  "bottomCenterAnchor": [
+    729.0,
+    2384.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998324958123953,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1868976,
+  "transparentPixelCount": 1612728,
+  "sourceUniqueColorEstimate": 59902,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 49959,
+  "saturationClampedPixelCount": 5335,
+  "elapsedMilliseconds": 3860.72,
+  "warningCodes": [],
+  "errorMessage": ""
+}

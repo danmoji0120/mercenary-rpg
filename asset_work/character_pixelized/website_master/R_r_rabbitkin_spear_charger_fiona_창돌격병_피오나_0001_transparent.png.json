@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_rabbitkin_spear_charger_fiona_창돌격병_피오나_0001_transparent.png",
+  "sourceRelativePath": "R_r_rabbitkin_spear_charger_fiona_창돌격병_피오나_0001_transparent.png",
+  "sourceSha256": "c9b4d19ee0dd9c43aeb139531cc78c2b3dd7dda629536c0c9240ed87d06c024a",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_rabbitkin_spear_charger_fiona_창돌격병_피오나_0001_transparent.png",
+  "outputSha256": "0f3084de9668b6e6daaf01621e0804f0226f4f9fbdc1da2b567b854e8a8938f6",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    61,
+    19,
+    1574,
+    2421
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1513,
+    2402
+  ],
+  "outputSize": [
+    1524,
+    2412
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1517,
+    2406
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1517,
+    2406
+  ],
+  "bottomCenterAnchor": [
+    762.0,
+    2406.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975124378109452,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 938916,
+  "transparentPixelCount": 2736972,
+  "sourceUniqueColorEstimate": 66118,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 24651,
+  "saturationClampedPixelCount": 3540,
+  "elapsedMilliseconds": 2337.598,
+  "warningCodes": [],
+  "errorMessage": ""
+}

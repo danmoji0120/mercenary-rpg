@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_harpy_rescue_nurse_marika_구조간호사_마리카_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_harpy_rescue_nurse_marika_구조간호사_마리카_0001_transparent.png",
+  "sourceSha256": "e9d553673bddaa750baa6fbab270314c9d98cd03a34b4a4d30f213ac22d8d92f",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_harpy_rescue_nurse_marika_구조간호사_마리카_0001_transparent.png",
+  "outputSha256": "9a9a138339977f7689756c8b33c3df7111ce0163a3c3680b8f0ccb9ffd293e28",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    41,
+    94,
+    1632,
+    2402
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1591,
+    2308
+  ],
+  "outputSize": [
+    1602,
+    2316
+  ],
+  "outputBoundingBox": [
+    5,
+    4,
+    1595,
+    2312
+  ],
+  "contentBoundingBox": [
+    5,
+    4,
+    1595,
+    2312
+  ],
+  "bottomCenterAnchor": [
+    801.0,
+    2312.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998272884283247,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1200696,
+  "transparentPixelCount": 2509536,
+  "sourceUniqueColorEstimate": 66851,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 31948,
+  "saturationClampedPixelCount": 1274,
+  "elapsedMilliseconds": 2673.422,
+  "warningCodes": [],
+  "errorMessage": ""
+}

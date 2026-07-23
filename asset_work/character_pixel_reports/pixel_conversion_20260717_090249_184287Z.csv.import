@@ -1,0 +1,16 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bwif2468j8seo"
+
+[deps]
+
+source_file="res://asset_work/character_pixel_reports/pixel_conversion_20260717_090249_184287Z.csv"
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

@@ -1,0 +1,74 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\G_g_lionkin_female_001_사자수인_여성_프리셋_001_0001.png",
+  "sourceRelativePath": "G_g_lionkin_female_001_사자수인_여성_프리셋_001_0001.png",
+  "sourceSha256": "86d0679a4252acc8d34afc75ad7452ba6fc634e6482dac30ffb128f66bfd8d77",
+  "sourceHadNoAlpha": true,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\G_g_lionkin_female_001_사자수인_여성_프리셋_001_0001.png",
+  "outputSha256": "afa9b56dedc0e7c1eb0858578ad93e2150e357d65f3643fc9e5b138188a3ca41",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    0,
+    0,
+    1664,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1664,
+    2432
+  ],
+  "outputSize": [
+    1674,
+    2442
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1667,
+    2436
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1667,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    837.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 4038660,
+  "transparentPixelCount": 49248,
+  "sourceUniqueColorEstimate": 14156,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 104744,
+  "saturationClampedPixelCount": 439,
+  "elapsedMilliseconds": 8601.692,
+  "warningCodes": [
+    "SOURCE_HAS_NO_ALPHA",
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

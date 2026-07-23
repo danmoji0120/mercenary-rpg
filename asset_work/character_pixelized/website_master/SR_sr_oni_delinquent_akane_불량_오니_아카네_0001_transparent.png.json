@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_oni_delinquent_akane_불량_오니_아카네_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_oni_delinquent_akane_불량_오니_아카네_0001_transparent.png",
+  "sourceSha256": "ef579b69715e708b70152d86256978898eb865f017ac2ffc5df6ff34f627ddc6",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_oni_delinquent_akane_불량_오니_아카네_0001_transparent.png",
+  "outputSha256": "17707c101856b9086ad0167eddb698b42e196e59a3d3a92cd8a2d504c8901693",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    32,
+    27,
+    1664,
+    2395
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1632,
+    2368
+  ],
+  "outputSize": [
+    1644,
+    2376
+  ],
+  "outputBoundingBox": [
+    6,
+    4,
+    1638,
+    2372
+  ],
+  "contentBoundingBox": [
+    6,
+    4,
+    1638,
+    2372
+  ],
+  "bottomCenterAnchor": [
+    822.0,
+    2372.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983164983164983,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1403292,
+  "transparentPixelCount": 2502852,
+  "sourceUniqueColorEstimate": 35981,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 37461,
+  "saturationClampedPixelCount": 987,
+  "elapsedMilliseconds": 2892.601,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

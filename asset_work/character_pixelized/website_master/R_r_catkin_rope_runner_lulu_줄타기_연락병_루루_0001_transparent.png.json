@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_catkin_rope_runner_lulu_줄타기_연락병_루루_0001_transparent.png",
+  "sourceRelativePath": "R_r_catkin_rope_runner_lulu_줄타기_연락병_루루_0001_transparent.png",
+  "sourceSha256": "644f8bd596d079ad289db24ae62462b68f0c3d67079286d9844e2986b8ce8435",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_catkin_rope_runner_lulu_줄타기_연락병_루루_0001_transparent.png",
+  "outputSha256": "a8f11c86e4d2ab1cb28d45792e0bf529f73db23610b0df352f13d9ced98b0637",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    312,
+    65,
+    1440,
+    2383
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1128,
+    2318
+  ],
+  "outputSize": [
+    1140,
+    2328
+  ],
+  "outputBoundingBox": [
+    6,
+    6,
+    1134,
+    2322
+  ],
+  "contentBoundingBox": [
+    6,
+    6,
+    1134,
+    2322
+  ],
+  "bottomCenterAnchor": [
+    570.0,
+    2322.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9974226804123711,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 986472,
+  "transparentPixelCount": 1667448,
+  "sourceUniqueColorEstimate": 52740,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 26348,
+  "saturationClampedPixelCount": 223,
+  "elapsedMilliseconds": 2120.496,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_wolfkin_gate_watch_beren_외문_감시병_베렌_0001_transparent.png",
+  "sourceRelativePath": "R_r_wolfkin_gate_watch_beren_외문_감시병_베렌_0001_transparent.png",
+  "sourceSha256": "ae85c05d57b9d22e1b2d5f3a28f0c9ca2705a837ffa2b7ff1443e0728cccfa81",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_wolfkin_gate_watch_beren_외문_감시병_베렌_0001_transparent.png",
+  "outputSha256": "b6861850863052f2792d56443bc32db5c1f14406e0fa3f4f75fe010d6cd5b526",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    131,
+    0,
+    1561,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1430,
+    2432
+  ],
+  "outputSize": [
+    1440,
+    2442
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1433,
+    2436
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1433,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    720.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1469628,
+  "transparentPixelCount": 2046852,
+  "sourceUniqueColorEstimate": 27586,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 39255,
+  "saturationClampedPixelCount": 274,
+  "elapsedMilliseconds": 3142.796,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

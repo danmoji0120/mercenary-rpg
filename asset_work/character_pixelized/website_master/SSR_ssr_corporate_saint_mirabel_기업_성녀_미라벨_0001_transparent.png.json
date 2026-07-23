@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SSR_ssr_corporate_saint_mirabel_기업_성녀_미라벨_0001_transparent.png",
+  "sourceRelativePath": "SSR_ssr_corporate_saint_mirabel_기업_성녀_미라벨_0001_transparent.png",
+  "sourceSha256": "a0b098f07043eec4554c9c882636ebf3507301363a1a88fc9c9dc6b6a5c0d074",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SSR_ssr_corporate_saint_mirabel_기업_성녀_미라벨_0001_transparent.png",
+  "outputSha256": "577a96cabb4d2af96f7b222d6f83616a045f3a65d7751b383f59da76eb33fe42",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    118,
+    0,
+    1456,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1338,
+    2432
+  ],
+  "outputSize": [
+    1350,
+    2442
+  ],
+  "outputBoundingBox": [
+    6,
+    6,
+    1344,
+    2436
+  ],
+  "contentBoundingBox": [
+    6,
+    6,
+    1344,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    675.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1325628,
+  "transparentPixelCount": 1971072,
+  "sourceUniqueColorEstimate": 53246,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 34477,
+  "saturationClampedPixelCount": 88,
+  "elapsedMilliseconds": 2817.905,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

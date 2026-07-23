@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_human_bad_contract_duelist_sion_불량계약_결투사_시온_0001_transparent.png",
+  "sourceRelativePath": "R_r_human_bad_contract_duelist_sion_불량계약_결투사_시온_0001_transparent.png",
+  "sourceSha256": "ce4ecd921db021f44f28afd29830d25732d8f5b84c09a64504724ba4c66ce07e",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_human_bad_contract_duelist_sion_불량계약_결투사_시온_0001_transparent.png",
+  "outputSha256": "3063cf6b1ff996a649c14cfb1af2bbd580101c12b413324cb24639862617e012",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    18,
+    18,
+    1533,
+    2410
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1515,
+    2392
+  ],
+  "outputSize": [
+    1524,
+    2400
+  ],
+  "outputBoundingBox": [
+    4,
+    4,
+    1516,
+    2396
+  ],
+  "contentBoundingBox": [
+    4,
+    4,
+    1516,
+    2396
+  ],
+  "bottomCenterAnchor": [
+    762.0,
+    2396.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983333333333333,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1247064,
+  "transparentPixelCount": 2410536,
+  "sourceUniqueColorEstimate": 43159,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 32719,
+  "saturationClampedPixelCount": 2753,
+  "elapsedMilliseconds": 2843.642,
+  "warningCodes": [],
+  "errorMessage": ""
+}

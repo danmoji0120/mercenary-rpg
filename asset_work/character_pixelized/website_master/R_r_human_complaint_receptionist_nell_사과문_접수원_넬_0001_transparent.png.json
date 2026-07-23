@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_human_complaint_receptionist_nell_사과문_접수원_넬_0001_transparent.png",
+  "sourceRelativePath": "R_r_human_complaint_receptionist_nell_사과문_접수원_넬_0001_transparent.png",
+  "sourceSha256": "15ab2c971aebeb4f359993887e57fec9b661322ef712c59af448082767c8c53d",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_human_complaint_receptionist_nell_사과문_접수원_넬_0001_transparent.png",
+  "outputSha256": "8c848c72cf264ea9d118fff1eaedb6750fc8a3b19294e56978710788805520c7",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    170,
+    0,
+    1292,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1122,
+    2432
+  ],
+  "outputSize": [
+    1134,
+    2442
+  ],
+  "outputBoundingBox": [
+    6,
+    6,
+    1128,
+    2436
+  ],
+  "contentBoundingBox": [
+    6,
+    6,
+    1128,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    567.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1038240,
+  "transparentPixelCount": 1730988,
+  "sourceUniqueColorEstimate": 42139,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 28099,
+  "saturationClampedPixelCount": 441,
+  "elapsedMilliseconds": 2222.811,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

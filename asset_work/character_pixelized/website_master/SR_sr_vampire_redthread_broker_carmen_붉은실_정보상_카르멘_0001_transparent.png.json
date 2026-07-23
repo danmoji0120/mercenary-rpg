@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_vampire_redthread_broker_carmen_붉은실_정보상_카르멘_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_vampire_redthread_broker_carmen_붉은실_정보상_카르멘_0001_transparent.png",
+  "sourceSha256": "6d31a836c9565c8097ed2868fac27e1650eee41bb546556ac9e2647c60fd0fb1",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_vampire_redthread_broker_carmen_붉은실_정보상_카르멘_0001_transparent.png",
+  "outputSha256": "f742f0ed2214ddcb9b4e19454de077a8039637f6e7ed4b9b02b3d69cb32d6e8f",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    173,
+    42,
+    1664,
+    2414
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1491,
+    2372
+  ],
+  "outputSize": [
+    1500,
+    2382
+  ],
+  "outputBoundingBox": [
+    4,
+    6,
+    1492,
+    2376
+  ],
+  "contentBoundingBox": [
+    4,
+    6,
+    1492,
+    2376
+  ],
+  "bottomCenterAnchor": [
+    750.0,
+    2376.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9974811083123426,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1108044,
+  "transparentPixelCount": 2464956,
+  "sourceUniqueColorEstimate": 34276,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 29162,
+  "saturationClampedPixelCount": 809,
+  "elapsedMilliseconds": 2532.603,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

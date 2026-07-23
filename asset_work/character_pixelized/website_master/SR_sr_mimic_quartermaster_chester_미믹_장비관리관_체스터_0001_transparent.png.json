@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_mimic_quartermaster_chester_미믹_장비관리관_체스터_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_mimic_quartermaster_chester_미믹_장비관리관_체스터_0001_transparent.png",
+  "sourceSha256": "4480c78209b37bfdbdf4b13e3f1a292429cd5aec32c4fd07d8d1ca1ee68452df",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_mimic_quartermaster_chester_미믹_장비관리관_체스터_0001_transparent.png",
+  "outputSha256": "00dfb4f7512e17342a390d0d0e2f272e8b8f7174223db57d54c326d834fd399b",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    214,
+    15,
+    1304,
+    2419
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1090,
+    2404
+  ],
+  "outputSize": [
+    1098,
+    2412
+  ],
+  "outputBoundingBox": [
+    4,
+    4,
+    1094,
+    2408
+  ],
+  "contentBoundingBox": [
+    4,
+    4,
+    1094,
+    2408
+  ],
+  "bottomCenterAnchor": [
+    549.0,
+    2408.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983416252072969,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1201320,
+  "transparentPixelCount": 1447056,
+  "sourceUniqueColorEstimate": 41237,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 32222,
+  "saturationClampedPixelCount": 346,
+  "elapsedMilliseconds": 2553.7,
+  "warningCodes": [],
+  "errorMessage": ""
+}

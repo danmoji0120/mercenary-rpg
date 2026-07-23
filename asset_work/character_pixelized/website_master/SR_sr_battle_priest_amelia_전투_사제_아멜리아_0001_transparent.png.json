@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_battle_priest_amelia_전투_사제_아멜리아_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_battle_priest_amelia_전투_사제_아멜리아_0001_transparent.png",
+  "sourceSha256": "a8ee8c6cab7571bfe9eb1fc8449c4d3248fa76461f58fb5f90848c41294822ae",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_battle_priest_amelia_전투_사제_아멜리아_0001_transparent.png",
+  "outputSha256": "9277b61a2449b1247989975236b1134df016963fc0939a702138c46b263fbdb9",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    202,
+    32,
+    1492,
+    2397
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1290,
+    2365
+  ],
+  "outputSize": [
+    1302,
+    2376
+  ],
+  "outputBoundingBox": [
+    6,
+    7,
+    1296,
+    2371
+  ],
+  "contentBoundingBox": [
+    6,
+    7,
+    1296,
+    2371
+  ],
+  "bottomCenterAnchor": [
+    651.0,
+    2371.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.997895622895623,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1311948,
+  "transparentPixelCount": 1781604,
+  "sourceUniqueColorEstimate": 62244,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 32503,
+  "saturationClampedPixelCount": 1507,
+  "elapsedMilliseconds": 2874.364,
+  "warningCodes": [],
+  "errorMessage": ""
+}

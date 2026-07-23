@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_golem_heavy_armor_no3_중장갑_3호_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_golem_heavy_armor_no3_중장갑_3호_0001_transparent.png",
+  "sourceSha256": "96be976db4f72b6baf15d900ca4b1d240052696770993df2042a8fb165705a98",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_golem_heavy_armor_no3_중장갑_3호_0001_transparent.png",
+  "outputSha256": "8a6557a2fa776bb938aeb7ad4e27b7a1faea31c55a852bc1383dcd9301f861e0",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    34,
+    90,
+    1545,
+    2361
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1511,
+    2271
+  ],
+  "outputSize": [
+    1524,
+    2280
+  ],
+  "outputBoundingBox": [
+    6,
+    5,
+    1517,
+    2273
+  ],
+  "contentBoundingBox": [
+    6,
+    5,
+    1517,
+    2273
+  ],
+  "bottomCenterAnchor": [
+    762.0,
+    2273.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9969298245614036,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 2235396,
+  "transparentPixelCount": 1239324,
+  "sourceUniqueColorEstimate": 32826,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 59394,
+  "saturationClampedPixelCount": 1237,
+  "elapsedMilliseconds": 4515.806,
+  "warningCodes": [],
+  "errorMessage": ""
+}

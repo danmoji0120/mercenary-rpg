@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_slime_infiltrator_luluzel_변장_침투원_루루젤_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_slime_infiltrator_luluzel_변장_침투원_루루젤_0001_transparent.png",
+  "sourceSha256": "d5d2b7ee8d3a1e7f1f0a41e24ba98edb76bafba885eac823a8ea1730329110f7",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_slime_infiltrator_luluzel_변장_침투원_루루젤_0001_transparent.png",
+  "outputSha256": "a11b69d91e82880117b282216a5a77b2c64fc6634b9c9c1ac2e9a51f4993bd0e",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    40,
+    19,
+    1644,
+    2395
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1604,
+    2376
+  ],
+  "outputSize": [
+    1614,
+    2388
+  ],
+  "outputBoundingBox": [
+    5,
+    8,
+    1607,
+    2384
+  ],
+  "contentBoundingBox": [
+    5,
+    8,
+    1607,
+    2384
+  ],
+  "bottomCenterAnchor": [
+    807.0,
+    2384.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998324958123953,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1289448,
+  "transparentPixelCount": 2564784,
+  "sourceUniqueColorEstimate": 54635,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 33266,
+  "saturationClampedPixelCount": 1121,
+  "elapsedMilliseconds": 2918.467,
+  "warningCodes": [],
+  "errorMessage": ""
+}

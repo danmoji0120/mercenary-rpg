@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SSR_ssr_demon_executor_seraphina_악마_집행관_세라피나_0002_transparent.png",
+  "sourceRelativePath": "SSR_ssr_demon_executor_seraphina_악마_집행관_세라피나_0002_transparent.png",
+  "sourceSha256": "8f2a9b36fcdc31c957af9471f2e05222d60f6ab66fc270197fac9c39c6f0b965",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SSR_ssr_demon_executor_seraphina_악마_집행관_세라피나_0002_transparent.png",
+  "outputSha256": "17494f352ca1c29a178b72bf9241c181f8eab6288f7a6f5f562b032c445ab866",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    32,
+    50,
+    1640,
+    2405
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1608,
+    2355
+  ],
+  "outputSize": [
+    1620,
+    2364
+  ],
+  "outputBoundingBox": [
+    6,
+    11,
+    1614,
+    2357
+  ],
+  "contentBoundingBox": [
+    6,
+    11,
+    1614,
+    2357
+  ],
+  "bottomCenterAnchor": [
+    810.0,
+    2357.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9970389170896785,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1502964,
+  "transparentPixelCount": 2326716,
+  "sourceUniqueColorEstimate": 43670,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 39821,
+  "saturationClampedPixelCount": 3286,
+  "elapsedMilliseconds": 3313.862,
+  "warningCodes": [],
+  "errorMessage": ""
+}

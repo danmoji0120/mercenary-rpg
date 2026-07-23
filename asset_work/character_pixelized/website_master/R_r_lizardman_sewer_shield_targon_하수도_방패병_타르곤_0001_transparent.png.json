@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_lizardman_sewer_shield_targon_하수도_방패병_타르곤_0001_transparent.png",
+  "sourceRelativePath": "R_r_lizardman_sewer_shield_targon_하수도_방패병_타르곤_0001_transparent.png",
+  "sourceSha256": "659aa5a4857c92bfae57ddd824a15fee67778298a08c318ad185088d15448672",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_lizardman_sewer_shield_targon_하수도_방패병_타르곤_0001_transparent.png",
+  "outputSha256": "f2844160d91ad5a5616ad99d6a74a6dea27f2f34f08a0f8543f2798e00456a30",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    136,
+    58,
+    1542,
+    2404
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1406,
+    2346
+  ],
+  "outputSize": [
+    1416,
+    2358
+  ],
+  "outputBoundingBox": [
+    5,
+    8,
+    1409,
+    2354
+  ],
+  "contentBoundingBox": [
+    5,
+    8,
+    1409,
+    2354
+  ],
+  "bottomCenterAnchor": [
+    708.0,
+    2354.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998303647158609,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1830852,
+  "transparentPixelCount": 1508076,
+  "sourceUniqueColorEstimate": 36347,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 48363,
+  "saturationClampedPixelCount": 402,
+  "elapsedMilliseconds": 3723.595,
+  "warningCodes": [],
+  "errorMessage": ""
+}

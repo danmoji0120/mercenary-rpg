@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_fairy_wax_seal_clerk_mel_밀랍봉인_서기_멜_0001_transparent.png",
+  "sourceRelativePath": "R_r_fairy_wax_seal_clerk_mel_밀랍봉인_서기_멜_0001_transparent.png",
+  "sourceSha256": "90aa82df3d923825f362fa5a0cd976af3b3433b1220bd177150683408baa095d",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_fairy_wax_seal_clerk_mel_밀랍봉인_서기_멜_0001_transparent.png",
+  "outputSha256": "5f731ef6c69050c26d3be66f80056773fc4ffee66d76e33bc90f3bb191f72a1a",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    200,
+    58,
+    1482,
+    2405
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1282,
+    2347
+  ],
+  "outputSize": [
+    1290,
+    2358
+  ],
+  "outputBoundingBox": [
+    4,
+    7,
+    1286,
+    2353
+  ],
+  "contentBoundingBox": [
+    4,
+    7,
+    1286,
+    2353
+  ],
+  "bottomCenterAnchor": [
+    645.0,
+    2353.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9978795589482612,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1049916,
+  "transparentPixelCount": 1991904,
+  "sourceUniqueColorEstimate": 61368,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 28197,
+  "saturationClampedPixelCount": 386,
+  "elapsedMilliseconds": 2433.493,
+  "warningCodes": [],
+  "errorMessage": ""
+}

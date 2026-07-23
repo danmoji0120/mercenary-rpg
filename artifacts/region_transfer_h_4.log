@@ -1,0 +1,8 @@
+Godot Engine v4.7.stable.mono.official.5b4e0cb0f - https://godotengine.org
+
+[MCP Runtime] Server listening on port 7777
+[MCP Runtime] Autoload ready, server starting on port 7777
+[RegionTransferEnetV3] PASS=False System.InvalidOperationException: Traveling reconnect was not restored.
+   at GameplayV3.Network.RegionTransferEnetFixtureV3.Check(Boolean condition, String reason) in E:\mercenary-rpg\scripts\gameplay_v3\network\RegionTransferEnetFixtureV3.cs:line 118
+   at GameplayV3.Network.RegionTransferEnetFixtureV3.Run() in E:\mercenary-rpg\scripts\gameplay_v3\network\RegionTransferEnetFixtureV3.cs:line 63
+   at GameplayV3.Network.RegionTransferEnetFixtureV3._Ready() in E:\mercenary-rpg\scripts\gameplay_v3\network\RegionTransferEnetFixtureV3.cs:line 22

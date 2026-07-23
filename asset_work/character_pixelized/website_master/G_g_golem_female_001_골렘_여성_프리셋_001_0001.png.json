@@ -1,0 +1,74 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\G_g_golem_female_001_골렘_여성_프리셋_001_0001.png",
+  "sourceRelativePath": "G_g_golem_female_001_골렘_여성_프리셋_001_0001.png",
+  "sourceSha256": "e75da28a3caea5a1cd46c108a5f0464c85dd008b4c2fcd89165605bf6f2f3e9f",
+  "sourceHadNoAlpha": true,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\G_g_golem_female_001_골렘_여성_프리셋_001_0001.png",
+  "outputSha256": "636bae31aea734274389a23c8b926b2097afa212f08cfb3a603201986c88b502",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    0,
+    0,
+    1664,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1664,
+    2432
+  ],
+  "outputSize": [
+    1674,
+    2442
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1667,
+    2436
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1667,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    837.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 4038660,
+  "transparentPixelCount": 49248,
+  "sourceUniqueColorEstimate": 12406,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 22772,
+  "saturationClampedPixelCount": 205,
+  "elapsedMilliseconds": 8831.007,
+  "warningCodes": [
+    "SOURCE_HAS_NO_ALPHA",
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

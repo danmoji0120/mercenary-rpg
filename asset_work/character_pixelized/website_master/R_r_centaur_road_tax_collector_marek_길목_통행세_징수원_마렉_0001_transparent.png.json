@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_centaur_road_tax_collector_marek_길목_통행세_징수원_마렉_0001_transparent.png",
+  "sourceRelativePath": "R_r_centaur_road_tax_collector_marek_길목_통행세_징수원_마렉_0001_transparent.png",
+  "sourceSha256": "1cf92ff89c56f76e2f5248123f0fde8ab975ef68ce5586513524e1d713312b21",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_centaur_road_tax_collector_marek_길목_통행세_징수원_마렉_0001_transparent.png",
+  "outputSha256": "48fc35df314b017690ab91c23aee11a697e50f6158dcc19c83e84d18a2536411",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    95,
+    27,
+    1521,
+    2411
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1426,
+    2384
+  ],
+  "outputSize": [
+    1434,
+    2394
+  ],
+  "outputBoundingBox": [
+    4,
+    6,
+    1430,
+    2388
+  ],
+  "contentBoundingBox": [
+    4,
+    6,
+    1430,
+    2388
+  ],
+  "bottomCenterAnchor": [
+    717.0,
+    2388.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9974937343358395,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1188372,
+  "transparentPixelCount": 2244624,
+  "sourceUniqueColorEstimate": 25937,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 29653,
+  "saturationClampedPixelCount": 1584,
+  "elapsedMilliseconds": 2628.938,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_magitech_runaway_mechanic_ion_폭주정비사_이온_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_magitech_runaway_mechanic_ion_폭주정비사_이온_0001_transparent.png",
+  "sourceSha256": "14ed0e9e432ca9b0eb5cd4ee95185e6a8cf1f1023acc384cd59ab72303cab522",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_magitech_runaway_mechanic_ion_폭주정비사_이온_0001_transparent.png",
+  "outputSha256": "8f97b18c0acbcde592dab82534e9f1be4b53ef4a183791b124db760aa2cfc86b",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    60,
+    0,
+    1593,
+    2424
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1533,
+    2424
+  ],
+  "outputSize": [
+    1542,
+    2436
+  ],
+  "outputBoundingBox": [
+    4,
+    8,
+    1534,
+    2432
+  ],
+  "contentBoundingBox": [
+    4,
+    8,
+    1534,
+    2432
+  ],
+  "bottomCenterAnchor": [
+    771.0,
+    2432.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983579638752053,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1678392,
+  "transparentPixelCount": 2077920,
+  "sourceUniqueColorEstimate": 52338,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 44339,
+  "saturationClampedPixelCount": 1176,
+  "elapsedMilliseconds": 3762.808,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

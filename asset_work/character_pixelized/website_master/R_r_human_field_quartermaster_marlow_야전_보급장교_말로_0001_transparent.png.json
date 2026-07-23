@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_human_field_quartermaster_marlow_야전_보급장교_말로_0001_transparent.png",
+  "sourceRelativePath": "R_r_human_field_quartermaster_marlow_야전_보급장교_말로_0001_transparent.png",
+  "sourceSha256": "fc1782cad7ad84c846986fc1b13dbc3b016790f4a6b64003aa9ae75ea7932706",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_human_field_quartermaster_marlow_야전_보급장교_말로_0001_transparent.png",
+  "outputSha256": "c13f2e11957297712e682ea835c4bc68f10db094f675bb30ec854504ecf9c280",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    198,
+    18,
+    1476,
+    2412
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1278,
+    2394
+  ],
+  "outputSize": [
+    1290,
+    2406
+  ],
+  "outputBoundingBox": [
+    6,
+    8,
+    1284,
+    2402
+  ],
+  "contentBoundingBox": [
+    6,
+    8,
+    1284,
+    2402
+  ],
+  "bottomCenterAnchor": [
+    645.0,
+    2402.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.99833748960931,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1451916,
+  "transparentPixelCount": 1651824,
+  "sourceUniqueColorEstimate": 45598,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 39485,
+  "saturationClampedPixelCount": 574,
+  "elapsedMilliseconds": 3045.447,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SSR_ssr_clockwork_archangel_regulus_시계태엽_대천사_레굴루스_0001_transparent.png",
+  "sourceRelativePath": "SSR_ssr_clockwork_archangel_regulus_시계태엽_대천사_레굴루스_0001_transparent.png",
+  "sourceSha256": "b5b64a12bcce42dcfade034f9f900cfdd4c152529cfbdce886170589c6994b79",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SSR_ssr_clockwork_archangel_regulus_시계태엽_대천사_레굴루스_0001_transparent.png",
+  "outputSha256": "b6fb31c89c73f5593470a3d6f120327f76563c3379703a9fe6bb8f41e62cdced",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    19,
+    158,
+    1652,
+    2371
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1633,
+    2213
+  ],
+  "outputSize": [
+    1644,
+    2226
+  ],
+  "outputBoundingBox": [
+    5,
+    9,
+    1637,
+    2222
+  ],
+  "contentBoundingBox": [
+    5,
+    9,
+    1637,
+    2222
+  ],
+  "bottomCenterAnchor": [
+    822.0,
+    2222.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9982030548068284,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1281804,
+  "transparentPixelCount": 2377740,
+  "sourceUniqueColorEstimate": 55870,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 33305,
+  "saturationClampedPixelCount": 126,
+  "elapsedMilliseconds": 2939.376,
+  "warningCodes": [],
+  "errorMessage": ""
+}

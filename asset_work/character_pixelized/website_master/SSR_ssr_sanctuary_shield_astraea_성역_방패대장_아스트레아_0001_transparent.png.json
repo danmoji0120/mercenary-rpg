@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SSR_ssr_sanctuary_shield_astraea_성역_방패대장_아스트레아_0001_transparent.png",
+  "sourceRelativePath": "SSR_ssr_sanctuary_shield_astraea_성역_방패대장_아스트레아_0001_transparent.png",
+  "sourceSha256": "8df9692e530382c5cdca78dbc06766494213e2f56cbea71907542c9e91478be0",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SSR_ssr_sanctuary_shield_astraea_성역_방패대장_아스트레아_0001_transparent.png",
+  "outputSha256": "4904e8ef2af01c9a785436c4bc3cb0318a4094e67460584adc45fe5467fff6dc",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    3,
+    36,
+    1652,
+    2406
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1649,
+    2370
+  ],
+  "outputSize": [
+    1662,
+    2382
+  ],
+  "outputBoundingBox": [
+    6,
+    8,
+    1655,
+    2378
+  ],
+  "contentBoundingBox": [
+    6,
+    8,
+    1655,
+    2378
+  ],
+  "bottomCenterAnchor": [
+    831.0,
+    2378.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998320738874895,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1977966,
+  "transparentPixelCount": 1980918,
+  "sourceUniqueColorEstimate": 54712,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 52307,
+  "saturationClampedPixelCount": 227,
+  "elapsedMilliseconds": 3348.646,
+  "warningCodes": [],
+  "errorMessage": ""
+}

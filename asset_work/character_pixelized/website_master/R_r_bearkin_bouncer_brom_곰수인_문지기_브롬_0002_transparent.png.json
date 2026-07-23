@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_bearkin_bouncer_brom_곰수인_문지기_브롬_0002_transparent.png",
+  "sourceRelativePath": "R_r_bearkin_bouncer_brom_곰수인_문지기_브롬_0002_transparent.png",
+  "sourceSha256": "66f1af8934467ee17484063de05a8aeaba04452990631b09a8f5bcb204f9df49",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_bearkin_bouncer_brom_곰수인_문지기_브롬_0002_transparent.png",
+  "outputSha256": "a95005d1a4e323175285e06ef144ed3ddc80124fa58b238431b7a43f1ade314e",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    215,
+    0,
+    1450,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1235,
+    2432
+  ],
+  "outputSize": [
+    1248,
+    2442
+  ],
+  "outputBoundingBox": [
+    6,
+    6,
+    1241,
+    2436
+  ],
+  "contentBoundingBox": [
+    6,
+    6,
+    1241,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    624.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 2012466,
+  "transparentPixelCount": 1035150,
+  "sourceUniqueColorEstimate": 15895,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 53150,
+  "saturationClampedPixelCount": 1191,
+  "elapsedMilliseconds": 3888.61,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

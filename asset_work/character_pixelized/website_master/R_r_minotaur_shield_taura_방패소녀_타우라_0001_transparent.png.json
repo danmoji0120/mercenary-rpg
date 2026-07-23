@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_minotaur_shield_taura_방패소녀_타우라_0001_transparent.png",
+  "sourceRelativePath": "R_r_minotaur_shield_taura_방패소녀_타우라_0001_transparent.png",
+  "sourceSha256": "f3f5ed1ae3ecfd1de047b7833098a7a09e97e879ec20d0d97397e79519eccf60",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_minotaur_shield_taura_방패소녀_타우라_0001_transparent.png",
+  "outputSha256": "a8f90368c150aedc6c140ab651b90f75ea114a210b3969fda77daac684b13fe6",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    175,
+    0,
+    1575,
+    2424
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1400,
+    2424
+  ],
+  "outputSize": [
+    1410,
+    2436
+  ],
+  "outputBoundingBox": [
+    5,
+    8,
+    1403,
+    2432
+  ],
+  "contentBoundingBox": [
+    5,
+    8,
+    1403,
+    2432
+  ],
+  "bottomCenterAnchor": [
+    705.0,
+    2432.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983579638752053,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1675368,
+  "transparentPixelCount": 1759392,
+  "sourceUniqueColorEstimate": 41478,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 45483,
+  "saturationClampedPixelCount": 1185,
+  "elapsedMilliseconds": 3465.824,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

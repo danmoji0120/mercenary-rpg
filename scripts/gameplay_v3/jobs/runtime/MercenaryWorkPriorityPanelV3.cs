@@ -10,11 +10,13 @@ public partial class MercenaryWorkPriorityPanelV3:Godot.Control
     private static readonly (JobTypeV3 Type,string Label)[] Rows=
     {
         (JobTypeV3.Hauling,"운반"),(JobTypeV3.Construction,"건설"),(JobTypeV3.Demolition,"철거"),
-        (JobTypeV3.Gathering,"채집"),(JobTypeV3.Sowing,"파종"),(JobTypeV3.Harvesting,"수확")
+        (JobTypeV3.Gathering,"채집"),(JobTypeV3.Sowing,"파종"),(JobTypeV3.Harvesting,"수확"),
+        (JobTypeV3.Production,"제작")
     };
     private JobManagerV3? _jobs;private MercenaryControlSessionV3? _control;private PanelContainer? _panel;private Label? _title;
     private readonly Dictionary<JobTypeV3,Button> _buttons=new();private string _mercenaryId=string.Empty;private bool _worldMapBlocked;
     public string LastAction{get;private set;}="Closed";public bool IsOpen=>_panel?.Visible==true;
+    public static int CategoryCount=>Rows.Length;public static bool IncludesProduction=>Array.Exists(Rows,x=>x.Type==JobTypeV3.Production&&x.Label=="\uC81C\uC791");
 
     public void Initialize(JobManagerV3 jobs,MercenaryControlSessionV3 control)
     { _jobs=jobs;_control=control;Build();control.Selection.SelectionChanged+=OnSelectionChanged;Visible=true; }

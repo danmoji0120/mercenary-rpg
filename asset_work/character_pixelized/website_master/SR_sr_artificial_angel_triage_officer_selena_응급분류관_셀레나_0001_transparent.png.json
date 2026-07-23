@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_artificial_angel_triage_officer_selena_응급분류관_셀레나_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_artificial_angel_triage_officer_selena_응급분류관_셀레나_0001_transparent.png",
+  "sourceSha256": "8e77a022470acad8ef514855ed9b7bd69118120f5712bdba3dcd3973c9a0f200",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_artificial_angel_triage_officer_selena_응급분류관_셀레나_0001_transparent.png",
+  "outputSha256": "30e6fc94e98ede38ef921c767982071ac2ff12f34a29caf082c3123d77b5f473",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    110,
+    30,
+    1485,
+    2419
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1375,
+    2389
+  ],
+  "outputSize": [
+    1386,
+    2400
+  ],
+  "outputBoundingBox": [
+    5,
+    7,
+    1379,
+    2395
+  ],
+  "contentBoundingBox": [
+    5,
+    7,
+    1379,
+    2395
+  ],
+  "bottomCenterAnchor": [
+    693.0,
+    2395.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9979166666666667,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1163376,
+  "transparentPixelCount": 2163024,
+  "sourceUniqueColorEstimate": 51870,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 29902,
+  "saturationClampedPixelCount": 76,
+  "elapsedMilliseconds": 2560.552,
+  "warningCodes": [],
+  "errorMessage": ""
+}

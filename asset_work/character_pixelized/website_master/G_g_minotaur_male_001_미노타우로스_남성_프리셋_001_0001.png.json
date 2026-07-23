@@ -1,0 +1,74 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\G_g_minotaur_male_001_미노타우로스_남성_프리셋_001_0001.png",
+  "sourceRelativePath": "G_g_minotaur_male_001_미노타우로스_남성_프리셋_001_0001.png",
+  "sourceSha256": "741607e206b82a4f7b710cd8bffb512856f603316924d746a2d5eb188dd1df27",
+  "sourceHadNoAlpha": true,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\G_g_minotaur_male_001_미노타우로스_남성_프리셋_001_0001.png",
+  "outputSha256": "1c310031d7b44f5d037c1980ea2715ba911bf5924d23cfaa0dac54f0cc3f8c2a",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    0,
+    0,
+    1664,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1664,
+    2432
+  ],
+  "outputSize": [
+    1674,
+    2442
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1667,
+    2436
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1667,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    837.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 4038660,
+  "transparentPixelCount": 49248,
+  "sourceUniqueColorEstimate": 10357,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 26868,
+  "saturationClampedPixelCount": 294,
+  "elapsedMilliseconds": 8375.089,
+  "warningCodes": [
+    "SOURCE_HAS_NO_ALPHA",
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

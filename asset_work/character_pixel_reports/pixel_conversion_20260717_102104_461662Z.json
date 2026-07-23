@@ -1,0 +1,617 @@
+{
+  "run": {
+    "startedUtc": "2026-07-17T10:21:04.460661+00:00",
+    "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+    "inputDir": "E:\\mercenary-rpg\\asset_work\\character_sources",
+    "outputDir": "E:\\mercenary-rpg\\asset_work\\character_pixelized",
+    "presets": [
+      "website_master"
+    ],
+    "selectedSourceCount": 8,
+    "workers": 4,
+    "dryRun": false,
+    "contactSheets": [
+      "E:\\mercenary-rpg\\asset_work\\character_contact_sheets\\website_master_sheet_001.png"
+    ]
+  },
+  "summary": {
+    "PASS": 0,
+    "WARNING": 8,
+    "SKIPPED": 0,
+    "FAILED": 0
+  },
+  "records": [
+    {
+      "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\G_g_bearkin_female_001_곰수인_여성_프리셋_001_0001.png",
+      "sourceRelativePath": "G_g_bearkin_female_001_곰수인_여성_프리셋_001_0001.png",
+      "sourceSha256": "da4a80649b58fb2bca911711e2e80557528a93880959d084562ac458404d8943",
+      "sourceHadNoAlpha": true,
+      "preset": "website_master",
+      "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+      "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+      "status": "WARNING",
+      "skippedReason": "",
+      "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\G_g_bearkin_female_001_곰수인_여성_프리셋_001_0001.png",
+      "outputSha256": "dbad053e06148d4b390932183bbb9ca229119028bb570913cc291d0e01b57d21",
+      "sourceSize": [
+        1664,
+        2432
+      ],
+      "sourceBoundingBox": [
+        0,
+        0,
+        1664,
+        2432
+      ],
+      "preserveSourceDimensions": true,
+      "targetContentHeight": null,
+      "scaleRatio": 1.0,
+      "contentSize": [
+        1664,
+        2432
+      ],
+      "outputSize": [
+        1674,
+        2442
+      ],
+      "outputBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "contentBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "bottomCenterAnchor": [
+        837.0,
+        2436.0
+      ],
+      "normalizedPivotX": 0.5,
+      "normalizedPivotY": 0.9975429975429976,
+      "requestedColors": 16,
+      "actualColors": 16,
+      "requestedPaletteColorCount": 16,
+      "actualPaletteColorCount": 16,
+      "opaquePixelCount": 4038660,
+      "transparentPixelCount": 49248,
+      "sourceUniqueColorEstimate": 12340,
+      "outputUniqueColorCount": 16,
+      "alphaValues": [
+        0,
+        255
+      ],
+      "saturationPreset": "high",
+      "saturationMultiplier": 1.35,
+      "saturationAdjustedPixelCount": 30529,
+      "saturationClampedPixelCount": 376,
+      "elapsedMilliseconds": 6325.821,
+      "warningCodes": [
+        "SOURCE_HAS_NO_ALPHA",
+        "BOUNDING_BOX_TOUCHES_EDGE"
+      ],
+      "errorMessage": ""
+    },
+    {
+      "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\G_g_bearkin_male_001_곰수인_남성_프리셋_001_0001.png",
+      "sourceRelativePath": "G_g_bearkin_male_001_곰수인_남성_프리셋_001_0001.png",
+      "sourceSha256": "3a7ce53ff54397363cda78881bd5b1609ebc335a36c51ee48f879ecd6c0d3598",
+      "sourceHadNoAlpha": true,
+      "preset": "website_master",
+      "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+      "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+      "status": "WARNING",
+      "skippedReason": "",
+      "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\G_g_bearkin_male_001_곰수인_남성_프리셋_001_0001.png",
+      "outputSha256": "94dfb622496042b929bef80eb1fc836d1d17bec60eee4976752d7d16ba867242",
+      "sourceSize": [
+        1664,
+        2432
+      ],
+      "sourceBoundingBox": [
+        0,
+        0,
+        1664,
+        2432
+      ],
+      "preserveSourceDimensions": true,
+      "targetContentHeight": null,
+      "scaleRatio": 1.0,
+      "contentSize": [
+        1664,
+        2432
+      ],
+      "outputSize": [
+        1674,
+        2442
+      ],
+      "outputBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "contentBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "bottomCenterAnchor": [
+        837.0,
+        2436.0
+      ],
+      "normalizedPivotX": 0.5,
+      "normalizedPivotY": 0.9975429975429976,
+      "requestedColors": 16,
+      "actualColors": 16,
+      "requestedPaletteColorCount": 16,
+      "actualPaletteColorCount": 16,
+      "opaquePixelCount": 4038660,
+      "transparentPixelCount": 49248,
+      "sourceUniqueColorEstimate": 18039,
+      "outputUniqueColorCount": 16,
+      "alphaValues": [
+        0,
+        255
+      ],
+      "saturationPreset": "high",
+      "saturationMultiplier": 1.35,
+      "saturationAdjustedPixelCount": 50066,
+      "saturationClampedPixelCount": 342,
+      "elapsedMilliseconds": 6064.799,
+      "warningCodes": [
+        "SOURCE_HAS_NO_ALPHA",
+        "BOUNDING_BOX_TOUCHES_EDGE"
+      ],
+      "errorMessage": ""
+    },
+    {
+      "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\G_g_catkin_female_001_고양이수인_여성_프리셋_001_0001.png",
+      "sourceRelativePath": "G_g_catkin_female_001_고양이수인_여성_프리셋_001_0001.png",
+      "sourceSha256": "0f87b6d00c538e3a3f9eb18b9b308e3e824ce380817cc6e423baf0990d1ecfd1",
+      "sourceHadNoAlpha": true,
+      "preset": "website_master",
+      "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+      "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+      "status": "WARNING",
+      "skippedReason": "",
+      "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\G_g_catkin_female_001_고양이수인_여성_프리셋_001_0001.png",
+      "outputSha256": "92c026c5e867f6b391595bfb2d2f88b728462d8a258cfa3700e7f3faa34404df",
+      "sourceSize": [
+        1664,
+        2432
+      ],
+      "sourceBoundingBox": [
+        0,
+        0,
+        1664,
+        2432
+      ],
+      "preserveSourceDimensions": true,
+      "targetContentHeight": null,
+      "scaleRatio": 1.0,
+      "contentSize": [
+        1664,
+        2432
+      ],
+      "outputSize": [
+        1674,
+        2442
+      ],
+      "outputBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "contentBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "bottomCenterAnchor": [
+        837.0,
+        2436.0
+      ],
+      "normalizedPivotX": 0.5,
+      "normalizedPivotY": 0.9975429975429976,
+      "requestedColors": 16,
+      "actualColors": 16,
+      "requestedPaletteColorCount": 16,
+      "actualPaletteColorCount": 16,
+      "opaquePixelCount": 4038660,
+      "transparentPixelCount": 49248,
+      "sourceUniqueColorEstimate": 10132,
+      "outputUniqueColorCount": 16,
+      "alphaValues": [
+        0,
+        255
+      ],
+      "saturationPreset": "high",
+      "saturationMultiplier": 1.35,
+      "saturationAdjustedPixelCount": 22108,
+      "saturationClampedPixelCount": 417,
+      "elapsedMilliseconds": 5920.86,
+      "warningCodes": [
+        "SOURCE_HAS_NO_ALPHA",
+        "BOUNDING_BOX_TOUCHES_EDGE"
+      ],
+      "errorMessage": ""
+    },
+    {
+      "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\G_g_catkin_male_001_고양이수인_남성_프리셋_001_0001.png",
+      "sourceRelativePath": "G_g_catkin_male_001_고양이수인_남성_프리셋_001_0001.png",
+      "sourceSha256": "11c240756d6202517f8f69e7e974ab1d5e01309affe0f41e3be17f0521d7b7ba",
+      "sourceHadNoAlpha": true,
+      "preset": "website_master",
+      "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+      "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+      "status": "WARNING",
+      "skippedReason": "",
+      "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\G_g_catkin_male_001_고양이수인_남성_프리셋_001_0001.png",
+      "outputSha256": "e5841d1cc8eaa6316f12444576b4f3fd6cf39e1d6d750edf58afc1aa56e162f2",
+      "sourceSize": [
+        1664,
+        2432
+      ],
+      "sourceBoundingBox": [
+        0,
+        0,
+        1664,
+        2432
+      ],
+      "preserveSourceDimensions": true,
+      "targetContentHeight": null,
+      "scaleRatio": 1.0,
+      "contentSize": [
+        1664,
+        2432
+      ],
+      "outputSize": [
+        1674,
+        2442
+      ],
+      "outputBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "contentBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "bottomCenterAnchor": [
+        837.0,
+        2436.0
+      ],
+      "normalizedPivotX": 0.5,
+      "normalizedPivotY": 0.9975429975429976,
+      "requestedColors": 16,
+      "actualColors": 16,
+      "requestedPaletteColorCount": 16,
+      "actualPaletteColorCount": 16,
+      "opaquePixelCount": 4038660,
+      "transparentPixelCount": 49248,
+      "sourceUniqueColorEstimate": 12163,
+      "outputUniqueColorCount": 16,
+      "alphaValues": [
+        0,
+        255
+      ],
+      "saturationPreset": "high",
+      "saturationMultiplier": 1.35,
+      "saturationAdjustedPixelCount": 29673,
+      "saturationClampedPixelCount": 252,
+      "elapsedMilliseconds": 5785.161,
+      "warningCodes": [
+        "SOURCE_HAS_NO_ALPHA",
+        "BOUNDING_BOX_TOUCHES_EDGE"
+      ],
+      "errorMessage": ""
+    },
+    {
+      "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\G_g_centaur_female_001_켄타우로스_여성_프리셋_001_0001.png",
+      "sourceRelativePath": "G_g_centaur_female_001_켄타우로스_여성_프리셋_001_0001.png",
+      "sourceSha256": "9db876a3fef8796afada6f6706aa0bd4bd448b6c0c18aaf3bebad9e02f5c2ccc",
+      "sourceHadNoAlpha": true,
+      "preset": "website_master",
+      "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+      "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+      "status": "WARNING",
+      "skippedReason": "",
+      "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\G_g_centaur_female_001_켄타우로스_여성_프리셋_001_0001.png",
+      "outputSha256": "e0c7cd751aa7e9b31466e8ddc1ce7ee57891d9247ca28095d95626de73a4bbe8",
+      "sourceSize": [
+        1664,
+        2432
+      ],
+      "sourceBoundingBox": [
+        0,
+        0,
+        1664,
+        2432
+      ],
+      "preserveSourceDimensions": true,
+      "targetContentHeight": null,
+      "scaleRatio": 1.0,
+      "contentSize": [
+        1664,
+        2432
+      ],
+      "outputSize": [
+        1674,
+        2442
+      ],
+      "outputBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "contentBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "bottomCenterAnchor": [
+        837.0,
+        2436.0
+      ],
+      "normalizedPivotX": 0.5,
+      "normalizedPivotY": 0.9975429975429976,
+      "requestedColors": 16,
+      "actualColors": 16,
+      "requestedPaletteColorCount": 16,
+      "actualPaletteColorCount": 16,
+      "opaquePixelCount": 4038660,
+      "transparentPixelCount": 49248,
+      "sourceUniqueColorEstimate": 14781,
+      "outputUniqueColorCount": 16,
+      "alphaValues": [
+        0,
+        255
+      ],
+      "saturationPreset": "high",
+      "saturationMultiplier": 1.35,
+      "saturationAdjustedPixelCount": 34876,
+      "saturationClampedPixelCount": 696,
+      "elapsedMilliseconds": 5374.617,
+      "warningCodes": [
+        "SOURCE_HAS_NO_ALPHA",
+        "BOUNDING_BOX_TOUCHES_EDGE"
+      ],
+      "errorMessage": ""
+    },
+    {
+      "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\G_g_centaur_male_001_켄타우로스_남성_프리셋_001_0001.png",
+      "sourceRelativePath": "G_g_centaur_male_001_켄타우로스_남성_프리셋_001_0001.png",
+      "sourceSha256": "9c296d122e68ff9005f77083a27faf0f6d4c273b34321dfbe6b4f86b7a807270",
+      "sourceHadNoAlpha": true,
+      "preset": "website_master",
+      "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+      "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+      "status": "WARNING",
+      "skippedReason": "",
+      "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\G_g_centaur_male_001_켄타우로스_남성_프리셋_001_0001.png",
+      "outputSha256": "2dbae5929b5c1ad89f76fbe3f216cc6b47e020452c301578ebc92daf734de4b1",
+      "sourceSize": [
+        1664,
+        2432
+      ],
+      "sourceBoundingBox": [
+        0,
+        0,
+        1664,
+        2432
+      ],
+      "preserveSourceDimensions": true,
+      "targetContentHeight": null,
+      "scaleRatio": 1.0,
+      "contentSize": [
+        1664,
+        2432
+      ],
+      "outputSize": [
+        1674,
+        2442
+      ],
+      "outputBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "contentBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "bottomCenterAnchor": [
+        837.0,
+        2436.0
+      ],
+      "normalizedPivotX": 0.5,
+      "normalizedPivotY": 0.9975429975429976,
+      "requestedColors": 16,
+      "actualColors": 16,
+      "requestedPaletteColorCount": 16,
+      "actualPaletteColorCount": 16,
+      "opaquePixelCount": 4038660,
+      "transparentPixelCount": 49248,
+      "sourceUniqueColorEstimate": 8551,
+      "outputUniqueColorCount": 16,
+      "alphaValues": [
+        0,
+        255
+      ],
+      "saturationPreset": "high",
+      "saturationMultiplier": 1.35,
+      "saturationAdjustedPixelCount": 34603,
+      "saturationClampedPixelCount": 574,
+      "elapsedMilliseconds": 5388.524,
+      "warningCodes": [
+        "SOURCE_HAS_NO_ALPHA",
+        "BOUNDING_BOX_TOUCHES_EDGE"
+      ],
+      "errorMessage": ""
+    },
+    {
+      "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\G_g_deerkin_female_001_사슴수인_여성_프리셋_001_0001.png",
+      "sourceRelativePath": "G_g_deerkin_female_001_사슴수인_여성_프리셋_001_0001.png",
+      "sourceSha256": "82e5af9f27f32f1cd9e46f3f6ecd5f7d8bfac705aeb304283fd1137b3ad6a81d",
+      "sourceHadNoAlpha": true,
+      "preset": "website_master",
+      "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+      "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+      "status": "WARNING",
+      "skippedReason": "",
+      "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\G_g_deerkin_female_001_사슴수인_여성_프리셋_001_0001.png",
+      "outputSha256": "1dc46104c96c3b75d338c73a83f32b387cc9191dc2933d83e8bb99bd75e9d1a0",
+      "sourceSize": [
+        1664,
+        2432
+      ],
+      "sourceBoundingBox": [
+        0,
+        0,
+        1664,
+        2432
+      ],
+      "preserveSourceDimensions": true,
+      "targetContentHeight": null,
+      "scaleRatio": 1.0,
+      "contentSize": [
+        1664,
+        2432
+      ],
+      "outputSize": [
+        1674,
+        2442
+      ],
+      "outputBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "contentBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "bottomCenterAnchor": [
+        837.0,
+        2436.0
+      ],
+      "normalizedPivotX": 0.5,
+      "normalizedPivotY": 0.9975429975429976,
+      "requestedColors": 16,
+      "actualColors": 16,
+      "requestedPaletteColorCount": 16,
+      "actualPaletteColorCount": 16,
+      "opaquePixelCount": 4038660,
+      "transparentPixelCount": 49248,
+      "sourceUniqueColorEstimate": 12042,
+      "outputUniqueColorCount": 16,
+      "alphaValues": [
+        0,
+        255
+      ],
+      "saturationPreset": "high",
+      "saturationMultiplier": 1.35,
+      "saturationAdjustedPixelCount": 22533,
+      "saturationClampedPixelCount": 167,
+      "elapsedMilliseconds": 5315.54,
+      "warningCodes": [
+        "SOURCE_HAS_NO_ALPHA",
+        "BOUNDING_BOX_TOUCHES_EDGE"
+      ],
+      "errorMessage": ""
+    },
+    {
+      "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\G_g_deerkin_male_001_사슴수인_남성_프리셋_001_0001.png",
+      "sourceRelativePath": "G_g_deerkin_male_001_사슴수인_남성_프리셋_001_0001.png",
+      "sourceSha256": "0a57084147d6cf1f054a017628dd8fa2982a23be5f0f9bd9e37090abf2412a1b",
+      "sourceHadNoAlpha": true,
+      "preset": "website_master",
+      "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+      "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+      "status": "WARNING",
+      "skippedReason": "",
+      "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\G_g_deerkin_male_001_사슴수인_남성_프리셋_001_0001.png",
+      "outputSha256": "6c645076e91117d49bbf5e8e6f4eef12c9a89ec0b7ef6aac858d5b1dfbd3111d",
+      "sourceSize": [
+        1664,
+        2432
+      ],
+      "sourceBoundingBox": [
+        0,
+        0,
+        1664,
+        2432
+      ],
+      "preserveSourceDimensions": true,
+      "targetContentHeight": null,
+      "scaleRatio": 1.0,
+      "contentSize": [
+        1664,
+        2432
+      ],
+      "outputSize": [
+        1674,
+        2442
+      ],
+      "outputBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "contentBoundingBox": [
+        5,
+        6,
+        1667,
+        2436
+      ],
+      "bottomCenterAnchor": [
+        837.0,
+        2436.0
+      ],
+      "normalizedPivotX": 0.5,
+      "normalizedPivotY": 0.9975429975429976,
+      "requestedColors": 16,
+      "actualColors": 16,
+      "requestedPaletteColorCount": 16,
+      "actualPaletteColorCount": 16,
+      "opaquePixelCount": 4038660,
+      "transparentPixelCount": 49248,
+      "sourceUniqueColorEstimate": 15461,
+      "outputUniqueColorCount": 16,
+      "alphaValues": [
+        0,
+        255
+      ],
+      "saturationPreset": "high",
+      "saturationMultiplier": 1.35,
+      "saturationAdjustedPixelCount": 33589,
+      "saturationClampedPixelCount": 194,
+      "elapsedMilliseconds": 5299.726,
+      "warningCodes": [
+        "SOURCE_HAS_NO_ALPHA",
+        "BOUNDING_BOX_TOUCHES_EDGE"
+      ],
+      "errorMessage": ""
+    }
+  ]
+}

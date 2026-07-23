@@ -72,9 +72,9 @@ public partial class MercenaryEntityV3 : Node2D
         }
         if(_carrying)
         {
-            Color carryColor=_carryType switch{ResourceTypeV3.Wood=>new Color(0.72f,0.40f,0.16f),ResourceTypeV3.Potato=>new Color(.72f,.50f,.24f),ResourceTypeV3.Ration=>new Color(.82f,.66f,.30f),_=>new Color(0.72f,0.76f,0.82f)};
+            Color carryColor=_carryType switch{ResourceTypeV3.Wood=>new Color(.72f,.40f,.16f),ResourceTypeV3.Potato=>new Color(.72f,.50f,.24f),ResourceTypeV3.Ration=>new Color(.82f,.66f,.30f),ResourceTypeV3.IronOre=>new Color(.48f,.31f,.26f),ResourceTypeV3.CopperOre=>new Color(.19f,.62f,.55f),ResourceTypeV3.Coal=>new Color(.13f,.14f,.16f),ResourceTypeV3.Clay=>new Color(.64f,.31f,.19f),ResourceTypeV3.Fiber=>new Color(.72f,.80f,.31f),ResourceTypeV3.MedicinalHerb=>new Color(.27f,.63f,.31f),_=>new Color(.72f,.76f,.82f)};
             DrawCircle(new Vector2(9.0f,7.0f),5.5f,new Color(0.04f,0.06f,0.07f,0.95f));
-            char carryCode=_carryType switch{ResourceTypeV3.Wood=>'W',ResourceTypeV3.Stone=>'S',ResourceTypeV3.Ration=>'R',ResourceTypeV3.Potato=>'P',_=>'?'};
+            char carryCode=_carryType switch{ResourceTypeV3.Wood=>'W',ResourceTypeV3.Stone=>'S',ResourceTypeV3.Ration=>'R',ResourceTypeV3.Potato=>'P',ResourceTypeV3.IronOre=>'I',ResourceTypeV3.CopperOre=>'C',ResourceTypeV3.Coal=>'K',ResourceTypeV3.Clay=>'L',ResourceTypeV3.Fiber=>'F',ResourceTypeV3.MedicinalHerb=>'H',_=>'?'};
             DrawString(ThemeDB.FallbackFont,new Vector2(5.5f,10.0f),$"{carryCode}{_carryAmount}",HorizontalAlignment.Left,-1,7,carryColor);
         }
     }

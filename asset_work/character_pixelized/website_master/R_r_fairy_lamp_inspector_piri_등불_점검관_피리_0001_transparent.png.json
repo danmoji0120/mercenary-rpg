@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_fairy_lamp_inspector_piri_등불_점검관_피리_0001_transparent.png",
+  "sourceRelativePath": "R_r_fairy_lamp_inspector_piri_등불_점검관_피리_0001_transparent.png",
+  "sourceSha256": "a1115190db99eb1989cd507b08e1c48589fdcff0b66dc3c280e6a0aea6336f70",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_fairy_lamp_inspector_piri_등불_점검관_피리_0001_transparent.png",
+  "outputSha256": "1f3541b273c1cd8d7b7715fc8a79b68a1b11e1b4014dd198001ef4cd993972e6",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    157,
+    57,
+    1560,
+    2369
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1403,
+    2312
+  ],
+  "outputSize": [
+    1416,
+    2322
+  ],
+  "outputBoundingBox": [
+    6,
+    6,
+    1409,
+    2316
+  ],
+  "contentBoundingBox": [
+    6,
+    6,
+    1409,
+    2316
+  ],
+  "bottomCenterAnchor": [
+    708.0,
+    2316.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9974160206718347,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1131210,
+  "transparentPixelCount": 2156742,
+  "sourceUniqueColorEstimate": 53298,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 30121,
+  "saturationClampedPixelCount": 431,
+  "elapsedMilliseconds": 2661.498,
+  "warningCodes": [],
+  "errorMessage": ""
+}

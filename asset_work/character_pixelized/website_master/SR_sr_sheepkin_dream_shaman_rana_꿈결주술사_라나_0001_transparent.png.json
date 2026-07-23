@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_sheepkin_dream_shaman_rana_꿈결주술사_라나_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_sheepkin_dream_shaman_rana_꿈결주술사_라나_0001_transparent.png",
+  "sourceSha256": "9f58520d71e8948e8d43710c65181e6113d514aca595807e0fe714815c0b0e9b",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_sheepkin_dream_shaman_rana_꿈결주술사_라나_0001_transparent.png",
+  "outputSha256": "62d896660f4ced8c2fa7f1ea513e6b3fabec1caead36d5fb7c0fd4bdff80657a",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    0,
+    18,
+    1574,
+    2414
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1574,
+    2396
+  ],
+  "outputSize": [
+    1584,
+    2406
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1577,
+    2400
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1577,
+    2400
+  ],
+  "bottomCenterAnchor": [
+    792.0,
+    2400.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975062344139651,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1564452,
+  "transparentPixelCount": 2246652,
+  "sourceUniqueColorEstimate": 53833,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 40502,
+  "saturationClampedPixelCount": 61,
+  "elapsedMilliseconds": 3550.493,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_illegal_summoner_nia_bell_불법_소환사_니아_벨_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_illegal_summoner_nia_bell_불법_소환사_니아_벨_0001_transparent.png",
+  "sourceSha256": "7f88b3874b54c25552ae127049b2e0cbe1f1d620961260b297b9b7e4880b8a09",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_illegal_summoner_nia_bell_불법_소환사_니아_벨_0001_transparent.png",
+  "outputSha256": "5a0f577e12480c6dd468aa640527608c320cdef9d8a4cf4f7867e29db3b41258",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    6,
+    13,
+    1609,
+    2418
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1603,
+    2405
+  ],
+  "outputSize": [
+    1614,
+    2418
+  ],
+  "outputBoundingBox": [
+    5,
+    9,
+    1607,
+    2414
+  ],
+  "contentBoundingBox": [
+    5,
+    9,
+    1607,
+    2414
+  ],
+  "bottomCenterAnchor": [
+    807.0,
+    2414.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983457402812241,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1641762,
+  "transparentPixelCount": 2260890,
+  "sourceUniqueColorEstimate": 51745,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 44050,
+  "saturationClampedPixelCount": 1574,
+  "elapsedMilliseconds": 3388.32,
+  "warningCodes": [],
+  "errorMessage": ""
+}

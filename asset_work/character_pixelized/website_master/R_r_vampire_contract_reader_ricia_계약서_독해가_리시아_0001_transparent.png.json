@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_vampire_contract_reader_ricia_계약서_독해가_리시아_0001_transparent.png",
+  "sourceRelativePath": "R_r_vampire_contract_reader_ricia_계약서_독해가_리시아_0001_transparent.png",
+  "sourceSha256": "03ef4fab370b336c83f4313622ede54ad4cf088671fada055cd890f11566c758",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_vampire_contract_reader_ricia_계약서_독해가_리시아_0001_transparent.png",
+  "outputSha256": "6b3fc3f96ec4d8fbe71e1b5783c621f97590a4120d7ed34e0093aecb6fb12406",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    331,
+    44,
+    1387,
+    2395
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1056,
+    2351
+  ],
+  "outputSize": [
+    1068,
+    2364
+  ],
+  "outputBoundingBox": [
+    6,
+    9,
+    1062,
+    2360
+  ],
+  "contentBoundingBox": [
+    6,
+    9,
+    1062,
+    2360
+  ],
+  "bottomCenterAnchor": [
+    534.0,
+    2360.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983079526226735,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 847740,
+  "transparentPixelCount": 1677012,
+  "sourceUniqueColorEstimate": 33631,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 22394,
+  "saturationClampedPixelCount": 1039,
+  "elapsedMilliseconds": 1930.635,
+  "warningCodes": [],
+  "errorMessage": ""
+}

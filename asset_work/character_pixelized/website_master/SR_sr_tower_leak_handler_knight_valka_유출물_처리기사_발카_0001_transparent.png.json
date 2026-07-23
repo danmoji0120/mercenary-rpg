@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_tower_leak_handler_knight_valka_유출물_처리기사_발카_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_tower_leak_handler_knight_valka_유출물_처리기사_발카_0001_transparent.png",
+  "sourceSha256": "94bbca173e1867c6891329dbb3b996cafab4ffdc405695ea24a0481bcfe6894f",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_tower_leak_handler_knight_valka_유출물_처리기사_발카_0001_transparent.png",
+  "outputSha256": "a151bf58bf9665683b0cdb1e2c7dd78ae5a74db21058541794129bed4ef3038c",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    71,
+    141,
+    1616,
+    2361
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1545,
+    2220
+  ],
+  "outputSize": [
+    1554,
+    2232
+  ],
+  "outputBoundingBox": [
+    4,
+    8,
+    1546,
+    2228
+  ],
+  "contentBoundingBox": [
+    4,
+    8,
+    1546,
+    2228
+  ],
+  "bottomCenterAnchor": [
+    777.0,
+    2228.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9982078853046595,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1821744,
+  "transparentPixelCount": 1646784,
+  "sourceUniqueColorEstimate": 61443,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 49578,
+  "saturationClampedPixelCount": 5069,
+  "elapsedMilliseconds": 3671.507,
+  "warningCodes": [],
+  "errorMessage": ""
+}

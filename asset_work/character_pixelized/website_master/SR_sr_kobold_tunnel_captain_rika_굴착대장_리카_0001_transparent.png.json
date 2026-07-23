@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_kobold_tunnel_captain_rika_굴착대장_리카_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_kobold_tunnel_captain_rika_굴착대장_리카_0001_transparent.png",
+  "sourceSha256": "764d46f53d3bcdb2af9230bf1dd74d3d467faaea14bdeb427d228212d234de02",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_kobold_tunnel_captain_rika_굴착대장_리카_0001_transparent.png",
+  "outputSha256": "efb03fd24ae0c56ed09a60f96b58ac751d19ea63a9696fb73549d22ae05c6dc8",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    92,
+    34,
+    1537,
+    2414
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1445,
+    2380
+  ],
+  "outputSize": [
+    1458,
+    2388
+  ],
+  "outputBoundingBox": [
+    6,
+    4,
+    1451,
+    2384
+  ],
+  "contentBoundingBox": [
+    6,
+    4,
+    1451,
+    2384
+  ],
+  "bottomCenterAnchor": [
+    729.0,
+    2384.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998324958123953,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1491174,
+  "transparentPixelCount": 1990530,
+  "sourceUniqueColorEstimate": 50512,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 40168,
+  "saturationClampedPixelCount": 355,
+  "elapsedMilliseconds": 3217.407,
+  "warningCodes": [],
+  "errorMessage": ""
+}

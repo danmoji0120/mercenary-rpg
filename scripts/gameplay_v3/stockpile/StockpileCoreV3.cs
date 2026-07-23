@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Collections.ObjectModel;
 using GameplayV3.Resources;
 using Godot;
@@ -20,7 +21,9 @@ public sealed class StockpileCellReservationV3
 {
     internal StockpileCellReservationV3(string zoneId, GlobalCellCoord cell, string requestId, string mercenaryId, ResourceTypeV3 type, long revision, DateTime created)
     { StockpileZoneId=zoneId;Cell=cell;WorkRequestId=requestId;MercenaryId=mercenaryId;ResourceType=type;Revision=revision;CreatedUtc=created; }
-    public string StockpileZoneId{get;} public GlobalCellCoord Cell{get;} public string WorkRequestId{get;} public string MercenaryId{get;} public ResourceTypeV3 ResourceType{get;} public long Revision{get;} public DateTime CreatedUtc{get;}
+    internal StockpileCellReservationV3(string zoneId, GlobalCellCoord cell, string requestId, string mercenaryId, string equipmentInstanceId, long revision, DateTime created)
+    { StockpileZoneId=zoneId;Cell=cell;WorkRequestId=requestId;MercenaryId=mercenaryId;EquipmentInstanceId=equipmentInstanceId;Revision=revision;CreatedUtc=created; }
+    public string StockpileZoneId{get;} public GlobalCellCoord Cell{get;} public string WorkRequestId{get;} public string MercenaryId{get;} public ResourceTypeV3? ResourceType{get;} public string? EquipmentInstanceId{get;} public long Revision{get;} public DateTime CreatedUtc{get;}
 }
 
 public sealed class StockpileCellReservationRegistryV3
@@ -43,33 +46,41 @@ public sealed class StockpileZoneStateV3
     private readonly HashSet<Vector2I> _cells; private readonly HashSet<ResourceTypeV3> _allowed;
     internal StockpileZoneStateV3(string id,string company,IEnumerable<Vector2I> cells,IEnumerable<ResourceTypeV3> allowed,DateTime created)
     {StockpileZoneId=id;CompanyId=company;_cells=new(cells);_allowed=new(allowed);CreatedUtc=created.Kind==DateTimeKind.Utc?created:created.ToUniversalTime();}
-    public string StockpileZoneId{get;} public string CompanyId{get;} public DateTime CreatedUtc{get;} public bool IsEnabled{get;private set;}=true;
+    public string StockpileZoneId{get;} public string CompanyId{get;} public DateTime CreatedUtc{get;} public bool IsEnabled{get;private set;}=true; public bool AllowsEquipment{get;private set;}=true;
     public IReadOnlyCollection<GlobalCellCoord> Cells{get{List<GlobalCellCoord> result=new();foreach(Vector2I cell in _cells)result.Add(new(cell));result.Sort((a,b)=>a.Value.Y!=b.Value.Y?a.Value.Y.CompareTo(b.Value.Y):a.Value.X.CompareTo(b.Value.X));return new ReadOnlyCollection<GlobalCellCoord>(result);}}
     public IReadOnlyCollection<ResourceTypeV3> AllowedResourceTypes{get{List<ResourceTypeV3> result=new(_allowed);result.Sort();return new ReadOnlyCollection<ResourceTypeV3>(result);}}
     public int CellCount=>_cells.Count; public bool Contains(GlobalCellCoord cell)=>_cells.Contains(cell.Value); public bool Allows(ResourceTypeV3 type)=>IsEnabled&&_allowed.Contains(type);
-    internal bool Add(Vector2I cell)=>_cells.Add(cell); internal bool Remove(Vector2I cell)=>_cells.Remove(cell); internal void SetEnabled(bool enabled)=>IsEnabled=enabled;
+    internal bool Add(Vector2I cell)=>_cells.Add(cell); internal bool Remove(Vector2I cell)=>_cells.Remove(cell); internal void SetEnabled(bool enabled)=>IsEnabled=enabled; internal void SetAllowsEquipment(bool allowed)=>AllowsEquipment=allowed;
 }
 
 public sealed class StockpileZoneRegistryV3
 {
     private readonly Dictionary<string,StockpileZoneStateV3> _zones=new(StringComparer.Ordinal); private readonly Dictionary<Vector2I,string> _cellIndex=new(); private readonly StockpileCellReservationRegistryV3 _reservations;
     public StockpileZoneRegistryV3(StockpileCellReservationRegistryV3 reservations){_reservations=reservations;}
+    public event Action<IReadOnlyList<GlobalCellCoord>>? CellsChanged;
     public int Count=>_zones.Count; public int CellCount=>_cellIndex.Count; public long Revision{get;private set;}
     public bool TryCreateZone(string companyId,IReadOnlyCollection<GlobalCellCoord> cells,Rect2I bounds,out StockpileZoneStateV3? zone,out string reason)
     {
         zone=null;if(string.IsNullOrWhiteSpace(companyId)){reason="InvalidCompany";return false;}if(cells==null||cells.Count==0){reason="Stockpile requires at least one cell.";return false;}
         HashSet<Vector2I> unique=new();foreach(GlobalCellCoord cell in cells){if(!bounds.HasPoint(cell.Value)){reason="Stockpile cell is outside world bounds.";return false;}if(!unique.Add(cell.Value)){reason="Duplicate stockpile cell.";return false;}if(_cellIndex.ContainsKey(cell.Value)){reason="Stockpile cell overlaps another zone.";return false;}}
-        string id=StockpileZoneIdFactoryV3.Create();zone=new(id,companyId,unique,new[]{ResourceTypeV3.Wood,ResourceTypeV3.Stone,ResourceTypeV3.Ration,ResourceTypeV3.Potato},DateTime.UtcNow);_zones.Add(id,zone);foreach(Vector2I cell in unique)_cellIndex.Add(cell,id);Revision++;reason=string.Empty;return true;
+        string id=StockpileZoneIdFactoryV3.Create();zone=new(id,companyId,unique,Enum.GetValues<ResourceTypeV3>(),DateTime.UtcNow);_zones.Add(id,zone);foreach(Vector2I cell in unique)_cellIndex.Add(cell,id);Revision++;CellsChanged?.Invoke(unique.Select(c=>new GlobalCellCoord(c)).ToList().AsReadOnly());reason=string.Empty;return true;
+    }
+    internal bool TryRestoreZone(string id,string companyId,IReadOnlyCollection<GlobalCellCoord> cells,IReadOnlyCollection<ResourceTypeV3> allowed,DateTime created,bool enabled,bool allowsEquipment,out string reason)
+    {
+        if(!StockpileZoneIdFactoryV3.IsValid(id)||string.IsNullOrWhiteSpace(companyId)||cells.Count==0||_zones.ContainsKey(id)){reason="InvalidOrDuplicateStockpile";return false;}
+        HashSet<Vector2I> unique=new();foreach(GlobalCellCoord cell in cells)if(!unique.Add(cell.Value)||_cellIndex.ContainsKey(cell.Value)){reason="StockpileCellConflict";return false;}
+        StockpileZoneStateV3 zone=new(id,companyId,unique,allowed,created);zone.SetEnabled(enabled);zone.SetAllowsEquipment(allowsEquipment);
+        _zones.Add(id,zone);foreach(Vector2I cell in unique)_cellIndex.Add(cell,id);Revision++;reason=string.Empty;return true;
     }
     public bool TryGetZone(string id,out StockpileZoneStateV3? zone)=>_zones.TryGetValue(id,out zone); public bool ContainsZone(string id)=>_zones.ContainsKey(id);
     public bool TryGetZoneAtCell(GlobalCellCoord cell,out StockpileZoneStateV3? zone){zone=null;return _cellIndex.TryGetValue(cell.Value,out string? id)&&_zones.TryGetValue(id,out zone);}
     public bool IsStockpileCell(GlobalCellCoord cell)=>_cellIndex.ContainsKey(cell.Value);
     public bool IsOwnedStockpileCell(string companyId,GlobalCellCoord cell)=>TryGetZoneAtCell(cell,out StockpileZoneStateV3? zone)&&zone?.CompanyId==companyId;
     public bool TryAddCells(string zoneId,string companyId,IReadOnlyCollection<GlobalCellCoord> cells,Rect2I bounds,out string reason)
-    {if(!_zones.TryGetValue(zoneId,out StockpileZoneStateV3? zone)){reason="InvalidStockpileZone";return false;}if(zone.CompanyId!=companyId){reason="OwnershipDenied";return false;}HashSet<Vector2I> unique=new();foreach(GlobalCellCoord cell in cells){if(!bounds.HasPoint(cell.Value)||!unique.Add(cell.Value)){reason="Invalid stockpile cells.";return false;}if(_cellIndex.TryGetValue(cell.Value,out string? owner)&&owner!=zoneId){reason="Stockpile cell overlaps another zone.";return false;}}bool changed=false;foreach(Vector2I cell in unique)if(zone.Add(cell)){_cellIndex.Add(cell,zoneId);changed=true;}if(changed)Revision++;reason=string.Empty;return true;}
+    {if(!_zones.TryGetValue(zoneId,out StockpileZoneStateV3? zone)){reason="InvalidStockpileZone";return false;}if(zone.CompanyId!=companyId){reason="OwnershipDenied";return false;}HashSet<Vector2I> unique=new();foreach(GlobalCellCoord cell in cells){if(!bounds.HasPoint(cell.Value)||!unique.Add(cell.Value)){reason="Invalid stockpile cells.";return false;}if(_cellIndex.TryGetValue(cell.Value,out string? owner)&&owner!=zoneId){reason="Stockpile cell overlaps another zone.";return false;}}bool changed=false;foreach(Vector2I cell in unique)if(zone.Add(cell)){_cellIndex.Add(cell,zoneId);changed=true;}if(changed){Revision++;CellsChanged?.Invoke(unique.Select(c=>new GlobalCellCoord(c)).ToList().AsReadOnly());}reason=string.Empty;return true;}
     public bool TryRemoveCells(string zoneId,string companyId,IReadOnlyCollection<GlobalCellCoord> cells,out bool zoneRemoved,out string reason)
-    {zoneRemoved=false;if(!_zones.TryGetValue(zoneId,out StockpileZoneStateV3? zone)){reason="InvalidStockpileZone";return false;}if(zone.CompanyId!=companyId){reason="OwnershipDenied";return false;}foreach(GlobalCellCoord cell in cells)if(zone.Contains(cell)&&_reservations.IsReserved(cell)){reason="DestinationReserved";return false;}bool changed=false;foreach(GlobalCellCoord cell in cells)if(zone.Remove(cell.Value)){_cellIndex.Remove(cell.Value);changed=true;}if(zone.CellCount==0){_zones.Remove(zoneId);zoneRemoved=true;}if(changed)Revision++;reason=string.Empty;return true;}
-    public bool TryRemoveZone(string id,string companyId,out string reason){if(!_zones.TryGetValue(id,out StockpileZoneStateV3? zone)){reason="InvalidStockpileZone";return false;}if(zone.CompanyId!=companyId){reason="OwnershipDenied";return false;}foreach(GlobalCellCoord cell in zone.Cells)if(_reservations.IsReserved(cell)){reason="DestinationReserved";return false;}foreach(GlobalCellCoord cell in zone.Cells)_cellIndex.Remove(cell.Value);_zones.Remove(id);Revision++;reason=string.Empty;return true;}
+    {zoneRemoved=false;if(!_zones.TryGetValue(zoneId,out StockpileZoneStateV3? zone)){reason="InvalidStockpileZone";return false;}if(zone.CompanyId!=companyId){reason="OwnershipDenied";return false;}foreach(GlobalCellCoord cell in cells)if(zone.Contains(cell)&&_reservations.IsReserved(cell)){reason="DestinationReserved";return false;}bool changed=false;foreach(GlobalCellCoord cell in cells)if(zone.Remove(cell.Value)){_cellIndex.Remove(cell.Value);changed=true;}if(zone.CellCount==0){_zones.Remove(zoneId);zoneRemoved=true;}if(changed){Revision++;CellsChanged?.Invoke(cells.ToList().AsReadOnly());}reason=string.Empty;return true;}
+    public bool TryRemoveZone(string id,string companyId,out string reason){if(!_zones.TryGetValue(id,out StockpileZoneStateV3? zone)){reason="InvalidStockpileZone";return false;}if(zone.CompanyId!=companyId){reason="OwnershipDenied";return false;}foreach(GlobalCellCoord cell in zone.Cells)if(_reservations.IsReserved(cell)){reason="DestinationReserved";return false;}IReadOnlyList<GlobalCellCoord> changed=zone.Cells.ToList().AsReadOnly();foreach(GlobalCellCoord cell in zone.Cells)_cellIndex.Remove(cell.Value);_zones.Remove(id);Revision++;CellsChanged?.Invoke(changed);reason=string.Empty;return true;}
     public IReadOnlyList<StockpileZoneStateV3> GetZonesByCompany(string companyId){List<StockpileZoneStateV3> result=new();foreach(StockpileZoneStateV3 zone in _zones.Values)if(zone.CompanyId==companyId)result.Add(zone);result.Sort((a,b)=>{int c=a.CreatedUtc.CompareTo(b.CreatedUtc);return c!=0?c:string.CompareOrdinal(a.StockpileZoneId,b.StockpileZoneId);});return result.AsReadOnly();}
     public IReadOnlyList<string> GetAllZoneIds(){List<string> ids=new(_zones.Keys);ids.Sort(StringComparer.Ordinal);return ids.AsReadOnly();}
     public void Clear(){_zones.Clear();_cellIndex.Clear();Revision++;}

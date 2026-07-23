@@ -1,0 +1,5 @@
+Godot Engine v4.7.stable.mono.official.5b4e0cb0f - https://godotengine.org
+
+[MCP Runtime] Server listening on port 7777
+[MCP Runtime] Autoload ready, server starting on port 7777
+[WorkBindingV3] fixture PASS=True first/second=1/2 f11f12=True staleRejected=True summary=PASS current/control/work/jobs=2/2/2/2 staleRejected=True fullScans=0

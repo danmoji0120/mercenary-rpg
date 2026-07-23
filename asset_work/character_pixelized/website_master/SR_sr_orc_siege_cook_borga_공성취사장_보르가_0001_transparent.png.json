@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_orc_siege_cook_borga_공성취사장_보르가_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_orc_siege_cook_borga_공성취사장_보르가_0001_transparent.png",
+  "sourceSha256": "d7bb3de872acdbefb68d9eada4d1f152e78302a0eb52245bf955c766a0ec8c03",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_orc_siege_cook_borga_공성취사장_보르가_0001_transparent.png",
+  "outputSha256": "c28144f31ab2ac9e77443d755be873d8bcf14c009647a744f131da9e7bf9c038",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    69,
+    34,
+    1588,
+    2411
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1519,
+    2377
+  ],
+  "outputSize": [
+    1530,
+    2388
+  ],
+  "outputBoundingBox": [
+    5,
+    7,
+    1523,
+    2383
+  ],
+  "contentBoundingBox": [
+    5,
+    7,
+    1523,
+    2383
+  ],
+  "bottomCenterAnchor": [
+    765.0,
+    2383.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9979061976549414,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1946052,
+  "transparentPixelCount": 1707588,
+  "sourceUniqueColorEstimate": 54049,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 52771,
+  "saturationClampedPixelCount": 7298,
+  "elapsedMilliseconds": 3800.327,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_spiderkin_trapbreaker_arachne_함정해체사_아라크네_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_spiderkin_trapbreaker_arachne_함정해체사_아라크네_0001_transparent.png",
+  "sourceSha256": "cec045286b37e548577e36658360d25251f282716999505fbbdc72efcb1ac09d",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_spiderkin_trapbreaker_arachne_함정해체사_아라크네_0001_transparent.png",
+  "outputSha256": "65089f0f323a24835ad58b04a7bcf6878fa72b4b218c4abe2d7d728ca6d06474",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    95,
+    28,
+    1487,
+    2419
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1392,
+    2391
+  ],
+  "outputSize": [
+    1404,
+    2400
+  ],
+  "outputBoundingBox": [
+    6,
+    5,
+    1398,
+    2393
+  ],
+  "contentBoundingBox": [
+    6,
+    5,
+    1398,
+    2393
+  ],
+  "bottomCenterAnchor": [
+    702.0,
+    2393.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9970833333333333,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1043820,
+  "transparentPixelCount": 2325780,
+  "sourceUniqueColorEstimate": 34541,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 28115,
+  "saturationClampedPixelCount": 1708,
+  "elapsedMilliseconds": 2401.206,
+  "warningCodes": [],
+  "errorMessage": ""
+}

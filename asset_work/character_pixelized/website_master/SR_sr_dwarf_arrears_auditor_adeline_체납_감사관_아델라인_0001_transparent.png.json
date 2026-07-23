@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_dwarf_arrears_auditor_adeline_체납_감사관_아델라인_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_dwarf_arrears_auditor_adeline_체납_감사관_아델라인_0001_transparent.png",
+  "sourceSha256": "76130fa92959aaf066dff6ba0824a95ec514b6240bec0bed9bc7548a670a6dc3",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_dwarf_arrears_auditor_adeline_체납_감사관_아델라인_0001_transparent.png",
+  "outputSha256": "9d2a9f8783b7a1c29f84c2938a10fe239875b59815234da5f199f8e1b004b9f9",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    71,
+    76,
+    1585,
+    2380
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1514,
+    2304
+  ],
+  "outputSize": [
+    1524,
+    2316
+  ],
+  "outputBoundingBox": [
+    5,
+    8,
+    1517,
+    2312
+  ],
+  "contentBoundingBox": [
+    5,
+    8,
+    1517,
+    2312
+  ],
+  "bottomCenterAnchor": [
+    762.0,
+    2312.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998272884283247,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1135188,
+  "transparentPixelCount": 2394396,
+  "sourceUniqueColorEstimate": 45663,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 30009,
+  "saturationClampedPixelCount": 310,
+  "elapsedMilliseconds": 2696.263,
+  "warningCodes": [],
+  "errorMessage": ""
+}

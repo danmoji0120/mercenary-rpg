@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SSR_ssr_deerkin_blessing_admin_eldora_축복관리관_엘도라_0001_transparent.png",
+  "sourceRelativePath": "SSR_ssr_deerkin_blessing_admin_eldora_축복관리관_엘도라_0001_transparent.png",
+  "sourceSha256": "2aa7c8fd2e50fa6c493da32c5a86fb097e97d7ee48136047a082adeb62754a1a",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SSR_ssr_deerkin_blessing_admin_eldora_축복관리관_엘도라_0001_transparent.png",
+  "outputSha256": "04e66ab13c25122d09baa158aa1e64939d25455439435e704466d1cee822238c",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    116,
+    19,
+    1411,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1295,
+    2413
+  ],
+  "outputSize": [
+    1308,
+    2424
+  ],
+  "outputBoundingBox": [
+    6,
+    7,
+    1301,
+    2419
+  ],
+  "contentBoundingBox": [
+    6,
+    7,
+    1301,
+    2419
+  ],
+  "bottomCenterAnchor": [
+    654.0,
+    2419.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9979372937293729,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1345092,
+  "transparentPixelCount": 1825500,
+  "sourceUniqueColorEstimate": 57254,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 35750,
+  "saturationClampedPixelCount": 23,
+  "elapsedMilliseconds": 2887.897,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

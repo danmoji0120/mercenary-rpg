@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_spiderkin_thread_shield_neria_실방패_네리아_0004_transparent.png",
+  "sourceRelativePath": "R_r_spiderkin_thread_shield_neria_실방패_네리아_0004_transparent.png",
+  "sourceSha256": "cac669c928cd3ec6cc1cf334b0c3e7e207aaaec622d2cc6cd7a21d650b44b208",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_spiderkin_thread_shield_neria_실방패_네리아_0004_transparent.png",
+  "outputSha256": "783e7e637aa967410a21a39f6c2fc067d5bf7f25c920046cb2049466dbca522e",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    240,
+    8,
+    1562,
+    2428
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1322,
+    2420
+  ],
+  "outputSize": [
+    1332,
+    2430
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1325,
+    2424
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1325,
+    2424
+  ],
+  "bottomCenterAnchor": [
+    666.0,
+    2424.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975308641975309,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1114956,
+  "transparentPixelCount": 2121804,
+  "sourceUniqueColorEstimate": 38149,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 30344,
+  "saturationClampedPixelCount": 458,
+  "elapsedMilliseconds": 2448.938,
+  "warningCodes": [],
+  "errorMessage": ""
+}

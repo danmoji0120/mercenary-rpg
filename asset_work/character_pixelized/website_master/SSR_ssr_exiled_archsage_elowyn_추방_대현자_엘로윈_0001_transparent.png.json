@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SSR_ssr_exiled_archsage_elowyn_추방_대현자_엘로윈_0001_transparent.png",
+  "sourceRelativePath": "SSR_ssr_exiled_archsage_elowyn_추방_대현자_엘로윈_0001_transparent.png",
+  "sourceSha256": "50d284a37bc807651f43734c2ad7abec0e95d09beb7ae17657adb7b709bf983e",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SSR_ssr_exiled_archsage_elowyn_추방_대현자_엘로윈_0001_transparent.png",
+  "outputSha256": "38b85242cf0f8316dbdfa1ff468ba813936f8523aa1c5ab872d5f9bea70c130a",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    76,
+    19,
+    1576,
+    2426
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1500,
+    2407
+  ],
+  "outputSize": [
+    1512,
+    2418
+  ],
+  "outputBoundingBox": [
+    6,
+    7,
+    1506,
+    2413
+  ],
+  "contentBoundingBox": [
+    6,
+    7,
+    1506,
+    2413
+  ],
+  "bottomCenterAnchor": [
+    756.0,
+    2413.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9979321753515302,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1943028,
+  "transparentPixelCount": 1712988,
+  "sourceUniqueColorEstimate": 66486,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 51120,
+  "saturationClampedPixelCount": 307,
+  "elapsedMilliseconds": 4151.396,
+  "warningCodes": [],
+  "errorMessage": ""
+}

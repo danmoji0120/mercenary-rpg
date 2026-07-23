@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_voidkin_rift_shield_voidrin_균열방패_보이드린_0002_transparent.png",
+  "sourceRelativePath": "R_r_voidkin_rift_shield_voidrin_균열방패_보이드린_0002_transparent.png",
+  "sourceSha256": "b514a86b9e27c7c68ddc3650e995585ce318021cfa9046b25172f186c5bb329f",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_voidkin_rift_shield_voidrin_균열방패_보이드린_0002_transparent.png",
+  "outputSha256": "beff46f886e9bdf537413a2963dbdfdc4e092366ae0acd5655ae735a1720b052",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    48,
+    4,
+    1612,
+    2426
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1564,
+    2422
+  ],
+  "outputSize": [
+    1572,
+    2430
+  ],
+  "outputBoundingBox": [
+    4,
+    4,
+    1568,
+    2422
+  ],
+  "contentBoundingBox": [
+    4,
+    4,
+    1568,
+    2422
+  ],
+  "bottomCenterAnchor": [
+    786.0,
+    2422.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9967078189300411,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1251528,
+  "transparentPixelCount": 2568432,
+  "sourceUniqueColorEstimate": 36872,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 33826,
+  "saturationClampedPixelCount": 803,
+  "elapsedMilliseconds": 2855.398,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_lamia_sediment_surveyor_issia_퇴적층_측량사_이시아_0001_transparent.png",
+  "sourceRelativePath": "R_r_lamia_sediment_surveyor_issia_퇴적층_측량사_이시아_0001_transparent.png",
+  "sourceSha256": "cdd4cbd3fe0a2d7bfcff5e564be93123450d30a6c525efe186ff3bb1891cc92a",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_lamia_sediment_surveyor_issia_퇴적층_측량사_이시아_0001_transparent.png",
+  "outputSha256": "5012dac4184e6e8178fa5b3030fa17dafc69c9b736ba6f6dcbd4ccfa9f1bf760",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    100,
+    52,
+    1576,
+    2405
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1476,
+    2353
+  ],
+  "outputSize": [
+    1488,
+    2364
+  ],
+  "outputBoundingBox": [
+    6,
+    7,
+    1482,
+    2359
+  ],
+  "contentBoundingBox": [
+    6,
+    7,
+    1482,
+    2359
+  ],
+  "bottomCenterAnchor": [
+    744.0,
+    2359.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9978849407783418,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1740816,
+  "transparentPixelCount": 1776816,
+  "sourceUniqueColorEstimate": 56187,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 47170,
+  "saturationClampedPixelCount": 1044,
+  "elapsedMilliseconds": 3728.611,
+  "warningCodes": [],
+  "errorMessage": ""
+}

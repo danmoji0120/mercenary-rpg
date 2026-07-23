@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_golem_repair_core_no12_수리핵_12호_0001_transparent.png",
+  "sourceRelativePath": "R_r_golem_repair_core_no12_수리핵_12호_0001_transparent.png",
+  "sourceSha256": "17818580a145fd8da926050bb141228f5d17b63d67f4b00a72ef51b29007699c",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_golem_repair_core_no12_수리핵_12호_0001_transparent.png",
+  "outputSha256": "4896deb566010b8868d25dd2cd443190c6e220b86b263009709b3d0f147423ee",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    141,
+    96,
+    1381,
+    2385
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1240,
+    2289
+  ],
+  "outputSize": [
+    1248,
+    2298
+  ],
+  "outputBoundingBox": [
+    4,
+    5,
+    1244,
+    2291
+  ],
+  "contentBoundingBox": [
+    4,
+    5,
+    1244,
+    2291
+  ],
+  "bottomCenterAnchor": [
+    624.0,
+    2291.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9969538729329852,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1228776,
+  "transparentPixelCount": 1639128,
+  "sourceUniqueColorEstimate": 53070,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 32571,
+  "saturationClampedPixelCount": 310,
+  "elapsedMilliseconds": 2659.361,
+  "warningCodes": [],
+  "errorMessage": ""
+}

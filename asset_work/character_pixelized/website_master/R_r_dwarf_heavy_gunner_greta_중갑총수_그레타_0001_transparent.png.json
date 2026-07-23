@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_dwarf_heavy_gunner_greta_중갑총수_그레타_0001_transparent.png",
+  "sourceRelativePath": "R_r_dwarf_heavy_gunner_greta_중갑총수_그레타_0001_transparent.png",
+  "sourceSha256": "0b9964f9fbbcf2091aca0d9e7371b20d212677d0c7ffe9370a6b582848df8f4d",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_dwarf_heavy_gunner_greta_중갑총수_그레타_0001_transparent.png",
+  "outputSha256": "6b76a5dc14d6d5fc339256d1a27ca4055aac72b1989d6e665bb10c756720b406",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    263,
+    39,
+    1421,
+    2399
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1158,
+    2360
+  ],
+  "outputSize": [
+    1170,
+    2370
+  ],
+  "outputBoundingBox": [
+    6,
+    6,
+    1164,
+    2364
+  ],
+  "contentBoundingBox": [
+    6,
+    6,
+    1164,
+    2364
+  ],
+  "bottomCenterAnchor": [
+    585.0,
+    2364.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9974683544303797,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1503864,
+  "transparentPixelCount": 1269036,
+  "sourceUniqueColorEstimate": 48975,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 39932,
+  "saturationClampedPixelCount": 4141,
+  "elapsedMilliseconds": 3160.801,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -1,0 +1,5 @@
+Godot Engine v4.7.stable.mono.official.5b4e0cb0f - https://godotengine.org
+
+[MCP Runtime] Server listening on port 7777
+[MCP Runtime] Autoload ready, server starting on port 7777
+[RegionTransferEnetV3] PASS=True port=38080 routes=3 groups=2/active0 created/arrived=2/2 added/removed=4/4 equipment=equip_0000000000000001_0000000000000001 reconnect=traveling stale=0 clockDuplicate=0

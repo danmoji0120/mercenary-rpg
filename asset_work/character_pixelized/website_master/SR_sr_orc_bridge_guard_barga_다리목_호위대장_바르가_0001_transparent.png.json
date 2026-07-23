@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_orc_bridge_guard_barga_다리목_호위대장_바르가_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_orc_bridge_guard_barga_다리목_호위대장_바르가_0001_transparent.png",
+  "sourceSha256": "9079062ddc5765ea0e3fb74e801446f9ee6221fcdd81bc2a773bb69a99969146",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_orc_bridge_guard_barga_다리목_호위대장_바르가_0001_transparent.png",
+  "outputSha256": "8290ce626a33522683c62c8a9f0ff2fa60d6deb459394be72965db08b9c3312f",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    128,
+    27,
+    1548,
+    2421
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1420,
+    2394
+  ],
+  "outputSize": [
+    1428,
+    2406
+  ],
+  "outputBoundingBox": [
+    4,
+    8,
+    1424,
+    2402
+  ],
+  "contentBoundingBox": [
+    4,
+    8,
+    1424,
+    2402
+  ],
+  "bottomCenterAnchor": [
+    714.0,
+    2402.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.99833748960931,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1549680,
+  "transparentPixelCount": 1886088,
+  "sourceUniqueColorEstimate": 54394,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 41517,
+  "saturationClampedPixelCount": 589,
+  "elapsedMilliseconds": 3207.089,
+  "warningCodes": [],
+  "errorMessage": ""
+}

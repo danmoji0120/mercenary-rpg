@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_minotaur_queue_controller_bardo_대기열_통제관_바르도_0001_transparent.png",
+  "sourceRelativePath": "R_r_minotaur_queue_controller_bardo_대기열_통제관_바르도_0001_transparent.png",
+  "sourceSha256": "32470a3b934e937cc1f86533648700c48658a0d75b0c38c5a15447eb25065c3c",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_minotaur_queue_controller_bardo_대기열_통제관_바르도_0001_transparent.png",
+  "outputSha256": "0d9079d7fbd21373e043d2162c64506f580171925c703ef6b52e92776b6cd803",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    86,
+    4,
+    1549,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1463,
+    2428
+  ],
+  "outputSize": [
+    1476,
+    2436
+  ],
+  "outputBoundingBox": [
+    6,
+    4,
+    1469,
+    2432
+  ],
+  "contentBoundingBox": [
+    6,
+    4,
+    1469,
+    2432
+  ],
+  "bottomCenterAnchor": [
+    738.0,
+    2432.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983579638752053,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1541490,
+  "transparentPixelCount": 2054046,
+  "sourceUniqueColorEstimate": 32530,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 38309,
+  "saturationClampedPixelCount": 2431,
+  "elapsedMilliseconds": 3314.894,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

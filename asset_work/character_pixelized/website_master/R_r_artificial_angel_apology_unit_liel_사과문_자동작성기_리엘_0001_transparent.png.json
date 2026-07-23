@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_artificial_angel_apology_unit_liel_사과문_자동작성기_리엘_0001_transparent.png",
+  "sourceRelativePath": "R_r_artificial_angel_apology_unit_liel_사과문_자동작성기_리엘_0001_transparent.png",
+  "sourceSha256": "3ff241d2c970f1543afb4342cce5b44674c0191a4d05c4e8265b948f6dbe88bd",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_artificial_angel_apology_unit_liel_사과문_자동작성기_리엘_0001_transparent.png",
+  "outputSha256": "700e765ea80de8408f4c75bb916c38c9a3747956e4e1f9bd22ada4680d0486b8",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    345,
+    65,
+    1422,
+    2384
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1077,
+    2319
+  ],
+  "outputSize": [
+    1086,
+    2328
+  ],
+  "outputBoundingBox": [
+    4,
+    5,
+    1078,
+    2321
+  ],
+  "contentBoundingBox": [
+    4,
+    5,
+    1078,
+    2321
+  ],
+  "bottomCenterAnchor": [
+    543.0,
+    2321.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9969931271477663,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 897732,
+  "transparentPixelCount": 1630476,
+  "sourceUniqueColorEstimate": 36751,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 23710,
+  "saturationClampedPixelCount": 45,
+  "elapsedMilliseconds": 2035.561,
+  "warningCodes": [],
+  "errorMessage": ""
+}

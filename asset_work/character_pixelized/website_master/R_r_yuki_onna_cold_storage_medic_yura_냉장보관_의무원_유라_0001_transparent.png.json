@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_yuki_onna_cold_storage_medic_yura_냉장보관_의무원_유라_0001_transparent.png",
+  "sourceRelativePath": "R_r_yuki_onna_cold_storage_medic_yura_냉장보관_의무원_유라_0001_transparent.png",
+  "sourceSha256": "cb7adec53eed8f1eec41f6443a6c80a53793f01585367a7c921b658a8dc65ccf",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_yuki_onna_cold_storage_medic_yura_냉장보관_의무원_유라_0001_transparent.png",
+  "outputSha256": "852800bcebc8146986badd3e9afc11763b1c633be1357947ac65b611fa924e99",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    265,
+    21,
+    1299,
+    2419
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1034,
+    2398
+  ],
+  "outputSize": [
+    1044,
+    2406
+  ],
+  "outputBoundingBox": [
+    5,
+    4,
+    1037,
+    2402
+  ],
+  "contentBoundingBox": [
+    5,
+    4,
+    1037,
+    2402
+  ],
+  "bottomCenterAnchor": [
+    522.0,
+    2402.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.99833748960931,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 970764,
+  "transparentPixelCount": 1541100,
+  "sourceUniqueColorEstimate": 50357,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 24155,
+  "saturationClampedPixelCount": 308,
+  "elapsedMilliseconds": 2247.733,
+  "warningCodes": [],
+  "errorMessage": ""
+}

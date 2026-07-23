@@ -27,6 +27,7 @@ public sealed class CropCellStateV3
     public bool AdvanceGrowth(float seconds,float duration){if(Stage!=CropStageV3.Growing||!float.IsFinite(seconds)||seconds<=0||duration<=0)return false;GrowthElapsedSeconds=Math.Min(duration,GrowthElapsedSeconds+seconds);GrowthNormalized=Math.Clamp(GrowthElapsedSeconds/duration,0,1);if(GrowthNormalized>=1){Stage=CropStageV3.Mature;GrowthNormalized=1;}Revision++;return true;}
     public bool ResetAfterHarvest(){if(Stage!=CropStageV3.Mature)return false;Stage=CropStageV3.Empty;GrowthElapsedSeconds=0;GrowthNormalized=0;Revision++;return true;}
     internal void ForceMature(float duration){Stage=CropStageV3.Mature;GrowthElapsedSeconds=duration;GrowthNormalized=1;Revision++;}
+    internal void Restore(CropStageV3 stage,float elapsed,float normalized,int revision){Stage=stage;GrowthElapsedSeconds=elapsed;GrowthNormalized=normalized;Revision=revision;}
 }
 public sealed class FarmPlotV3
 {
@@ -37,8 +38,17 @@ public sealed class FarmPlotRegistryV3
 {
     private readonly Dictionary<string,FarmPlotV3> _plots=new(StringComparer.Ordinal);private readonly Dictionary<Vector2I,string> _cellToPlot=new();private readonly Dictionary<Vector2I,CropCellStateV3> _crops=new();public int Count=>_plots.Count;public int CellCount=>_cellToPlot.Count;public long Revision{get;private set;}public event Action? Changed;
     public bool TryCreate(string company,string crop,IReadOnlyCollection<GlobalCellCoord> cells,int maxCompanyCells,out FarmPlotV3? plot,out string reason){plot=null;if(string.IsNullOrWhiteSpace(company)||cells.Count==0||cells.Count>256){reason="InvalidFarmCell";return false;}if(GetCellCountByCompany(company)+cells.Count>maxCompanyCells){reason="FarmCellLimitExceeded";return false;}HashSet<Vector2I> unique=new();foreach(var cell in cells)if(!unique.Add(cell.Value)||_cellToPlot.ContainsKey(cell.Value)){reason="OccupiedByFarmPlot";return false;}string id="farm_"+Guid.NewGuid().ToString("N");plot=new(id,company,crop,unique);_plots.Add(id,plot);foreach(var cell in unique){_cellToPlot.Add(cell,id);_crops.Add(cell,new(cell,id,company,crop));}Revision++;Changed?.Invoke();reason=string.Empty;return true;}
+    internal bool TryRestorePlot(string id,string company,string crop,IReadOnlyList<(GlobalCellCoord Cell,CropStageV3 Stage,float Elapsed,float Normalized,int Revision)> cells,int plotRevision,out string reason)
+    {
+        if(string.IsNullOrWhiteSpace(id)||string.IsNullOrWhiteSpace(company)||cells.Count==0||_plots.ContainsKey(id)){reason="InvalidOrDuplicateFarmPlot";return false;}
+        HashSet<Vector2I> unique=new();foreach(var item in cells)if(!unique.Add(item.Cell.Value)||_cellToPlot.ContainsKey(item.Cell.Value)){reason="FarmCellConflict";return false;}
+        FarmPlotV3 plot=new(id,company,crop,unique){Revision=plotRevision};_plots.Add(id,plot);
+        foreach(var item in cells){_cellToPlot.Add(item.Cell.Value,id);CropCellStateV3 state=new(item.Cell.Value,id,company,crop);state.Restore(item.Stage,item.Elapsed,item.Normalized,item.Revision);_crops.Add(item.Cell.Value,state);}
+        Revision++;reason=string.Empty;return true;
+    }
     public bool TryGetPlot(string id,out FarmPlotV3? plot)=>_plots.TryGetValue(id,out plot);public bool TryGetPlotAt(GlobalCellCoord cell,out FarmPlotV3? plot){plot=null;return _cellToPlot.TryGetValue(cell.Value,out string? id)&&_plots.TryGetValue(id,out plot);}public bool TryGetCrop(GlobalCellCoord cell,out CropCellStateV3? crop)=>_crops.TryGetValue(cell.Value,out crop);public bool ContainsCell(Vector2I cell)=>_cellToPlot.ContainsKey(cell);public int GetCellCountByCompany(string company)=>_plots.Values.Where(x=>x.CompanyId==company).Sum(x=>x.CellCount);
     public IReadOnlyList<FarmPlotV3> GetPlotsByCompany(string company)=>_plots.Values.Where(x=>x.CompanyId==company).OrderBy(x=>x.CreatedUtc).ThenBy(x=>x.FarmPlotId,StringComparer.Ordinal).ToList().AsReadOnly();public IReadOnlyList<CropCellStateV3> GetAllCrops()=>_crops.Values.OrderBy(x=>x.Cell.Y).ThenBy(x=>x.Cell.X).ToList().AsReadOnly();public IReadOnlyList<CropCellStateV3> GetGrowingCrops()=>_crops.Values.Where(x=>x.Stage==CropStageV3.Growing).OrderBy(x=>x.Cell.Y).ThenBy(x=>x.Cell.X).ToList().AsReadOnly();
+    public IReadOnlyList<FarmPlotV3> GetAllPlots()=>_plots.Values.OrderBy(x=>x.FarmPlotId,StringComparer.Ordinal).ToList().AsReadOnly();
     public int GetStageCount(CropStageV3 stage){int count=0;foreach(CropCellStateV3 crop in _crops.Values)if(crop.Stage==stage)count++;return count;}
     public bool TryRemoveEmpty(GlobalCellCoord cell,FarmCellWorkReservationRegistryV3 reservations,out string reason){if(!_cellToPlot.TryGetValue(cell.Value,out string? id)||!_plots.TryGetValue(id,out var plot)||!_crops.TryGetValue(cell.Value,out var crop)){reason="FarmCellMissing";return false;}if(crop.Stage!=CropStageV3.Empty){reason="CropPresent";return false;}if(reservations.IsReserved(cell)){reason="FarmCellBusy";return false;}plot.Remove(cell.Value);_cellToPlot.Remove(cell.Value);_crops.Remove(cell.Value);if(plot.CellCount==0)_plots.Remove(id);Revision++;Changed?.Invoke();reason=string.Empty;return true;}public void NotifyCropChanged(){Revision++;Changed?.Invoke();}public void Clear(){_plots.Clear();_cellToPlot.Clear();_crops.Clear();Revision++;Changed?.Invoke();}
 }
@@ -60,7 +70,7 @@ public sealed class FarmingWorkRegistryV3
 }
 public sealed class FarmSessionV3
 {
-    public const int MaxFarmCellsPerCompany=4096;public long SessionRevision{get;}public CropCatalogV3 Crops{get;}=new();public FarmCellWorkReservationRegistryV3 Reservations{get;}=new();public FarmPlotRegistryV3 Plots{get;}=new();public FarmingWorkRegistryV3 Works{get;}=new();public FarmingDiagnosticsV3 Diagnostics{get;}=new();public FarmSessionV3(long revision){SessionRevision=revision;}
+    public const int MaxFarmCellsPerCompany=4096;public long SessionRevision{get;private set;}public CropCatalogV3 Crops{get;}=new();public FarmCellWorkReservationRegistryV3 Reservations{get;}=new();public FarmPlotRegistryV3 Plots{get;}=new();public FarmingWorkRegistryV3 Works{get;}=new();public FarmingDiagnosticsV3 Diagnostics{get;}=new();public FarmSessionV3(long revision){SessionRevision=revision;}public void RebindSessionRevision(long revision){if(revision<1)throw new ArgumentOutOfRangeException(nameof(revision));Reservations.Clear();Works.Clear();SessionRevision=revision;}
 }
 public static class FarmDesignationValidationV3
 {

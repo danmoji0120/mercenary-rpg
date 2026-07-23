@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_harpy_alarm_crier_nina_경보_외침꾼_니나_0001_transparent.png",
+  "sourceRelativePath": "R_r_harpy_alarm_crier_nina_경보_외침꾼_니나_0001_transparent.png",
+  "sourceSha256": "1abc27a4aa12f01a15e53683c1c64e3b2b0228a36f0466fa0b7530ea51753180",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_harpy_alarm_crier_nina_경보_외침꾼_니나_0001_transparent.png",
+  "outputSha256": "ffb78a1897481b366c7d09e07588da9e91bcb195a1f73efa405a7326b8dcbd4c",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    50,
+    37,
+    1487,
+    2409
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1437,
+    2372
+  ],
+  "outputSize": [
+    1446,
+    2382
+  ],
+  "outputBoundingBox": [
+    4,
+    6,
+    1438,
+    2376
+  ],
+  "contentBoundingBox": [
+    4,
+    6,
+    1438,
+    2376
+  ],
+  "bottomCenterAnchor": [
+    723.0,
+    2376.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9974811083123426,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1034388,
+  "transparentPixelCount": 2409984,
+  "sourceUniqueColorEstimate": 50683,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 27802,
+  "saturationClampedPixelCount": 865,
+  "elapsedMilliseconds": 2483.858,
+  "warningCodes": [],
+  "errorMessage": ""
+}

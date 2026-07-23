@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_orc_convoy_captain_grakka_호송대장_그라카_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_orc_convoy_captain_grakka_호송대장_그라카_0001_transparent.png",
+  "sourceSha256": "c4079838babda4577086f72d042b307186de07df855abeb7525e5bfe3df465ec",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_orc_convoy_captain_grakka_호송대장_그라카_0001_transparent.png",
+  "outputSha256": "0056d98d3507e89274f7d5c5663c03dc4f5c2e6c7a72978b3ef45e25122dd361",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    41,
+    0,
+    1645,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1604,
+    2432
+  ],
+  "outputSize": [
+    1614,
+    2442
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1607,
+    2436
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1607,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    807.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1627524,
+  "transparentPixelCount": 2313864,
+  "sourceUniqueColorEstimate": 49272,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 43693,
+  "saturationClampedPixelCount": 337,
+  "elapsedMilliseconds": 3338.953,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

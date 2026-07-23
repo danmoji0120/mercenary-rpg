@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_orc_warehouse_bouncer_grom_창고_문지기_그롬_0001_transparent.png",
+  "sourceRelativePath": "R_r_orc_warehouse_bouncer_grom_창고_문지기_그롬_0001_transparent.png",
+  "sourceSha256": "695aefebf64149cbbd2442f61e2207d400588ce272594e76cba0765e3cd16369",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_orc_warehouse_bouncer_grom_창고_문지기_그롬_0001_transparent.png",
+  "outputSha256": "cc47b5bf64cf90c88217edc52493241d2209f74c46e6c7ef08e27fd2082adee6",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    112,
+    68,
+    1548,
+    2417
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1436,
+    2349
+  ],
+  "outputSize": [
+    1446,
+    2358
+  ],
+  "outputBoundingBox": [
+    5,
+    5,
+    1439,
+    2351
+  ],
+  "contentBoundingBox": [
+    5,
+    5,
+    1439,
+    2351
+  ],
+  "bottomCenterAnchor": [
+    723.0,
+    2351.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9970313825275657,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 2258172,
+  "transparentPixelCount": 1151496,
+  "sourceUniqueColorEstimate": 25933,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 60487,
+  "saturationClampedPixelCount": 1460,
+  "elapsedMilliseconds": 4707.731,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -8,6 +8,7 @@ using GameplayV3.Movement;
 using GameplayV3.Navigation;
 using GameplayV3.Needs;
 using GameplayV3.Resources;
+using GameplayV3.Session;
 using GameplayV3.Stockpile;
 using GameplayV3.Work;
 using Godot;
@@ -38,7 +39,7 @@ public partial class FarmDesignationControllerV3:Node
 
 public partial class FarmGrowthRuntimeV3:Node
 {
-    private FarmSessionV3? _farm;private float _accumulator;public void Initialize(FarmSessionV3 farm)=>_farm=farm;public override void _PhysicsProcess(double delta){if(_farm==null)return;_accumulator+=Math.Max(0,(float)delta);int steps=0;while(_accumulator>=1&&steps<4){_accumulator-=1;TickOneSecond();steps++;}}
+    private FarmSessionV3? _farm;private float _accumulator;public float PendingTickCredit=>_accumulator;public void Initialize(FarmSessionV3 farm){_farm=farm;SetPhysicsProcess(false);}public void AdvanceSimulation(double delta){if(_farm==null||delta<=0||!GameplaySessionV3.TryGetFarmSession(out var currentFarm)||!ReferenceEquals(currentFarm,_farm))return;_accumulator+=(float)delta;int steps=0;while(_accumulator>=1&&steps<4){_accumulator-=1;TickOneSecond();steps++;}}
     public void AdvanceForTest(float seconds){int whole=(int)MathF.Floor(Math.Max(0,seconds));for(int i=0;i<whole;i++)TickOneSecond();}
     private void TickOneSecond(){if(_farm==null)return;bool changed=false;foreach(var crop in _farm.Plots.GetGrowingCrops())if(_farm.Crops.TryGet(crop.CropDefinitionId,out var definition)&&definition!=null)changed|=crop.AdvanceGrowth(1,definition.GrowthDurationSeconds);_farm.Diagnostics.GrowthTickCount++;_farm.Diagnostics.LastGrowthTickDuration=1;if(changed)_farm.Plots.NotifyCropChanged();}
 }

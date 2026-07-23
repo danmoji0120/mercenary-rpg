@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_human_demon_clause_collector_laura_악마조항_추심관_라우라_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_human_demon_clause_collector_laura_악마조항_추심관_라우라_0001_transparent.png",
+  "sourceSha256": "ce85a83e0a91e8b9c0640d539dd95b8d7ab8fedaae36822c6297861489899079",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_human_demon_clause_collector_laura_악마조항_추심관_라우라_0001_transparent.png",
+  "outputSha256": "8fd309cca6ff38ebb010a18f5690c5ba9d253089fb3528f970a4033180e5b787",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    326,
+    87,
+    1528,
+    2375
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1202,
+    2288
+  ],
+  "outputSize": [
+    1212,
+    2298
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1205,
+    2292
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1205,
+    2292
+  ],
+  "bottomCenterAnchor": [
+    606.0,
+    2292.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9973890339425587,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1157328,
+  "transparentPixelCount": 1627848,
+  "sourceUniqueColorEstimate": 36977,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 30425,
+  "saturationClampedPixelCount": 4424,
+  "elapsedMilliseconds": 2414.853,
+  "warningCodes": [],
+  "errorMessage": ""
+}

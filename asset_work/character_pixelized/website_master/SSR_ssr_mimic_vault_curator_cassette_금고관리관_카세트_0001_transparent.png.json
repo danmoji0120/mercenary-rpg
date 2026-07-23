@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SSR_ssr_mimic_vault_curator_cassette_금고관리관_카세트_0001_transparent.png",
+  "sourceRelativePath": "SSR_ssr_mimic_vault_curator_cassette_금고관리관_카세트_0001_transparent.png",
+  "sourceSha256": "219397504baf28bec39517989999cd19cf6e868b70194b81ae15e6c5e2d1fbe9",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SSR_ssr_mimic_vault_curator_cassette_금고관리관_카세트_0001_transparent.png",
+  "outputSha256": "226c53924c0f6ffcf5db98eff8f5c9b8fc1853fcf34840a41062b6ba3c320c4a",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    102,
+    65,
+    1582,
+    2384
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1480,
+    2319
+  ],
+  "outputSize": [
+    1488,
+    2328
+  ],
+  "outputBoundingBox": [
+    4,
+    5,
+    1484,
+    2321
+  ],
+  "contentBoundingBox": [
+    4,
+    5,
+    1484,
+    2321
+  ],
+  "bottomCenterAnchor": [
+    744.0,
+    2321.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9969931271477663,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1751520,
+  "transparentPixelCount": 1712544,
+  "sourceUniqueColorEstimate": 46234,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 47509,
+  "saturationClampedPixelCount": 975,
+  "elapsedMilliseconds": 3496.772,
+  "warningCodes": [],
+  "errorMessage": ""
+}

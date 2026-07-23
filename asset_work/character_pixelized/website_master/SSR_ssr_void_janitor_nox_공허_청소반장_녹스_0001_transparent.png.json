@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SSR_ssr_void_janitor_nox_공허_청소반장_녹스_0001_transparent.png",
+  "sourceRelativePath": "SSR_ssr_void_janitor_nox_공허_청소반장_녹스_0001_transparent.png",
+  "sourceSha256": "7cfdff90642aa8fa34c8d1265460cb354fd124bd92eeb518813f21f47f3999b9",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SSR_ssr_void_janitor_nox_공허_청소반장_녹스_0001_transparent.png",
+  "outputSha256": "bc059190426fd4edc0a340ef3e951268593bdcc7264bd63af278f2f10d8d69a2",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    87,
+    0,
+    1645,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1558,
+    2432
+  ],
+  "outputSize": [
+    1566,
+    2442
+  ],
+  "outputBoundingBox": [
+    4,
+    6,
+    1562,
+    2436
+  ],
+  "contentBoundingBox": [
+    4,
+    6,
+    1562,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    783.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1805076,
+  "transparentPixelCount": 2019096,
+  "sourceUniqueColorEstimate": 41546,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 48240,
+  "saturationClampedPixelCount": 804,
+  "elapsedMilliseconds": 2654.105,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

@@ -277,7 +277,7 @@ public sealed class MercenaryControlSessionV3
     {
         command=null;
         if (currentSessionRevision != SessionRevision) { reason="Control session is stale."; return false; }
-        if (_company.LocalPlayer?.PlayerId != issuer || !_company.CanPlayerControlCompany(issuer,companyId)) { reason="Issuer cannot control company."; return false; }
+        if (!_company.CanPlayerControlCompany(issuer,companyId)) { reason="Issuer cannot control company."; return false; }
         if (ids.Count==0) { reason="At least one mercenary is required."; return false; }
         HashSet<string> unique=new(StringComparer.Ordinal); foreach(string id in ids)
         { if(!unique.Add(id)){reason="Duplicate requested mercenary.";return false;} if(!_mercenary.Registry.TryGetState(id,out MercenaryStateV3? state)||state==null||state.CompanyId!=companyId||!_mercenary.CanPlayerControlMercenary(issuer,id)){reason="Requested mercenary ownership is invalid.";return false;} }

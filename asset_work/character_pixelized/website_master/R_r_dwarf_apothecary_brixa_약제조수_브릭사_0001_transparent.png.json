@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_dwarf_apothecary_brixa_약제조수_브릭사_0001_transparent.png",
+  "sourceRelativePath": "R_r_dwarf_apothecary_brixa_약제조수_브릭사_0001_transparent.png",
+  "sourceSha256": "a838672c213f6d8ede8578807b815dd2caab7f1b74b71985d4d020022df19e53",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_dwarf_apothecary_brixa_약제조수_브릭사_0001_transparent.png",
+  "outputSha256": "25ab1e55a0ef071a70388cb2d609c8b2261ee1315bab715a020552ae4c0c64b7",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    263,
+    36,
+    1526,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1263,
+    2396
+  ],
+  "outputSize": [
+    1272,
+    2406
+  ],
+  "outputBoundingBox": [
+    4,
+    6,
+    1264,
+    2400
+  ],
+  "contentBoundingBox": [
+    4,
+    6,
+    1264,
+    2400
+  ],
+  "bottomCenterAnchor": [
+    636.0,
+    2400.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975062344139651,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1240668,
+  "transparentPixelCount": 1819764,
+  "sourceUniqueColorEstimate": 59523,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 33375,
+  "saturationClampedPixelCount": 498,
+  "elapsedMilliseconds": 2832.937,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

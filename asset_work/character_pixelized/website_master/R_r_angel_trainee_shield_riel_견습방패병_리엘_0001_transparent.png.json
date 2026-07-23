@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_angel_trainee_shield_riel_견습방패병_리엘_0001_transparent.png",
+  "sourceRelativePath": "R_r_angel_trainee_shield_riel_견습방패병_리엘_0001_transparent.png",
+  "sourceSha256": "787c709298fa9cca8ffd82a4c4df04a9fdac9b3cb340b0681daaa0bd5bef0eec",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_angel_trainee_shield_riel_견습방패병_리엘_0001_transparent.png",
+  "outputSha256": "37506de700ddad0806d40b30ee40471d56630fe0669dc6227f144c3a1c61351e",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    13,
+    43,
+    1407,
+    2417
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1394,
+    2374
+  ],
+  "outputSize": [
+    1404,
+    2382
+  ],
+  "outputBoundingBox": [
+    5,
+    4,
+    1397,
+    2378
+  ],
+  "contentBoundingBox": [
+    5,
+    4,
+    1397,
+    2378
+  ],
+  "bottomCenterAnchor": [
+    702.0,
+    2378.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.998320738874895,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1155144,
+  "transparentPixelCount": 2189184,
+  "sourceUniqueColorEstimate": 48675,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 28958,
+  "saturationClampedPixelCount": 181,
+  "elapsedMilliseconds": 2739.218,
+  "warningCodes": [],
+  "errorMessage": ""
+}

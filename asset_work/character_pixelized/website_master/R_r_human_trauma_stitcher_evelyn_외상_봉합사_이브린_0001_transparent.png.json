@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_human_trauma_stitcher_evelyn_외상_봉합사_이브린_0001_transparent.png",
+  "sourceRelativePath": "R_r_human_trauma_stitcher_evelyn_외상_봉합사_이브린_0001_transparent.png",
+  "sourceSha256": "8b29a9efb78937534422ad9d8c625c3806f4b8672508d379dacfefee59d3e790",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_human_trauma_stitcher_evelyn_외상_봉합사_이브린_0001_transparent.png",
+  "outputSha256": "9196f05bda6fd83fc41b36043f3786f1a9a945855f6d6bacde31c2bc3bd13aa1",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    215,
+    94,
+    1315,
+    2352
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1100,
+    2258
+  ],
+  "outputSize": [
+    1110,
+    2268
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1103,
+    2262
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1103,
+    2262
+  ],
+  "bottomCenterAnchor": [
+    555.0,
+    2262.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9973544973544973,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1006560,
+  "transparentPixelCount": 1510920,
+  "sourceUniqueColorEstimate": 41351,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 26621,
+  "saturationClampedPixelCount": 136,
+  "elapsedMilliseconds": 2177.951,
+  "warningCodes": [],
+  "errorMessage": ""
+}

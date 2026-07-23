@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_yuki_onna_frost_medic_shirane_서리의무관_시라네_0002_transparent.png",
+  "sourceRelativePath": "SR_sr_yuki_onna_frost_medic_shirane_서리의무관_시라네_0002_transparent.png",
+  "sourceSha256": "7f04f6d428ad79e3af8a981c3de1e55080f63cc7a4fccc1adb4605b3e66880be",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_yuki_onna_frost_medic_shirane_서리의무관_시라네_0002_transparent.png",
+  "outputSha256": "935d5e0e17bd62d799fa7d3eea85914658cbb3c21e6aaf2668da266665d7c162",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    120,
+    8,
+    1579,
+    2424
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1459,
+    2416
+  ],
+  "outputSize": [
+    1470,
+    2424
+  ],
+  "outputBoundingBox": [
+    5,
+    4,
+    1463,
+    2420
+  ],
+  "contentBoundingBox": [
+    5,
+    4,
+    1463,
+    2420
+  ],
+  "bottomCenterAnchor": [
+    735.0,
+    2420.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983498349834984,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1222320,
+  "transparentPixelCount": 2340960,
+  "sourceUniqueColorEstimate": 52430,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 31185,
+  "saturationClampedPixelCount": 171,
+  "elapsedMilliseconds": 2774.586,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -16,6 +16,7 @@ public sealed class WorldChunkCacheV2
     public long CacheMissCount { get; private set; }
     public long StoreCount { get; private set; }
     public long CacheEvictionCount { get; private set; }
+    public long GenerationStartedTotal{get;private set;}public long GenerationCompletedTotal{get;private set;}public long GenerationCancelledTotal{get;private set;}
     public int CachedChunkDataCount => CountEntriesWithData();
     public int EntryCount => _entriesByCoord.Count;
 
@@ -46,6 +47,7 @@ public sealed class WorldChunkCacheV2
     {
         long storeStart = WorldV2PerformanceProfiler.Instance.BeginSample();
         CacheEntry entry = GetOrCreateEntry(coord);
+        if(entry.State==WorldChunkLifecycleStateV2.Generating)GenerationCompletedTotal++;
         entry.Data = data;
         entry.State = entry.IsRendered ? WorldChunkLifecycleStateV2.Rendered : WorldChunkLifecycleStateV2.DataCached;
         TouchEntry(entry);
@@ -71,10 +73,17 @@ public sealed class WorldChunkCacheV2
         CacheEntry entry = GetOrCreateEntry(coord);
         if (entry.Data == null)
         {
+            if(entry.State!=WorldChunkLifecycleStateV2.Generating)GenerationStartedTotal++;
             entry.State = WorldChunkLifecycleStateV2.Generating;
         }
 
         TouchEntry(entry);
+    }
+
+    public bool CancelGenerating(Vector2I coord)
+    {
+        if(!_entriesByCoord.TryGetValue(coord,out CacheEntry? entry)||entry.State!=WorldChunkLifecycleStateV2.Generating||entry.Data!=null)return false;
+        _entriesByCoord.Remove(coord);GenerationCancelledTotal++;return true;
     }
 
     public bool IsGenerating(Vector2I coord)
@@ -244,6 +253,7 @@ public sealed class WorldChunkCacheV2
         CacheMissCount = 0;
         StoreCount = 0;
         CacheEvictionCount = 0;
+        GenerationStartedTotal=0;GenerationCompletedTotal=0;GenerationCancelledTotal=0;
     }
 
     private CacheEntry GetOrCreateEntry(Vector2I coord)

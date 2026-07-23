@@ -18,6 +18,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 MCPRuntime="*uid://dkbk3re78qr5"
+DedicatedServerBootstrapV3="*res://scripts/gameplay_v3/network/DedicatedServerBootstrapV3.cs"
 
 [display]
 

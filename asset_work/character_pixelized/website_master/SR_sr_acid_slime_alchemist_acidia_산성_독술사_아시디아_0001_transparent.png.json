@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_acid_slime_alchemist_acidia_산성_독술사_아시디아_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_acid_slime_alchemist_acidia_산성_독술사_아시디아_0001_transparent.png",
+  "sourceSha256": "6a85b7b513390ba357faa7079246ec75589dce787869b3b1a584c3d0d96c5427",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_acid_slime_alchemist_acidia_산성_독술사_아시디아_0001_transparent.png",
+  "outputSha256": "d591d4b2baf49ac3865c6d3ce7d74151917635a036b8f58048b52e54fae6768e",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    80,
+    28,
+    1614,
+    2393
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1534,
+    2365
+  ],
+  "outputSize": [
+    1542,
+    2376
+  ],
+  "outputBoundingBox": [
+    4,
+    7,
+    1538,
+    2371
+  ],
+  "contentBoundingBox": [
+    4,
+    7,
+    1538,
+    2371
+  ],
+  "bottomCenterAnchor": [
+    771.0,
+    2371.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.997895622895623,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1568868,
+  "transparentPixelCount": 2094924,
+  "sourceUniqueColorEstimate": 64247,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 42055,
+  "saturationClampedPixelCount": 1077,
+  "elapsedMilliseconds": 3273.67,
+  "warningCodes": [],
+  "errorMessage": ""
+}

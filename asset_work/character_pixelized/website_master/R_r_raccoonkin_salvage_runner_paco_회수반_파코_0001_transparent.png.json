@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_raccoonkin_salvage_runner_paco_회수반_파코_0001_transparent.png",
+  "sourceRelativePath": "R_r_raccoonkin_salvage_runner_paco_회수반_파코_0001_transparent.png",
+  "sourceSha256": "f11b0192c10289fd647090b8f19b4fbc5b17f4f1fe5e35fc8f917129483fc707",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_raccoonkin_salvage_runner_paco_회수반_파코_0001_transparent.png",
+  "outputSha256": "37824877f3a1abc8dab30fdbe3b581a4311cff6e5746ffbc2867144fea00d18b",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    203,
+    0,
+    1568,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1365,
+    2432
+  ],
+  "outputSize": [
+    1374,
+    2442
+  ],
+  "outputBoundingBox": [
+    4,
+    6,
+    1366,
+    2436
+  ],
+  "contentBoundingBox": [
+    4,
+    6,
+    1366,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    687.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1624392,
+  "transparentPixelCount": 1730916,
+  "sourceUniqueColorEstimate": 37905,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 40636,
+  "saturationClampedPixelCount": 3058,
+  "elapsedMilliseconds": 3308.794,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

@@ -1,0 +1,33 @@
+using System;
+using System.Collections.Generic;
+using GameplayV3.Session;
+using Godot;
+using WorldV2;
+
+namespace GameplayV3.Objectives.UI;
+
+public partial class FrontierSurvivalPanelV3:Godot.Control
+{
+    public const float PanelWidth=340f;public const float PanelMaxHeight=490f;public const int RowCount=8;
+    private WorldManagerV2? _manager;private FrontierSurvivalSessionV3? _objective;private Button? _toggle;private PanelContainer? _panel;private Label? _summary;private Label? _status;private readonly Dictionary<FrontierSurvivalMilestoneIdV3,Label> _rows=new();private bool _worldMapBlocked;private bool _initialized;
+    public int PanelRootCount=>_initialized?1:0;public int CreatedRowCount=>_rows.Count;public int FullRefreshCount{get;private set;}public int PartialRefreshCount{get;private set;}public int EventCoalescedCount{get;private set;}public int WorldInputLeakCount{get;private set;}public bool IsOpen=>_panel?.Visible==true;public bool BlocksWorldInput=>MouseFilter==MouseFilterEnum.Ignore&&_panel?.MouseFilter==MouseFilterEnum.Stop&&_toggle?.MouseFilter==MouseFilterEnum.Stop;
+    public static bool TryValidateLayout(Vector2 viewport,out string reason){float width=Math.Min(PanelWidth,viewport.X*.4f);float height=Math.Min(PanelMaxHeight,viewport.Y*.7f);if(viewport.X<320||viewport.Y<480||width>viewport.X||height>viewport.Y){reason="Objective panel does not fit the viewport.";return false;}reason=string.Empty;return true;}
+    public void Initialize(WorldManagerV2 manager){if(_initialized)return;_initialized=true;_manager=manager;Name="FrontierSurvivalPanelV3";AddToGroup("frontier_survival_panel_v3");MouseFilter=MouseFilterEnum.Ignore;SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);Build();GameplaySessionV3.SessionBegan+=OnSessionBegan;BindCurrent();SetWorldMapBlocked(manager.WorldMapOverlayVisible);}
+    public void InitializeForFixture(FrontierSurvivalSessionV3 objective){if(_initialized)return;_initialized=true;Name="FrontierSurvivalPanelV3";AddToGroup("frontier_survival_panel_v3");MouseFilter=MouseFilterEnum.Ignore;SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);Build();Bind(objective);}
+    public override void _ExitTree(){GameplaySessionV3.SessionBegan-=OnSessionBegan;Unbind();}
+    public bool HandleEscape(){if(!IsOpen)return false;SetOpen(false);return true;}public void SetWorldMapBlocked(bool blocked){_worldMapBlocked=blocked;if(blocked)SetOpen(false);if(_toggle!=null)_toggle.Disabled=blocked;}
+    private void Build()
+    {
+        _toggle=new Button{Name="FrontierObjectiveToggle",Text="개척 목표",MouseFilter=MouseFilterEnum.Stop,FocusMode=FocusModeEnum.None,CustomMinimumSize=new Vector2(96,30)};_toggle.SetAnchorsPreset(LayoutPreset.TopLeft);_toggle.Position=new Vector2(12,112);_toggle.Pressed+=()=>{if(!_worldMapBlocked)SetOpen(!IsOpen);GetViewport().SetInputAsHandled();};AddChild(_toggle);
+        _panel=new PanelContainer{Name="FrontierObjectivePanel",MouseFilter=MouseFilterEnum.Stop,CustomMinimumSize=new Vector2(PanelWidth,0),Visible=false};_panel.SetAnchorsPreset(LayoutPreset.TopLeft);_panel.Position=new Vector2(12,148);_panel.Size=new Vector2(PanelWidth,PanelMaxHeight);AddChild(_panel);
+        MarginContainer margin=new(){MouseFilter=MouseFilterEnum.Stop};margin.AddThemeConstantOverride("margin_left",10);margin.AddThemeConstantOverride("margin_right",10);margin.AddThemeConstantOverride("margin_top",8);margin.AddThemeConstantOverride("margin_bottom",8);_panel.AddChild(margin);VBoxContainer body=new(){MouseFilter=MouseFilterEnum.Stop};body.AddThemeConstantOverride("separation",5);margin.AddChild(body);Label header=new(){Text="개척 생존 목표",MouseFilter=MouseFilterEnum.Ignore};header.AddThemeFontSizeOverride("font_size",16);body.AddChild(header);_summary=new Label{MouseFilter=MouseFilterEnum.Ignore};body.AddChild(_summary);ScrollContainer scroll=new(){MouseFilter=MouseFilterEnum.Stop,CustomMinimumSize=new Vector2(0,360),HorizontalScrollMode=ScrollContainer.ScrollMode.Disabled};body.AddChild(scroll);VBoxContainer rows=new(){MouseFilter=MouseFilterEnum.Stop};rows.AddThemeConstantOverride("separation",4);scroll.AddChild(rows);foreach(FrontierSurvivalMilestoneIdV3 id in Enum.GetValues<FrontierSurvivalMilestoneIdV3>()){Label row=new(){Name=$"ObjectiveRow_{id}",AutowrapMode=TextServer.AutowrapMode.WordSmart,MouseFilter=MouseFilterEnum.Ignore,CustomMinimumSize=new Vector2(292,36)};row.AddThemeFontSizeOverride("font_size",12);rows.AddChild(row);_rows.Add(id,row);}_status=new Label{MouseFilter=MouseFilterEnum.Ignore,AutowrapMode=TextServer.AutowrapMode.WordSmart};body.AddChild(_status);
+    }
+    private void SetOpen(bool open){if(_panel==null)return;_panel.Visible=open;if(open)RefreshAll();}
+    private void OnSessionBegan(){SetOpen(false);CallDeferred(nameof(BindCurrent));}private void BindCurrent(){Unbind();if(_manager==null||string.IsNullOrWhiteSpace(_manager.LocalCompanyId))return;Bind(GameplaySessionV3.EnsureFrontierSurvivalSession(_manager.LocalCompanyId));}
+    private void Bind(FrontierSurvivalSessionV3 objective){Unbind();_objective=objective;_objective.MilestoneProgressChanged+=OnProgress;_objective.FrontierSurvivalCompleted+=OnCompleted;RefreshAll();}
+    private void Unbind(){if(_objective==null)return;_objective.MilestoneProgressChanged-=OnProgress;_objective.FrontierSurvivalCompleted-=OnCompleted;_objective=null;}
+    private void OnProgress(FrontierSurvivalEventV3 value){if(value.MilestoneId is FrontierSurvivalMilestoneIdV3 id)RefreshRow(id);RefreshSummary();PartialRefreshCount++;}private void OnCompleted(FrontierSurvivalEventV3 _){RefreshSummary();}
+    private void RefreshAll(){if(_objective==null)return;foreach(FrontierSurvivalMilestoneIdV3 id in _rows.Keys)RefreshRow(id);RefreshSummary();FullRefreshCount++;}
+    private void RefreshRow(FrontierSurvivalMilestoneIdV3 id){if(_objective==null||!_rows.TryGetValue(id,out Label? label)||!_objective.TryGetMilestone(id,out FrontierSurvivalMilestoneSnapshotV3? value)||value==null)return;string check=value.CompletedOnce?"[✓]":"[ ]";string suffix=value.CompletedOnce&&!value.CurrentConditionMet?" · 현재 조건 미충족":string.Empty;string unit=id==FrontierSurvivalMilestoneIdV3.SurviveThreeDays?"시간":string.Empty;label.Text=$"{check} {value.DisplayName}  {value.CurrentValue} / {value.TargetValue}{unit}\n{value.Description}{suffix}";}
+    private void RefreshSummary(){if(_objective==null||_summary==null||_status==null)return;FrontierSurvivalSnapshotV3 value=_objective.GetSnapshot();_summary.Text=$"진행 {value.CompletedMilestoneCount} / {value.TotalMilestoneCount} · 생존 {value.SurvivedHours} / 72시간";_status.Text=value.IsCompleted?"개척 생존 목표를 달성했습니다.":"초기 거점을 세우고 3일 동안 생존하세요.";}
+}

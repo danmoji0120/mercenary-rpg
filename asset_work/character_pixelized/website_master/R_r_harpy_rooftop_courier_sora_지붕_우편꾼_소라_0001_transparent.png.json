@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_harpy_rooftop_courier_sora_지붕_우편꾼_소라_0001_transparent.png",
+  "sourceRelativePath": "R_r_harpy_rooftop_courier_sora_지붕_우편꾼_소라_0001_transparent.png",
+  "sourceSha256": "1b77204761cddda9882b095b015aafffee1d88d2db344f74faf8f26145e2a19b",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_harpy_rooftop_courier_sora_지붕_우편꾼_소라_0001_transparent.png",
+  "outputSha256": "62a312e5af15561c06fc97f0bba477d89c02ad26ba2400d514be6e8583836b09",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    138,
+    32,
+    1611,
+    2400
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1473,
+    2368
+  ],
+  "outputSize": [
+    1482,
+    2376
+  ],
+  "outputBoundingBox": [
+    4,
+    4,
+    1474,
+    2372
+  ],
+  "contentBoundingBox": [
+    4,
+    4,
+    1474,
+    2372
+  ],
+  "bottomCenterAnchor": [
+    741.0,
+    2372.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983164983164983,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1174140,
+  "transparentPixelCount": 2347092,
+  "sourceUniqueColorEstimate": 58340,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 31136,
+  "saturationClampedPixelCount": 287,
+  "elapsedMilliseconds": 2663.954,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -1,0 +1,157 @@
+Godot Engine v4.7.stable.mono.official.5b4e0cb0f - https://godotengine.org
+D3D12 12_0 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+
+[MCP Runtime] Server listening on port 7777
+[MCP Runtime] Autoload ready, server starting on port 7777
+[CompanyCoreV3]
+Local player created:
+PlayerId=ply_34101e926bb642588af1bbdd7b04eab1
+[CompanyCoreV3]
+Local company created:
+CompanyId=cmp_f4af0b8d63fc401e820340b42a073f71
+OwnerPlayerId=ply_34101e926bb642588af1bbdd7b04eab1
+Name=Unnamed Mercenary Company
+[CompanyCoreV3] Self-check PASS: 3 players/companies, owner lookup, ownership isolation, duplicate rejection, removal, and local-company checks.
+[StartingDeploymentV3]
+Arrival anchor resolved:
+SettlementId=9
+Cell=(796, 857)
+DistanceToRoad=0.0
+[StartingDeploymentV3]
+Company deployed:
+CompanyId=cmp_f4af0b8d63fc401e820340b42a073f71
+Slot=0
+Anchor=(786, 857)
+Formation=(784, 857), (788, 855), (788, 859)
+Attempts=1
+DistanceToSettlement=10.0
+DistanceToRoad=7.0
+DistanceToUnsafeFeatureCore=219.7
+[StartingDeploymentV3] Self-check PASS: formation validation, registry rejection, idempotency, four-slot stability, fifth-company rejection, and stable ordering.
+[StartingDeploymentV3] Runtime self-check PASS
+[MercenaryCoreV3]
+Initial squad created:
+CompanyId=cmp_f4af0b8d63fc401e820340b42a073f71
+MercenaryCount=3
+[MercenaryCoreV3]
+Mercenary created:
+MercenaryId=merc_9df802d161584c8ea0c3ce6d6f1e363a
+Name=Recruit A
+CompanyId=cmp_f4af0b8d63fc401e820340b42a073f71
+Cell=(784, 857)
+TopSkills=Hauling 8, Construction 8
+[MercenaryCoreV3]
+Mercenary created:
+MercenaryId=merc_91d74328a8fe42c786f0c109f31b2000
+Name=Recruit B
+CompanyId=cmp_f4af0b8d63fc401e820340b42a073f71
+Cell=(788, 855)
+TopSkills=Construction 11, Production 10
+[MercenaryCoreV3]
+Mercenary created:
+MercenaryId=merc_26968fd5472c4d3695eb5f1c403c0fae
+Name=Recruit C
+CompanyId=cmp_f4af0b8d63fc401e820340b42a073f71
+Cell=(788, 859)
+TopSkills=Hauling 12, Gathering 11
+[MercenaryCoreV3] Self-check PASS: IDs, value ranges, multipliers, registry atomicity, initial-squad idempotency, ownership, and unrestricted company rosters.
+[MercenaryControlV3] Self-check PASS
+[HungerV3] Initial ration stack=rstack_eacea56898034f6ab504fa7989155705 cell=(788, 857) amount=18
+[ResourceCoreV3] Initial gathering patch created nodes=10 candidates=9048
+[ResourceCoreV3] node=rnode_c570094db2f5aed9cdb9dfb027aa4c5b type=Tree cell=(751, 868) amount=15
+[ResourceCoreV3] node=rnode_88f6f1373931752bfe5cc2300df90c7a type=Tree cell=(751, 865) amount=15
+[ResourceCoreV3] node=rnode_aa85d8c24fa4cbd3e29755878fe53571 type=Tree cell=(754, 868) amount=15
+[ResourceCoreV3] node=rnode_c66d803ddaf0ee202136b3b0d1d15c34 type=Tree cell=(754, 865) amount=15
+[ResourceCoreV3] node=rnode_9caffa012a76117d2c9da0e885e70ad5 type=Tree cell=(752, 871) amount=15
+[ResourceCoreV3] node=rnode_2ae7e46ec64fb0d2e5762fc38c27ef1a type=Tree cell=(748, 867) amount=15
+[ResourceCoreV3] node=rnode_b8daac9914c481d86197f2563bcce52a type=StoneOutcrop cell=(774, 845) amount=20
+[ResourceCoreV3] node=rnode_0606c1275eb3cd8f0011e05ac8a36dcb type=StoneOutcrop cell=(774, 869) amount=20
+[ResourceCoreV3] node=rnode_14c51eeb0b06657b661a36b3f47fc4a3 type=StoneOutcrop cell=(772, 848) amount=20
+[ResourceCoreV3] node=rnode_780423b07c11b67501ee98e4e00150d9 type=StoneOutcrop cell=(772, 865) amount=20
+[ResourceDistributionV3] self-check PASS 10 chunks P(T/S)=43/18 F=348/10 R=0/282
+[WorkCoreV3] Self-check PASS
+[StockpileV3] Self-check PASS
+[ConstructionMaterialV3] Self-check PASS
+[ConstructionSupplyV3] Self-check PASS
+[SelectionInspectV3] Self-check PASS
+[ConstructionV3] Self-check PASS
+[ProductionV3] Self-check PASS recipes=15 facilities=4 queue/buffer/output/refund/conservation/local-lifecycle
+[WorkBindingV3] Self-check PASS current/control/work/jobs=1/1/1/1 staleRejected=True fullScans=0
+[ConstructionV3] Runtime self-check PASS singleTrips=2 splitTrips=2
+[DemolitionV3] Self-check PASS scores=8.90/9.50/9.75 salvage=5
+[DoorPassageV3] Self-check PASS doors=1000 events=200 cpuMs=3.042
+[HungerV3] Self-check PASS
+[EatingV3] Runtime self-check PASS
+[EatingV3] Arrival transition self-check PASS
+[FarmingV3] Self-check PASS
+[MercenaryCoreV3]
+Mercenary materialized:
+MercenaryId=merc_26968fd5472c4d3695eb5f1c403c0fae
+WorldPosition=(18924, 20628)
+[MercenaryCoreV3]
+Mercenary materialized:
+MercenaryId=merc_91d74328a8fe42c786f0c109f31b2000
+WorldPosition=(18924, 20532)
+[MercenaryCoreV3]
+Mercenary materialized:
+MercenaryId=merc_9df802d161584c8ea0c3ce6d6f1e363a
+WorldPosition=(18828, 20580)
+[MercenaryCoreV3] Runtime self-check PASS
+[ResourceCoreV3] views nodes=0 stacks=1 created=0
+[MercenaryNeedsV3] self-check PASS
+[ConstructionUiV3] Self-check PASS
+[RoomV3] self-check PASS 100 rooms/2500 cells/13 chunks/1.42ms; 1000 rooms/25000 cells/65 chunks/18.28ms
+[FloorV3] self-check PASS 1000 cells/16 chunks/0.56ms; 10000 cells/16 chunks/5.83ms; 50000 cells/64 chunks/45.69ms
+[BaseAreaV3] self-check PASS sources=21000 bases=1000 chunks=416 pairChecks=1964 attachmentChecks=79065 cellWrites=78496 elapsed=413.8ms
+[BaseRoleV3] self-check PASS roles=3 headquarters=2 base=0 outpost=1 events=16
+[FacilityAffiliationV3] self-check PASS
+[MercenaryBaseAffiliationV3] self-check PASS
+[ResourceEcologyV3] self-check PASS
+[JobManagerV3] self-check PASS 100x1000=1200 candidates/5.42ms 300x5000=3600 candidates/13.10ms mainThreadChunkGenerationCount=0
+[JobActivityRangeV3] self-check PASS
+[MercenaryInspectHudV3] Condition self-check PASS
+[BaseManagementUiV3] Self-check PASS
+[MercenaryScheduleUiV3] Self-check PASS
+[ProductionV3] UI self-check PASS
+[ResourceDistributionV3] first chunk=(24, 26) trees=10 stones=0 registered=11 candidates=8192 eligible=1688 worker=True ms=7.94
+[WorkCoreV3] Approach movement request=work_2966f5f45c144cb7af1ef3ce6ff2a8e6 candidate=(773, 848) index=0
+[WorkCoreV3] Approach movement request=work_f0a4567b2f444cdda6d1d2563a0a092c candidate=(774, 843) index=0
+[WorkCoreV3] Approach movement request=work_f0c5e1010dc045bfbb338cdf67713481 candidate=(775, 845) index=0
+[MercenaryControlV3] Movement completed mercenary=merc_9df802d161584c8ea0c3ce6d6f1e363a cell=(773, 848)
+[WorkCoreV3] Working started request=work_2966f5f45c144cb7af1ef3ce6ff2a8e6 mercenary=merc_9df802d161584c8ea0c3ce6d6f1e363a
+[MercenaryControlV3] Movement completed mercenary=merc_91d74328a8fe42c786f0c109f31b2000 cell=(774, 843)
+[WorkCoreV3] Working started request=work_f0a4567b2f444cdda6d1d2563a0a092c mercenary=merc_91d74328a8fe42c786f0c109f31b2000
+[MercenaryControlV3] Movement completed mercenary=merc_26968fd5472c4d3695eb5f1c403c0fae cell=(775, 845)
+[WorkCoreV3] Working started request=work_f0c5e1010dc045bfbb338cdf67713481 mercenary=merc_26968fd5472c4d3695eb5f1c403c0fae
+[WorkCoreV3] Gathering cycle request=work_2966f5f45c144cb7af1ef3ce6ff2a8e6 yield=5 remaining=15 stack=5 merged=False
+[WorkCoreV3] Gathering cycle request=work_f0c5e1010dc045bfbb338cdf67713481 yield=5 remaining=15 stack=5 merged=False
+[WorkCoreV3] Gathering cycle request=work_f0a4567b2f444cdda6d1d2563a0a092c yield=5 remaining=10 stack=5 merged=False
+[WorkCoreV3] Gathering cycle request=work_2966f5f45c144cb7af1ef3ce6ff2a8e6 yield=5 remaining=10 stack=10 merged=True
+[WorkCoreV3] Gathering cycle request=work_f0c5e1010dc045bfbb338cdf67713481 yield=5 remaining=10 stack=10 merged=True
+[WorkCoreV3] Gathering cycle request=work_f0a4567b2f444cdda6d1d2563a0a092c yield=5 remaining=5 stack=10 merged=True
+[WorkCoreV3] Gathering cycle request=work_2966f5f45c144cb7af1ef3ce6ff2a8e6 yield=5 remaining=5 stack=15 merged=True
+[WorkCoreV3] Gathering cycle request=work_f0c5e1010dc045bfbb338cdf67713481 yield=5 remaining=5 stack=15 merged=True
+[WorkCoreV3] Gathering cycle request=work_f0a4567b2f444cdda6d1d2563a0a092c yield=5 remaining=0 stack=15 merged=True
+[WorkCoreV3] Resource depleted node=rnode_3918acb214fab8f7f2075177bbaec96b work=work_f0a4567b2f444cdda6d1d2563a0a092c
+[WorkCoreV3] Approach movement request=work_5fb0a3bf280940edab38ab36a2ffc2ff candidate=(770, 847) index=0
+[MercenaryControlV3] Movement completed mercenary=merc_91d74328a8fe42c786f0c109f31b2000 cell=(770, 847)
+[WorkCoreV3] Working started request=work_5fb0a3bf280940edab38ab36a2ffc2ff mercenary=merc_91d74328a8fe42c786f0c109f31b2000
+[WorkCoreV3] Gathering cycle request=work_2966f5f45c144cb7af1ef3ce6ff2a8e6 yield=5 remaining=0 stack=20 merged=True
+[WorkCoreV3] Resource depleted node=rnode_14c51eeb0b06657b661a36b3f47fc4a3 work=work_2966f5f45c144cb7af1ef3ce6ff2a8e6
+[WorkCoreV3] Gathering cycle request=work_f0c5e1010dc045bfbb338cdf67713481 yield=5 remaining=0 stack=20 merged=True
+[WorkCoreV3] Resource depleted node=rnode_b8daac9914c481d86197f2563bcce52a work=work_f0c5e1010dc045bfbb338cdf67713481
+[WorkCoreV3] Approach movement request=work_839ed1e2ecfd41068b53256e6d9f0911 candidate=(770, 850) index=0
+[WorkCoreV3] Approach movement request=work_e9ef6f1eff3e4f05bad684c99079e216 candidate=(771, 849) index=0
+[MercenaryControlV3] Movement completed mercenary=merc_9df802d161584c8ea0c3ce6d6f1e363a cell=(770, 850)
+[WorkCoreV3] Working started request=work_839ed1e2ecfd41068b53256e6d9f0911 mercenary=merc_9df802d161584c8ea0c3ce6d6f1e363a
+[MercenaryControlV3] Movement completed mercenary=merc_26968fd5472c4d3695eb5f1c403c0fae cell=(771, 849)
+[WorkCoreV3] Working started request=work_e9ef6f1eff3e4f05bad684c99079e216 mercenary=merc_26968fd5472c4d3695eb5f1c403c0fae
+[WorkCoreV3] Gathering cycle request=work_5fb0a3bf280940edab38ab36a2ffc2ff yield=5 remaining=10 stack=5 merged=False
+[WorkCoreV3] Gathering cycle request=work_839ed1e2ecfd41068b53256e6d9f0911 yield=5 remaining=10 stack=5 merged=False
+[WorkCoreV3] Gathering cycle request=work_e9ef6f1eff3e4f05bad684c99079e216 yield=3 remaining=7 stack=3 merged=False
+[WorkCoreV3] Gathering cycle request=work_5fb0a3bf280940edab38ab36a2ffc2ff yield=5 remaining=5 stack=10 merged=True
+[WorkCoreV3] Gathering cycle request=work_e9ef6f1eff3e4f05bad684c99079e216 yield=3 remaining=4 stack=6 merged=True
+[WorkCoreV3] Gathering cycle request=work_839ed1e2ecfd41068b53256e6d9f0911 yield=5 remaining=5 stack=10 merged=True
+[WorkCoreV3] Gathering cycle request=work_5fb0a3bf280940edab38ab36a2ffc2ff yield=5 remaining=0 stack=15 merged=True
+[WorkCoreV3] Resource depleted node=rnode_9d21aa1c55c88333e5c707a95334f366 work=work_5fb0a3bf280940edab38ab36a2ffc2ff
+[WorkCoreV3] Approach movement request=work_763217fc24b8402ab8779f1c4694f573 candidate=(768, 841) index=0

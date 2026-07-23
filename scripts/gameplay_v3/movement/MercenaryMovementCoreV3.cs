@@ -73,10 +73,13 @@ public sealed class MercenaryMovementCoordinatorV3
 {
     private readonly MercenaryMovementSettingsV3 _settings;
     private Func<string,float>? _runtimeSpeedMultiplier;
+    private Action<string,GlobalCellCoord,GlobalCellCoord>? _segmentStarting;
+    private Action<string>? _movementEnded;
     private readonly List<string> _completedThisTick = new();
     private readonly List<string> _blockedThisTick = new();
     public MercenaryMovementCoordinatorV3(MercenaryMovementSettingsV3 settings){_settings=settings;}
     public void AttachRuntimeSpeedMultiplier(Func<string,float>? resolver)=>_runtimeSpeedMultiplier=resolver;
+    public void AttachPassageCallbacks(Action<string,GlobalCellCoord,GlobalCellCoord>? segmentStarting,Action<string>? movementEnded){_segmentStarting=segmentStarting;_movementEnded=movementEnded;}
     public IReadOnlyList<string> CompletedThisTick => _completedThisTick;
     public IReadOnlyList<string> BlockedThisTick => _blockedThisTick;
     public bool TryStart(MercenaryMoveOrderV3 order,MercenaryPathResultV3 result,MercenarySessionV3 mercenary,IMercenaryNavigationWorldQueryV3 query,MercenaryMovementRegistryV3 registry,out string reason)
@@ -93,7 +96,8 @@ public sealed class MercenaryMovementCoordinatorV3
         _completedThisTick.Clear();_blockedThisTick.Clear();
         foreach(string id in control.Movements.GetActiveIds())
         {
-            if(!control.Movements.TryGet(id,out MercenaryMovementStateV3? moving)||moving==null||!control.MercenarySession.Registry.TryGetState(id,out MercenaryStateV3? state)||state==null)continue;
+            if(!control.Movements.TryGet(id,out MercenaryMovementStateV3? moving)||moving==null)continue;
+            if(!control.MercenarySession.Registry.TryGetState(id,out MercenaryStateV3? state)||state==null){control.Movements.Remove(id);_movementEnded?.Invoke(id);_blockedThisTick.Add(id);continue;}
             float remainingDelta=Math.Max(0,delta);int advanced=0;bool finished=false;
             while(remainingDelta>0&&advanced<_settings.MaxSegmentsAdvancedPerTick)
             {
@@ -104,7 +108,7 @@ public sealed class MercenaryMovementCoordinatorV3
                 moving.FromCell=state.CurrentCell;moving.ToCell=moving.Path[moving.NextPathIndex++];PrepareSegment(moving,query);
             }
             if(!finished)continue;
-            control.Movements.Remove(id);state.TrySetActivityState(MercenaryActivityStateV3.Idle,out _);
+            control.Movements.Remove(id);_movementEnded?.Invoke(id);state.TrySetActivityState(MercenaryActivityStateV3.Idle,out _);
             if(!_blockedThisTick.Contains(id))_completedThisTick.Add(id);
             if(control.Commands.TryGetActiveOrder(id,out MercenaryMoveOrderV3? order)&&order!=null&&order.CommandId==moving.CommandId&&order.OrderRevision==moving.OrderRevision)
             { control.Commands.FinishOrder(order,true,string.Empty);control.Diagnostics.CompletedMovementCount++; }
@@ -112,7 +116,7 @@ public sealed class MercenaryMovementCoordinatorV3
     }
     private static bool _querySafe(IMercenaryNavigationWorldQueryV3 query,Vector2I cell)=>query.IsWalkable(cell);
     private void PrepareSegment(MercenaryMovementStateV3 state,IMercenaryNavigationWorldQueryV3 query)
-    { state.SegmentElapsed=0;state.EnteringTraversalMultiplier=query.GetTraversalMultiplier(state.ToCell.Value);float distance=MercenaryMovementCostPolicyV3.DirectionDistance(state.FromCell.Value,state.ToCell.Value);float fatigue=Math.Clamp(_runtimeSpeedMultiplier?.Invoke(state.MercenaryId)??1f,.1f,2f);float speed=_settings.BaseMoveSpeedCellsPerSecond*state.MoveSpeedMultiplier*fatigue;state.SegmentDuration=distance*state.EnteringTraversalMultiplier/Math.Max(0.001f,speed); }
+    { _segmentStarting?.Invoke(state.MercenaryId,state.FromCell,state.ToCell);state.SegmentElapsed=0;state.EnteringTraversalMultiplier=query.GetTraversalMultiplier(state.ToCell.Value);float distance=MercenaryMovementCostPolicyV3.DirectionDistance(state.FromCell.Value,state.ToCell.Value);float fatigue=Math.Clamp(_runtimeSpeedMultiplier?.Invoke(state.MercenaryId)??1f,.1f,2f);float speed=_settings.BaseMoveSpeedCellsPerSecond*state.MoveSpeedMultiplier*fatigue;state.SegmentDuration=distance*state.EnteringTraversalMultiplier/Math.Max(0.001f,speed); }
 }
 
 internal static class MovementRegistryExtensionsV3

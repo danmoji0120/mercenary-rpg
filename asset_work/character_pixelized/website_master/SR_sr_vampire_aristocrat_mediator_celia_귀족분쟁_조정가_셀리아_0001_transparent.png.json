@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_vampire_aristocrat_mediator_celia_귀족분쟁_조정가_셀리아_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_vampire_aristocrat_mediator_celia_귀족분쟁_조정가_셀리아_0001_transparent.png",
+  "sourceSha256": "4a7c371d4586ee0d784f7bb7c648c6140b4110ce8488d95278a15af8e136f28d",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_vampire_aristocrat_mediator_celia_귀족분쟁_조정가_셀리아_0001_transparent.png",
+  "outputSha256": "4644569f04749f9a52964dfa2e04d3ebc448d01a7ba7429992c6af32589f121c",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    257,
+    5,
+    1565,
+    2425
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1308,
+    2420
+  ],
+  "outputSize": [
+    1320,
+    2430
+  ],
+  "outputBoundingBox": [
+    6,
+    6,
+    1314,
+    2424
+  ],
+  "contentBoundingBox": [
+    6,
+    6,
+    1314,
+    2424
+  ],
+  "bottomCenterAnchor": [
+    660.0,
+    2424.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975308641975309,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1249884,
+  "transparentPixelCount": 1957716,
+  "sourceUniqueColorEstimate": 35777,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 33530,
+  "saturationClampedPixelCount": 2392,
+  "elapsedMilliseconds": 2725.062,
+  "warningCodes": [],
+  "errorMessage": ""
+}

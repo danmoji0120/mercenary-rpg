@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_snow_barrier_neve_빙결_결계술사_네베_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_snow_barrier_neve_빙결_결계술사_네베_0001_transparent.png",
+  "sourceSha256": "f6bbef1ee9b685b7aa6cbbce8eb99ccbe8c066cb2f26bfe06ec6dbefcca9f5c7",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_snow_barrier_neve_빙결_결계술사_네베_0001_transparent.png",
+  "outputSha256": "4184b732b11982935903ad897d94dc4e06a903127eb742c04870185b0405227e",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    45,
+    4,
+    1606,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1561,
+    2428
+  ],
+  "outputSize": [
+    1572,
+    2436
+  ],
+  "outputBoundingBox": [
+    5,
+    4,
+    1565,
+    2432
+  ],
+  "contentBoundingBox": [
+    5,
+    4,
+    1565,
+    2432
+  ],
+  "bottomCenterAnchor": [
+    786.0,
+    2432.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983579638752053,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1758252,
+  "transparentPixelCount": 2071140,
+  "sourceUniqueColorEstimate": 53637,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 44213,
+  "saturationClampedPixelCount": 138,
+  "elapsedMilliseconds": 3855.051,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource path="res://scripts/gameplay_v3/time/MercenaryScheduleRuntimeFixtureV3.cs" type="Script" id="1"]
+
+[node name="MercenaryScheduleRuntimeFixtureV3" type="Node"]
+script = ExtResource("1")

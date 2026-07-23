@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_undead_evidence_watcher_verno_증거품_감시자_베르노_0001_transparent.png",
+  "sourceRelativePath": "R_r_undead_evidence_watcher_verno_증거품_감시자_베르노_0001_transparent.png",
+  "sourceSha256": "5d576ea1e836c05608a91ac301695f02d43e8bf33c86d387d9d7032f4ff6e4f3",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_undead_evidence_watcher_verno_증거품_감시자_베르노_0001_transparent.png",
+  "outputSha256": "90a7bd6a24167c00a093a5853d64c00f4f3bb5aa8f834cd2965b5c7141dd0662",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    27,
+    29,
+    1645,
+    2407
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1618,
+    2378
+  ],
+  "outputSize": [
+    1626,
+    2388
+  ],
+  "outputBoundingBox": [
+    4,
+    6,
+    1622,
+    2382
+  ],
+  "contentBoundingBox": [
+    4,
+    6,
+    1622,
+    2382
+  ],
+  "bottomCenterAnchor": [
+    813.0,
+    2382.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9974874371859297,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1419360,
+  "transparentPixelCount": 2463528,
+  "sourceUniqueColorEstimate": 37983,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 37808,
+  "saturationClampedPixelCount": 1589,
+  "elapsedMilliseconds": 3126.516,
+  "warningCodes": [],
+  "errorMessage": ""
+}

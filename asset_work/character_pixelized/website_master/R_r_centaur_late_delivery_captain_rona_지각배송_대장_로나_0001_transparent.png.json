@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_centaur_late_delivery_captain_rona_지각배송_대장_로나_0001_transparent.png",
+  "sourceRelativePath": "R_r_centaur_late_delivery_captain_rona_지각배송_대장_로나_0001_transparent.png",
+  "sourceSha256": "656b5726be7f55186c6631f324281753c59016c4ddbe930638af022eda19eda1",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_centaur_late_delivery_captain_rona_지각배송_대장_로나_0001_transparent.png",
+  "outputSha256": "90dcbbe6dd332c40d2cd936fbced2e6c5c7245b4a224ceaaf134ee8c347d9c49",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    30,
+    65,
+    1632,
+    2398
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1602,
+    2333
+  ],
+  "outputSize": [
+    1614,
+    2346
+  ],
+  "outputBoundingBox": [
+    6,
+    9,
+    1608,
+    2342
+  ],
+  "contentBoundingBox": [
+    6,
+    9,
+    1608,
+    2342
+  ],
+  "bottomCenterAnchor": [
+    807.0,
+    2342.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9982949701619779,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1311156,
+  "transparentPixelCount": 2475288,
+  "sourceUniqueColorEstimate": 33795,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 34404,
+  "saturationClampedPixelCount": 882,
+  "elapsedMilliseconds": 2996.955,
+  "warningCodes": [],
+  "errorMessage": ""
+}

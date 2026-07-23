@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\SR_sr_flame_destroyer_mage_flea_화염_파괴마도사_플레아_0001_transparent.png",
+  "sourceRelativePath": "SR_sr_flame_destroyer_mage_flea_화염_파괴마도사_플레아_0001_transparent.png",
+  "sourceSha256": "9508e10eb956c5cc503e7a28f3804173d6d55749fc05b3d8301caa7cc62f6948",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\SR_sr_flame_destroyer_mage_flea_화염_파괴마도사_플레아_0001_transparent.png",
+  "outputSha256": "ec55ac35c3fa5b10aab378aa1d1249a21d154e1992f1cc15e0820eee10cdc6d5",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    46,
+    0,
+    1613,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1567,
+    2432
+  ],
+  "outputSize": [
+    1578,
+    2442
+  ],
+  "outputBoundingBox": [
+    5,
+    6,
+    1571,
+    2436
+  ],
+  "contentBoundingBox": [
+    5,
+    6,
+    1571,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    789.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1539828,
+  "transparentPixelCount": 2313648,
+  "sourceUniqueColorEstimate": 55799,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 41097,
+  "saturationClampedPixelCount": 7280,
+  "elapsedMilliseconds": 3374.292,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

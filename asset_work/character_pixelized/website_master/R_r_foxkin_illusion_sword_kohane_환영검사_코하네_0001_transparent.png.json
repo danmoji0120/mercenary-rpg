@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_foxkin_illusion_sword_kohane_환영검사_코하네_0001_transparent.png",
+  "sourceRelativePath": "R_r_foxkin_illusion_sword_kohane_환영검사_코하네_0001_transparent.png",
+  "sourceSha256": "e0f25983c46aa9afcf81f7b5bbf8f77c63ebcf4d2342364a09479b38975f849c",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_foxkin_illusion_sword_kohane_환영검사_코하네_0001_transparent.png",
+  "outputSha256": "0a1b869ccbac24a7e11daa50bf91a47d2abd031c267e3f8f70f68702a763cdf1",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    103,
+    16,
+    1478,
+    2411
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1375,
+    2395
+  ],
+  "outputSize": [
+    1386,
+    2406
+  ],
+  "outputBoundingBox": [
+    5,
+    7,
+    1379,
+    2401
+  ],
+  "contentBoundingBox": [
+    5,
+    7,
+    1379,
+    2401
+  ],
+  "bottomCenterAnchor": [
+    693.0,
+    2401.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9979218620116376,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1280340,
+  "transparentPixelCount": 2054376,
+  "sourceUniqueColorEstimate": 43319,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 34198,
+  "saturationClampedPixelCount": 781,
+  "elapsedMilliseconds": 2941.057,
+  "warningCodes": [],
+  "errorMessage": ""
+}

@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_orc_work_leader_gorg_작업반장_고르그_0001_transparent.png",
+  "sourceRelativePath": "R_r_orc_work_leader_gorg_작업반장_고르그_0001_transparent.png",
+  "sourceSha256": "d5ae8c03dbeee51caf9f565b6d170e6ea0c358bfce6795476468121ae60404c6",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_orc_work_leader_gorg_작업반장_고르그_0001_transparent.png",
+  "outputSha256": "52ad9aaa02f1739bc7d694f327a7fa021bf77acd37d0be2c214f2f04c6c011ef",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    247,
+    26,
+    1450,
+    2428
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1203,
+    2402
+  ],
+  "outputSize": [
+    1212,
+    2412
+  ],
+  "outputBoundingBox": [
+    4,
+    6,
+    1204,
+    2406
+  ],
+  "contentBoundingBox": [
+    4,
+    6,
+    1204,
+    2406
+  ],
+  "bottomCenterAnchor": [
+    606.0,
+    2406.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975124378109452,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1699380,
+  "transparentPixelCount": 1223964,
+  "sourceUniqueColorEstimate": 53560,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 46089,
+  "saturationClampedPixelCount": 3273,
+  "elapsedMilliseconds": 3398.851,
+  "warningCodes": [],
+  "errorMessage": ""
+}

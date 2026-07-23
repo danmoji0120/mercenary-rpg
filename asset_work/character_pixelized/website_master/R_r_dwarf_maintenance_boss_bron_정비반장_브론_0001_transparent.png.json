@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_dwarf_maintenance_boss_bron_정비반장_브론_0001_transparent.png",
+  "sourceRelativePath": "R_r_dwarf_maintenance_boss_bron_정비반장_브론_0001_transparent.png",
+  "sourceSha256": "508f9ad51bc1659e1c4cba3f7db2a19329dbfab71070b509fd07a996a6f4d992",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_dwarf_maintenance_boss_bron_정비반장_브론_0001_transparent.png",
+  "outputSha256": "070eac6fc1d5da35fc395c3a289659745689e4137ca49ad32370112a441baccf",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    0,
+    31,
+    1657,
+    2383
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1657,
+    2352
+  ],
+  "outputSize": [
+    1668,
+    2364
+  ],
+  "outputBoundingBox": [
+    5,
+    8,
+    1661,
+    2360
+  ],
+  "contentBoundingBox": [
+    5,
+    8,
+    1661,
+    2360
+  ],
+  "bottomCenterAnchor": [
+    834.0,
+    2360.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983079526226735,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 2196756,
+  "transparentPixelCount": 1746396,
+  "sourceUniqueColorEstimate": 56184,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 59659,
+  "saturationClampedPixelCount": 971,
+  "elapsedMilliseconds": 4495.409,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}

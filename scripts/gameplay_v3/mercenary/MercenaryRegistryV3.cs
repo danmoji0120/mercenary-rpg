@@ -18,6 +18,8 @@ public sealed class MercenaryRegistryV3
 
     public int Count => _profilesById.Count;
     public int DuplicateMercenaryRejectedCount { get; private set; }
+    public event Action<MercenaryStateV3>? MercenaryRegistered;
+    public event Action<string,string>? MercenaryRemoved;
 
     public bool CanRegisterMercenary(MercenaryProfileV3? profile, MercenaryStateV3? state, out string reason)
     {
@@ -72,6 +74,7 @@ public sealed class MercenaryRegistryV3
         _profilesById.Add(validProfile.MercenaryId, validProfile);
         _statesById.Add(validState.MercenaryId, validState);
         GetOrCreateCompanyIds(validState.CompanyId).Add(validState.MercenaryId);
+        MercenaryRegistered?.Invoke(validState);
         reason = string.Empty;
         return true;
     }
@@ -124,6 +127,8 @@ public sealed class MercenaryRegistryV3
             }
         }
 
+        MercenaryRemoved?.Invoke(mercenaryId,state.CompanyId);
+
         reason = string.Empty;
         return true;
     }
@@ -154,6 +159,10 @@ public sealed class MercenaryRegistryV3
 
     public void Clear()
     {
+        foreach (MercenaryStateV3 state in _statesById.Values)
+        {
+            MercenaryRemoved?.Invoke(state.MercenaryId,state.CompanyId);
+        }
         _profilesById.Clear();
         _statesById.Clear();
         _mercenaryIdsByCompany.Clear();

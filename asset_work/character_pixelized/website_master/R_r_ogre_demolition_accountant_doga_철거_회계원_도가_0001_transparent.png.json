@@ -1,0 +1,71 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_ogre_demolition_accountant_doga_철거_회계원_도가_0001_transparent.png",
+  "sourceRelativePath": "R_r_ogre_demolition_accountant_doga_철거_회계원_도가_0001_transparent.png",
+  "sourceSha256": "781ff38c381a79f7da97b133704d70d938cf1249aaa247c826991b83f073527e",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "PASS",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_ogre_demolition_accountant_doga_철거_회계원_도가_0001_transparent.png",
+  "outputSha256": "6ea9668ae6677ba0f0ac4228f77857db760e2f84aa0a7c98e01fe76cf1d62986",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    132,
+    18,
+    1432,
+    2410
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1300,
+    2392
+  ],
+  "outputSize": [
+    1308,
+    2400
+  ],
+  "outputBoundingBox": [
+    4,
+    4,
+    1304,
+    2396
+  ],
+  "contentBoundingBox": [
+    4,
+    4,
+    1304,
+    2396
+  ],
+  "bottomCenterAnchor": [
+    654.0,
+    2396.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9983333333333333,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1775208,
+  "transparentPixelCount": 1363992,
+  "sourceUniqueColorEstimate": 23935,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 46389,
+  "saturationClampedPixelCount": 746,
+  "elapsedMilliseconds": 3631.736,
+  "warningCodes": [],
+  "errorMessage": ""
+}

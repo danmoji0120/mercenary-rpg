@@ -1,0 +1,73 @@
+{
+  "sourcePath": "E:\\mercenary-rpg\\asset_work\\character_sources\\R_r_wolfkin_chaser_lena_추격자_레나_0001_transparent.png",
+  "sourceRelativePath": "R_r_wolfkin_chaser_lena_추격자_레나_0001_transparent.png",
+  "sourceSha256": "94b044d695de81199a0084a32b2ddc4585bfa501c79fd1edf5614ff8948b26f4",
+  "sourceHadNoAlpha": false,
+  "preset": "website_master",
+  "presetConfigHash": "d9f65e9f487237e86a6f80df6c266cc1226f40a6935d8f746867e0be08b4e8ce",
+  "algorithmVersion": "mercenary-pixel-convert-1.0.0",
+  "status": "WARNING",
+  "skippedReason": "",
+  "outputPath": "E:\\mercenary-rpg\\asset_work\\character_pixelized\\website_master\\R_r_wolfkin_chaser_lena_추격자_레나_0001_transparent.png",
+  "outputSha256": "8252e142b58d0ee8c6923bf69c758c80f55835f2db5af713cea42e048b5d863c",
+  "sourceSize": [
+    1664,
+    2432
+  ],
+  "sourceBoundingBox": [
+    368,
+    0,
+    1664,
+    2432
+  ],
+  "preserveSourceDimensions": true,
+  "targetContentHeight": null,
+  "scaleRatio": 1.0,
+  "contentSize": [
+    1296,
+    2432
+  ],
+  "outputSize": [
+    1308,
+    2442
+  ],
+  "outputBoundingBox": [
+    6,
+    6,
+    1302,
+    2436
+  ],
+  "contentBoundingBox": [
+    6,
+    6,
+    1302,
+    2436
+  ],
+  "bottomCenterAnchor": [
+    654.0,
+    2436.0
+  ],
+  "normalizedPivotX": 0.5,
+  "normalizedPivotY": 0.9975429975429976,
+  "requestedColors": 16,
+  "actualColors": 16,
+  "requestedPaletteColorCount": 16,
+  "actualPaletteColorCount": 16,
+  "opaquePixelCount": 1237068,
+  "transparentPixelCount": 1957068,
+  "sourceUniqueColorEstimate": 45440,
+  "outputUniqueColorCount": 16,
+  "alphaValues": [
+    0,
+    255
+  ],
+  "saturationPreset": "high",
+  "saturationMultiplier": 1.35,
+  "saturationAdjustedPixelCount": 32513,
+  "saturationClampedPixelCount": 1443,
+  "elapsedMilliseconds": 2641.121,
+  "warningCodes": [
+    "BOUNDING_BOX_TOUCHES_EDGE"
+  ],
+  "errorMessage": ""
+}
